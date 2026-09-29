@@ -216,7 +216,7 @@ class DownloadManager:
         self._start_bridge()
         self._scheduler = threading.Thread(target=self._scheduler_loop, daemon=True)
         self._scheduler.start()
-        self.log("PyIDM hazır.", "info")
+        self.log("Retro+ Download Manager hazır.", "info")
 
     def _setup_logger(self):
         logger = logging.getLogger("pdm")
@@ -431,11 +431,22 @@ class DownloadManager:
             urls = [urls]
         created = []
         for raw in urls or []:
-            url = self._normalize_url(raw)
+            entry = raw if isinstance(raw, dict) else None
+            source = entry.get("url") if entry else raw
+            url = self._normalize_url(source)
             if not url:
-                self.log(f"Geçersiz URL atlandı: {raw}", "warning")
+                self.log(f"Geçersiz URL atlandı: {source}", "warning")
                 continue
-            task = DownloadTask(url, self, **kwargs)
+            options = dict(kwargs)
+            if entry:
+                if entry.get("filename") and not options.get("filename"):
+                    options["filename"] = entry["filename"]
+                headers = dict(entry.get("headers") or {})
+                if headers:
+                    merged = dict(options.get("extra_headers") or {})
+                    merged.update(headers)
+                    options["extra_headers"] = merged
+            task = DownloadTask(url, self, **options)
             with self.lock:
                 self.tasks.append(task)
             created.append(task)
@@ -813,10 +824,12 @@ class DownloadManager:
         with self.lock:
             active = [t for t in self.tasks if t.state == DOWNLOADING]
             queued = sum(1 for t in self.tasks if t.state in (QUEUED, SCHEDULED))
+            completed = sum(1 for t in self.tasks if t.state == COMPLETED)
             total_speed = sum(t.speed for t in active)
             return {
                 "active": len(active),
                 "queued": queued,
+                "completed": completed,
                 "total": len(self.tasks),
                 "speed": total_speed,
             }

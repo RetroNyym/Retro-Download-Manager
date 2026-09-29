@@ -7,7 +7,7 @@
   <img alt="Lisans" src="https://img.shields.io/badge/Lisans-MIT-yellow.svg">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
   <img alt="Parça" src="https://img.shields.io/badge/indirme-32%20par%C3%A7a-brightgreen">
-  <img alt="Test" src="https://img.shields.io/badge/test-82%20kontrol-blue">
+  <img alt="Test" src="https://img.shields.io/badge/test-97%20kontrol-blue">
 </p>
 
 **Retro+ Download Manager**, Internet Download Manager'ın indirme becerilerini bağımsız bir Python
@@ -34,6 +34,8 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 | Duraklatma sırasında bitiş eşiği ve hız sınırı | ✅ | KB/sn sınırı, isteğe bağlı kota |
 | Kategori kuralı (video/müzik/arşiv...) | ✅ | Uzantı + anahtar kelime, eşleşene göre klasöre ayırır |
 | Tarayıcı bağlantı grabber'ı | ✅ | Pano izleme + yerel HTTP köprüsü (`/links`, `/add`) |
+| Web sayfası / playlist linki çözümleme | ✅ | `og:video`/kaynak tarayıcı + yt-dlp (56 videoluk liste tek tuşla kuyruğa) |
+| Video indirme (ses+video birleştirme) | ✅ | YouTube vb. için yt-dlp + ffmpeg otomatik birleştirme |
 | Site şifresi / çerez desteği | ⚠️ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
 | MMS/RTSP, FTPS'te özel tunnel | ❌ | HTTP(S), HTTP range, FTP/FTPS desteklenir |
 | Site entegrasyonu (site yöneticisi) | ❌ | Yerel köprü ve pano ile ikame edildi |
@@ -49,6 +51,14 @@ python -m pip install -r requirements.txt
 ```
 
 Tek çalışma zamanı bağımlılığı `requests`'tir; `tkinterdnd2` kuruluysa sürükle-bırak eklenir.
+
+Video/playlist linkleri (YouTube, Vimeo, ...) için opsiyonel olarak `yt-dlp` ve `ffmpeg`
+gerektirir; ikisi de kurulu değilse uygulama normal indirmelere olduğu gibi devam eder:
+
+```bash
+python -m pip install yt-dlp
+winget install Gyan.FFmpeg        # ses+video birleştirme için
+```
 
 ## Çalıştırma
 
@@ -71,6 +81,22 @@ mgr.start()                                 # kuyruk çalışır
 
 Durum, ilerleme ve sonuçlar `mgr.tasks` üzerinden okunabilir; uygulama yeniden başlatıldığında
 yarım kalan indirmeler `download_manager/data/state.json` üzerinden kaldığı yerden devam eder.
+
+## Web sayfası ve video linkleri
+
+Adres çubuğuna yapıştırılan link taranır ve doğru motor otomatik seçilir:
+
+| Girdi | Davranış |
+| --- | --- |
+| Doğrudan dosya (`.zip`, `.mp4`, ...) | çok parçalı HTTP/FTP indirme |
+| `.html`/`.htm` uzantılı bağlantı | sayfa dosya olarak iner (IDM davranışı) |
+| Web sayfası (uzantısız, PHP, ...) | `og:video`/`<source>`/JSON-LD ile medya adresi çözümlenir |
+| Medya bulunamayan sayfa | net hata mesajı, dosya oluşturmaz |
+| Playlist / video sayfası (YouTube vb.) | yt-dlp ile liste çözümlenir, tüm videolar kuyruğa eklenir |
+| Ses+video ayrı akış (DASH) | yt-dlp indirir, ffmpeg ile tek dosyada birleştirir |
+
+Tek parça indirme ayrıca **Site Grabber** (aynı sayfadaki tüm medya bağlantıları) ile de
+toplu eklenebilir.
 
 ## Tarayıcı köprüsü
 
@@ -95,10 +121,11 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | --- | --- |
 | `download_manager/engine.py` | çok parçalı indirme motoru (HTTP/FTP, duraklat/devam, yeniden deneme, ayna URL) |
 | `download_manager/manager.py` | kuyruk, zamanlayıcı, kategoriler, grabber, köprü, geçmiş, ayarlar |
-| `download_manager/gui.py` | Tkinter arayüz (indirme listesi, segment görünürlüğü, diyaloglar) |
+| `download_manager/gui.py` | Tkinter arayüz (IDM düzeni: kategori paneli, ikonlu araç çubuğu, segment görünürlüğü) |
+| `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
 | `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
-| `tests/` | 82 kontrol (motor, FTP, köprü, yeniden başlatma, GUI) |
+| `tests/` | 97 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
 
 ## Testler
 
@@ -109,6 +136,7 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
 | `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
 | `tests/test_gui.py` | diyaloglar ve arayüz (ekran/`tkinter` gerektirir) | 20 |
+| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` dosya davranışı | 15 |
 
 ```bash
 python tests/test_download_manager.py
@@ -116,6 +144,7 @@ python tests/test_restart_resume.py
 python tests/test_bridge.py
 python tests/test_ftp.py        # pip install pyftpdlib
 python tests/test_gui.py        # grafik oturum gerekir
+python tests/test_page_media.py
 ```
 
 Lint: `python -m pyflakes download_manager`.
@@ -124,6 +153,8 @@ Lint: `python -m pyflakes download_manager`.
 
 - Tarayıcı entegrasyonu eklenti yerine **yerel köprü + pano izleme** ile sağlanır.
 - Sunucu `Range` desteklemiyorsa paralel segment kullanılmaz (tümü doğrudan tamamlanır).
+- Video indirmeleri yt-dlp tarafından yürütülür; duraklat/devam yerine iptal→yeniden
+  başlatma mantığı kullanılır (tek parça `Range` indirmesi gibi değildir).
 - `FTP over explicit TLS` (FTPS) deneme amaçlıdır; bazı sunucularda `MLSD` yerine `NLST`'ye düşer.
 - Saloon / çoklu parça her zaman sunucunun izin verdiği kadar hızlanır; hız sınırı istemci tarafıdır.
 

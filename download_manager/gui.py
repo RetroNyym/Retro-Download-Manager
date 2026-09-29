@@ -1,4 +1,4 @@
-"""PyIDM Tkinter arayuzu."""
+"""Retro+ Download Manager Tkinter arayüzü."""
 
 from __future__ import annotations
 
@@ -32,27 +32,39 @@ from .util import (
     looks_like_url,
 )
 
-TREE_COLUMNS = ("filename", "category", "state", "size", "percent", "speed", "eta", "url")
+TREE_COLUMNS = ("filename", "size", "speed", "eta", "segments", "percent", "state")
 TREE_HEADINGS = {
     "filename": "Ad",
-    "category": "Kategori",
-    "state": "Durum",
     "size": "Boyut",
-    "percent": "%",
     "speed": "Hız",
     "eta": "Kalan süre",
-    "url": "Bağlantı",
+    "segments": "Parça",
+    "percent": "Yüzde",
+    "state": "Durum",
 }
 TREE_WIDTHS = {
-    "filename": 280,
-    "category": 95,
-    "state": 110,
+    "filename": 360,
     "size": 95,
-    "percent": 60,
-    "speed": 100,
-    "eta": 85,
-    "url": 350,
+    "speed": 105,
+    "eta": 95,
+    "segments": 60,
+    "percent": 70,
+    "state": 120,
 }
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+HEADER_BG = "#0e2a3f"
+CATEGORY_ITEMS = (
+    ("all", "Tüm indirmeler"),
+    ("active", "Devam eden"),
+    ("queued", "Bekleyen"),
+    ("done", "Tamamlanan"),
+    ("cat:video", "Video"),
+    ("cat:audio", "Ses"),
+    ("cat:programs", "Programlar"),
+    ("cat:archives", "Arşivler"),
+    ("cat:documents", "Belgeler"),
+    ("cat:other", "Diğer"),
+)
 STATE_TAGS = {
     QUEUED: "queued",
     SCHEDULED: "scheduled",
@@ -73,6 +85,19 @@ STATE_COLORS = {
     "error": "#c5221f",
     "canceled": "#9aa0a6",
 }
+
+
+def load_photo(relative, store=None):
+    path = ASSETS_DIR / relative
+    if not path.exists():
+        return None
+    try:
+        photo = tk.PhotoImage(file=str(path))
+    except Exception:
+        return None
+    if store is not None:
+        store[str(path)] = photo
+    return photo
 
 
 def center_window(window, parent=None):
@@ -295,7 +320,7 @@ def _parse_headers(text):
 
 
 class SettingsDialog(tk.Toplevel):
-    def __init__(self, parent, manager):
+    def __init__(self, parent, manager, tab=None):
         super().__init__(parent)
         self.manager = manager
         self.result = None
@@ -305,6 +330,12 @@ class SettingsDialog(tk.Toplevel):
 
         notebook = ttk.Notebook(self)
         notebook.pack(fill="both", expand=True, padx=8, pady=8)
+        self.notebook = notebook
+        tabs = {"general": 0, "connection": 1, "queue": 2, "categories": 3,
+                "security": 4}
+        if tab in tabs:
+            index = tabs[tab]
+            self.after(50, lambda: notebook.select(str(index)))
 
         st = manager.settings
 
@@ -785,16 +816,22 @@ class App:
     def __init__(self, manager):
         self.mgr = manager
         self.root = self._create_root()
-        self.root.title(f"PyIDM {__version__} — Internet Download Manager (Python)")
-        self.root.geometry("1120x660")
-        self.root.minsize(900, 540)
+        self.root.title(f"Retro+ Download Manager {__version__}")
+        self.root.geometry("1180x700")
+        self.root.minsize(940, 560)
+        self._photos = {}
+        self._filter = "all"
+        self._cat_texts = {}
 
         style = ttk.Style(self.root)
         try:
             style.theme_use("clam")
         except Exception:
             pass
-        style.configure("Treeview", rowheight=24)
+        style.configure("Treeview", rowheight=25)
+        style.configure("Header.TFrame", background=HEADER_BG)
+
+        self._set_window_icon()
 
         self._rows = {}
         self._log_seq = 0
@@ -804,6 +841,7 @@ class App:
         self._all_done = False
         self._context_menu = None
 
+        self._build_header()
         self._build_menu()
         self._build_toolbar()
         self._build_body()
@@ -814,6 +852,43 @@ class App:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.mgr.on_all_done = self._on_all_done
         self._ui_tick()
+
+    def _set_window_icon(self):
+        logo = load_photo("logo.png", self._photos)
+        if logo is None:
+            return
+        try:
+            self.root.iconphoto(True, logo)
+        except Exception:
+            pass
+
+    def _build_header(self):
+        header = tk.Frame(self.root, background=HEADER_BG, height=54)
+        header.pack(fill="x", side="top")
+        header.pack_propagate(False)
+
+        logo = load_photo("logo_small.png", self._photos)
+        if logo is not None:
+            tk.Label(header, image=logo, background=HEADER_BG).pack(
+                side="left", padx=(14, 10), pady=7)
+        titles = tk.Frame(header, background=HEADER_BG)
+        titles.pack(side="left", fill="y")
+        tk.Label(titles, text="Retro+ Download Manager", foreground="#ffffff",
+                 background=HEADER_BG, font=("Segoe UI Semibold", 14)).pack(
+            anchor="w", pady=(8, 0))
+        tk.Label(titles, text="IDM mantığında çok parçalı indirme · duraklat/devam · "
+                              "kuyruk ve zamanlama · tarayıcı köprüsü",
+                 foreground="#8fd4cb", background=HEADER_BG,
+                 font=("Segoe UI", 8)).pack(anchor="w")
+
+        self.var_header_speed = tk.StringVar(value="")
+        tk.Label(header, textvariable=self.var_header_speed, foreground="#e8eaed",
+                 background=HEADER_BG, font=("Segoe UI", 11, "bold")).pack(
+            side="right", padx=18)
+        self.var_header_active = tk.StringVar(value="")
+        tk.Label(header, textvariable=self.var_header_active, foreground="#8fd4cb",
+                 background=HEADER_BG, font=("Segoe UI", 9)).pack(
+            side="right", padx=(0, 6))
 
     def _build_menu(self):
         menubar = tk.Menu(self.root)
@@ -887,27 +962,77 @@ class App:
         bar = ttk.Frame(self.root, padding=(6, 5))
         bar.pack(fill="x")
 
-        def btn(text, command):
-            ttk.Button(bar, text=text, command=command).pack(side="left", padx=2)
+        def btn(icon, text, command):
+            image = load_photo(f"icons/{icon}.png", self._photos)
+            widget = ttk.Button(bar, text=text, image=image, compound="left",
+                                command=command)
+            widget.pack(side="left", padx=2)
+            return widget
 
-        btn("URL Ekle", self.add_url)
-        btn("Toplu Ekle", self.add_batch)
-        btn("Site Grabber", self.open_grabber)
+        btn("add", "URL Ekle", self.add_url)
+        btn("batch", "Toplu Ekle", self.add_batch)
         ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
-        btn("Duraklat", lambda: self._apply("pause"))
-        btn("Devam", lambda: self._apply("start"))
-        btn("İptal", lambda: self._apply("cancel"))
-        btn("Yeniden Başlat", lambda: self._apply("restart"))
+        btn("play", "Başlat", lambda: self._apply("start"))
+        btn("pause", "Duraklat", lambda: self._apply("pause"))
+        btn("stop", "İptal", lambda: self._apply("cancel"))
+        btn("retry", "Yeniden Başlat", lambda: self._apply("restart"))
         ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
+        btn("delete", "Sil", self.remove_selected)
+        btn("folder", "Klasör", self.open_selected_folder)
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
+        btn("grabber", "Site Grabber", self.open_grabber)
+        btn("schedule", "Zamanlayıcı", self.open_scheduler)
+
         self.btn_queue = ttk.Button(bar, text="Kuyruğu Durdur", command=self.toggle_queue)
-        self.btn_queue.pack(side="left", padx=2)
-        btn("Sil", self.remove_selected)
-        btn("Klasör", self.open_selected_folder)
-        btn("Ayarlar", self.open_settings)
+        self.btn_queue.pack(side="right", padx=2)
+        btn("settings", "Ayarlar", self.open_settings).pack(side="right", padx=2)
+
+        self.btn_limit = ttk.Button(bar, text="Hız: Sınırsız", command=self._show_limits)
+        self.btn_limit.pack(side="right", padx=6)
+
+    def _show_limits(self):
+        menu = tk.Menu(self.root, tearoff=0)
+        current = int(getattr(self.mgr.settings, "speed_limit", 0) or 0)
+        for label, kbps in (("Sınırsız", 0), ("512 KB/s", 512), ("1 MB/s", 1024),
+                            ("2 MB/s", 2048), ("5 MB/s", 5120), ("10 MB/s", 10240)):
+            def choose(value=kbps, text=label):
+                self.mgr.set_global_limit(value)
+                self.btn_limit.configure(
+                    text="Hız: Sınırsız" if value == 0 else f"Hız: {text}")
+                self.mgr.log(f"Toplam hız sınırı: {text}", "info")
+            menu.add_command(label=("\u2713  " if kbps == current else "") + label,
+                             command=choose)
+        try:
+            menu.tk_popup(self.btn_limit.winfo_rootx(),
+                          self.btn_limit.winfo_rooty() + self.btn_limit.winfo_height())
+        finally:
+            menu.grab_release()
+
+    def open_scheduler(self):
+        self.open_settings(tab="queue")
 
     def _build_body(self):
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=6, pady=(0, 4))
+        body = ttk.Panedwindow(self.root, orient="horizontal")
+        body.pack(fill="both", expand=True, padx=6, pady=(0, 4))
+
+        left = ttk.Frame(body, width=200)
+        body.add(left, weight=0)
+        ttk.Label(left, text="  KATEGORİLER", foreground="#5f6368",
+                  font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=6, pady=(6, 2))
+        self.cat_tree = ttk.Treeview(left, show="tree", selectmode="browse",
+                                     height=len(CATEGORY_ITEMS))
+        self.cat_tree.pack(fill="both", expand=True, padx=(4, 4), pady=(0, 6))
+        for iid, label in CATEGORY_ITEMS:
+            self.cat_tree.insert("", "end", iid=iid, text=label)
+            self._cat_texts[iid] = label
+        self.cat_tree.selection_set("all")
+        self.cat_tree.bind("<<TreeviewSelect>>", self._on_category)
+
+        right = ttk.Frame(body)
+        body.add(right, weight=1)
+
+        self.notebook = ttk.Notebook(right)
+        self.notebook.pack(fill="both", expand=True)
 
         downloads = ttk.Frame(self.notebook)
         self.notebook.add(downloads, text=" İndirmeler ")
@@ -921,8 +1046,7 @@ class App:
             self.tree.heading(column, text=TREE_HEADINGS[column])
             self.tree.column(column, width=TREE_WIDTHS[column],
                              minwidth=50,
-                             anchor="w" if column in ("filename", "url", "category")
-                             else "center")
+                             anchor="w" if column == "filename" else "center")
         for tag, color in STATE_COLORS.items():
             self.tree.tag_configure(tag, foreground=color)
 
@@ -1117,8 +1241,8 @@ class App:
     def open_grabber(self):
         GrabberDialog(self.root, self.mgr)
 
-    def open_settings(self):
-        dialog = SettingsDialog(self.root, self.mgr)
+    def open_settings(self, tab=None):
+        dialog = SettingsDialog(self.root, self.mgr, tab=tab)
         self.root.wait_window(dialog)
         if dialog.result:
             was_queue = self.mgr.queue_running
@@ -1136,20 +1260,31 @@ class App:
             self.mgr.history_clear()
 
     def show_about(self):
-        messagebox.showinfo(
-            "Hakkında",
-            f"PyIDM {__version__}\n\n"
-            "Internet Download Manager yeteneklerini karşılayan bağımsız "
-            "Python modülü:\n"
-            "• Çok parçalı (32 parça) indirme\n"
-            "• Duraklat / devam / yeniden başlat\n"
-            "• Kuyruk ve zamanlayıcı\n"
-            "• Kategoriler ve otomatik klasörleme\n"
-            "• Site grabber ve toplu ekleme\n"
-            "• Hız sınırı, proxy, çerez, referer, özel başlıklar\n"
-            "• Otomatik yeniden deneme, aynası (mirror) destekli\n"
-            "• Virüs tarama, sesli bildirim, günlük ve tarihçe",
-            parent=self.root)
+        about = [
+            f"Retro+ Download Manager {__version__}",
+            "",
+            "Internet Download Manager mantığında çalışan bağımsız Python modülü:",
+            "• Çok parçalı (32 parça) indirme, duraklat / devam / iptal",
+            "• Web sayfası ve playlist algılama (yt-dlp ile site desteği)",
+            "• Kuyruk, zamanlayıcı, görev başına hız sınırı",
+            "• Kategoriler, otomatik klasörleme, sol panel filtreleri",
+            "• Site Grabber, toplu ekleme, tarayıcı köprüsü, pano izleme",
+            "• Proxy, çerez, referer, özel başlıklar, ayna URL destekli",
+            "• Otomatik yeniden deneme, virüs tarama, sesli bildirim",
+        ]
+        logo = load_photo("logo_small.png", self._photos)
+        if logo is None:
+            messagebox.showinfo("Hakkında", "\n".join(about), parent=self.root)
+            return
+        box = tk.Toplevel(self.root)
+        box.title("Hakkında")
+        box.transient(self.root)
+        box.resizable(False, False)
+        tk.Label(box, image=logo).pack(padx=16, pady=(14, 4))
+        tk.Label(box, text="\n".join(about), justify="left",
+                 font=("Segoe UI", 10)).pack(padx=16, pady=(0, 8))
+        ttk.Button(box, text="Kapat", command=box.destroy).pack(pady=(0, 12))
+        center_window(box, self.root)
 
     def remove_selected(self):
         ids = self._selected_ids()
@@ -1239,21 +1374,69 @@ class App:
 
     def _row_values(self, snap):
         percent = "-" if snap["percent"] < 0 else f"{snap['percent']:.1f}"
+        segments = "-" if snap.get("external") else str(len(snap["segments"]))
         return (
             snap["filename"],
-            CATEGORY_LABELS.get(snap["category"], snap["category"]),
-            snap["state_label"],
             format_bytes(snap["size"]),
-            percent,
             format_speed(snap["speed"]),
             format_eta(snap["eta"]),
-            snap["url"],
+            segments,
+            percent,
+            snap["state_label"],
         )
+
+    def _matches_filter(self, snap):
+        key = self._filter
+        if key == "all":
+            return True
+        if key == "active":
+            return snap["state"] in (DOWNLOADING, PROBING)
+        if key == "queued":
+            return snap["state"] in (QUEUED, SCHEDULED, PAUSED, ERROR, CANCELED)
+        if key == "done":
+            return snap["state"] == COMPLETED
+        if key.startswith("cat:"):
+            return snap["category"] == key[4:]
+        return True
+
+    def _count_snapshot(self, snap, counts):
+        counts["all"] += 1
+        if snap["state"] in (DOWNLOADING, PROBING):
+            counts["active"] += 1
+        elif snap["state"] in (QUEUED, SCHEDULED, PAUSED, ERROR, CANCELED):
+            counts["queued"] += 1
+        elif snap["state"] == COMPLETED:
+            counts["done"] += 1
+        counts["cat:" + snap["category"]] += 1
+
+    def _update_category_texts(self, counts):
+        for iid, label in CATEGORY_ITEMS:
+            text = f"{label} ({counts.get(iid, 0)})"
+            if self._cat_texts.get(iid) != text:
+                self._cat_texts[iid] = text
+                if self.cat_tree.exists(iid):
+                    self.cat_tree.item(iid, text=text)
+
+    def _on_category(self, _event=None):
+        selection = self.cat_tree.selection()
+        key = selection[0] if selection else "all"
+        if key == self._filter:
+            return
+        self._filter = key
+        self._rows.clear()
+        self.tree.delete(*self.tree.get_children())
+        self._sync_rows()
 
     def _sync_rows(self):
         snapshots = self.mgr.snapshot_list()
-        seen = set()
+        counts = {iid: 0 for iid, _label in CATEGORY_ITEMS}
+        visible = []
         for snap in snapshots:
+            self._count_snapshot(snap, counts)
+            if self._matches_filter(snap):
+                visible.append(snap)
+        seen = set()
+        for snap in visible:
             iid = snap["id"]
             seen.add(iid)
             values = self._row_values(snap)
@@ -1274,12 +1457,13 @@ class App:
                 if self.tree.exists(iid):
                     self.tree.delete(iid)
                 del self._rows[iid]
-        expected = [snap["id"] for snap in snapshots]
+        expected = [snap["id"] for snap in visible]
         current = list(self.tree.get_children(""))
         if current != expected:
             for index, iid in enumerate(expected):
                 if self.tree.exists(iid):
                     self.tree.move("", index, iid)
+        self._update_category_texts(counts)
 
     def _update_details(self):
         tasks = self._selected_tasks()
@@ -1298,8 +1482,10 @@ class App:
             f"Hız: {format_speed(snap['speed'])}",
             f"Kalan: {format_eta(snap['eta'])}",
         ]
-        if snap["segments"]:
+        if snap["segments"] and not snap.get("external"):
             parts.append(f"Parça: {len(snap['segments'])}")
+        elif snap.get("external"):
+            parts.append("Motor: yt-dlp (ses+video birleştirme)")
         if snap["scheduled_at"]:
             parts.append(f"Başlangıç: {snap['scheduled_at']}")
         self.var_detail.set("   |   ".join(parts))
@@ -1350,8 +1536,17 @@ class App:
             f"Eşzamanlı: {stats['active']}/{st.max_concurrent}   |   "
             f"Kayıt: {stats['total']} (kuyrukta {stats['queued']})")
         self.var_status_right.set(f"Toplam hız: {format_speed(stats['speed'])}")
+        self.var_header_speed.set(format_speed(stats["speed"]))
+        active = int(stats.get("active", 0))
+        total = int(stats.get("total", 0))
+        done = int(stats.get("completed", 0)) or 0
+        self.var_header_active.set(
+            f"İndiriliyor: {active}   ·   Tamamlanan: {done}   ·   Toplam: {total}")
         self.btn_queue.configure(
             text="Kuyruğu Durdur" if self.mgr.queue_running else "Kuyruğu Başlat")
+        limit = int(getattr(st, "speed_limit", 0) or 0)
+        self.btn_limit.configure(
+            text="Hız: Sınırsız" if limit <= 0 else f"Hız: {format_speed(limit * 1024)}")
 
     def _drain_logs(self):
         entries = list(self.mgr.log_lines)

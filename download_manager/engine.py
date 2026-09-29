@@ -134,6 +134,10 @@ class _FtpAbort(Exception):
     pass
 
 
+class _ExternalAbort(Exception):
+    pass
+
+
 class Segment:
     __slots__ = ("index", "start", "end", "pos", "finished")
 
@@ -236,6 +240,9 @@ class DownloadTask:
         self._force_single = False
         self._mirror_index = 0
         self._delete_pending = False
+        self._resolve_depth = 0
+        self._external = None
+        self._external_final = None
 
     @property
     def size(self):
@@ -315,6 +322,7 @@ class DownloadTask:
             "eta": self.eta,
             "error": self.error,
             "segments": seg_states,
+            "external": bool(self._external),
             "scheduled_at": self.scheduled_at.isoformat() if self.scheduled_at else None,
             "destination": self.destination,
             "created_at": self.created_at,
@@ -378,9 +386,17 @@ class DownloadTask:
     def _probe(self):
         if self._is_ftp:
             return self._probe_ftp()
+        if self._external:
+            return self._probe_external()
         errors = []
-        for attempt in range(2):
-            for url in self._urls_for_attempt(attempt):
+        rounds = 0
+        progressed = True
+        while progressed and rounds < 4:
+            progressed = False
+            rounds += 1
+            if self._external:
+                return self._probe_external()
+            for url in self._urls_for_attempt(rounds - 1):
                 if self._cancel_evt.is_set():
                     return False
                 headers = dict(self._build_headers())
@@ -398,6 +414,11 @@ class DownloadTask:
                         continue
                     self._final_url = response.url or url
                     hdrs = response.headers
+                    if self._is_html_response(hdrs):
+                        if not self._adopt_media(response):
+                            raise RuntimeError(self._page_error())
+                        progressed = True
+                        break
                     if response.status_code == 206:
                         match = re.search(r"/(\d+)\s*$", str(hdrs.get("Content-Range", "")))
                         if match and match.group(1) != "0":
@@ -417,6 +438,108 @@ class DownloadTask:
                 finally:
                     response.close()
         raise RuntimeError("Sunucuya ulaşılamadı: " + ("; ".join(errors) or self.url))
+
+    def _probe_external(self):
+        """yt-dlp'ye devredilen indirmelerde boyut baslangicta bilinmez."""
+        self._final_url = self._external.get("url") or self.url
+        self._size = -1
+        self._ranges = False
+        self._etag = ""
+        if not self.user_filename and not self._probe_name:
+            self._probe_name = "indirilen"
+        self._probed = True
+        self.error = None
+        return True
+
+    _PAGE_LIKE_EXT = {".php", ".php3", ".phtml", ".asp", ".aspx", ".jsp", ".cgi",
+                      ".do", ".action", ".cfm"}
+
+    def _is_html_response(self, headers):
+        ctype = str(headers.get("Content-Type") or "").lower()
+        if "html" not in ctype:
+            return False
+        path = urlparse(self._final_url or self.url).path or ""
+        ext = Path(path).suffix.lower()
+        if ext in self._PAGE_LIKE_EXT or not ext:
+            return True
+        return False
+
+    def _read_body(self, response, limit=4 * 1024 * 1024):
+        try:
+            chunks = []
+            total = 0
+            for chunk in response.iter_content(65536):
+                if not chunk:
+                    continue
+                chunks.append(chunk)
+                total += len(chunk)
+                if total >= limit:
+                    break
+            data = b"".join(chunks)
+            return data.decode(response.encoding or "utf-8", errors="replace")
+        except Exception:
+            return ""
+
+    def _adopt_media(self, response):
+        """HTML sayfadan indirilebilir medya baglantisini gorev icine alir."""
+        from .extractor import resolve_page
+
+        if self._resolve_depth >= 3:
+            return False
+        self._resolve_depth += 1
+        html = self._read_body(response)
+        info = resolve_page(self._final_url or self.url, html, self.settings)
+        if not info:
+            return False
+        if info.get("kind") == "playlist":
+            entries = [e for e in (info.get("entries") or []) if e.get("url")]
+            if not entries:
+                return False
+            extra = entries[1:]
+            if extra:
+                try:
+                    self.mgr.add(extra)
+                    self.mgr.log(f"Liste: {len(extra)} video indirme listesine eklendi",
+                                 "info")
+                except Exception as exc:
+                    self.mgr.log(f"Liste genişletilemedi: {exc}", "warning")
+            info = entries[0]
+            if info.get("external"):
+                return self._set_external(info.get("url") or self.url,
+                                          info.get("filename"))
+        if info.get("kind") == "external":
+            return self._set_external(info.get("url") or self.url, info.get("filename"))
+        media_url = info.get("url")
+        if not media_url:
+            return False
+        self.urls = [media_url]
+        headers = info.get("headers") or {}
+        if headers:
+            self.extra_headers.update(headers)
+            ua = headers.get("User-Agent")
+            if ua:
+                self.user_agent = ua
+        if info.get("filename") and not self.user_filename:
+            self._probe_name = sanitize_filename(info["filename"])
+        self.mgr.log(f"Medya bulundu: {media_url[:140]}", "info")
+        return True
+
+    def _set_external(self, page_url, filename=None):
+        from .extractor import has_ffmpeg, ytdlp_available
+
+        if not ytdlp_available():
+            return False
+        self._external = {"url": page_url, "filename": filename}
+        if filename and not self.user_filename:
+            self._probe_name = sanitize_filename(filename)
+        self.mgr.log("Ses ve video ayrı akışlar; indirme yt-dlp ile yürütülecek"
+                     + ("" if has_ffmpeg() else " (ffmpeg bulunamadı, birleştirme sınırlı)"),
+                     "info")
+        return True
+
+    def _page_error(self):
+        from .extractor import unavailable_reason
+        return unavailable_reason()
 
     def _ftp_connect(self, url):
         from ftplib import FTP, FTP_TLS
@@ -635,6 +758,23 @@ class DownloadTask:
             if path:
                 try:
                     Path(path).unlink()
+                except OSError:
+                    pass
+        if self._external and self.dest_dir and self.dest_dir.exists():
+            stem = Path(self.filename).stem
+            targets = []
+            final = self._resolve_external_final()
+            if final:
+                targets.append(final)
+            if self.final_path:
+                targets.append(Path(self.final_path))
+            targets.extend(self.dest_dir.glob(stem + ".part"))
+            targets.extend(self.dest_dir.glob(stem + ".*.part"))
+            targets.extend(self.dest_dir.glob(stem + ".part.json"))
+            targets.extend(self.dest_dir.glob(stem + ".*.part.json"))
+            for target in set(targets):
+                try:
+                    target.unlink()
                 except OSError:
                     pass
 
@@ -918,6 +1058,7 @@ class DownloadTask:
         self._idle_evt.clear()
         self._fatal = None
         self._force_single = False
+        self._resolve_depth = 0
         session = None
         try:
             if not self._is_ftp:
@@ -941,21 +1082,27 @@ class DownloadTask:
             meta = self._load_meta()
             self._prepare_target(meta)
             self._plan(meta)
-            self._ensure_part_file()
-            self.state = DOWNLOADING
-            self._start_saver()
-            single_mode = len(self._segments) <= 1
-            while True:
-                self._spawn_workers()
-                if self._cancel_evt.is_set() or self._pause_evt.is_set() or self._fatal:
+            if self._external:
+                self.state = DOWNLOADING
+                self._start_saver()
+                self._run_external()
+            else:
+                self._ensure_part_file()
+                self.state = DOWNLOADING
+                self._start_saver()
+                single_mode = len(self._segments) <= 1
+                while True:
+                    self._spawn_workers()
+                    if self._cancel_evt.is_set() or self._pause_evt.is_set() or self._fatal:
+                        break
+                    if self._force_single and not single_mode:
+                        single_mode = True
+                        self._force_single = False
+                        self.mgr.log(f"{self.filename}: tek bağlantı moduna geçiliyor",
+                                     "info")
+                        self._reset_to_single()
+                        continue
                     break
-                if self._force_single and not single_mode:
-                    single_mode = True
-                    self._force_single = False
-                    self.mgr.log(f"{self.filename}: tek bağlantı moduna geçiliyor", "info")
-                    self._reset_to_single()
-                    continue
-                break
             self._decide_state()
         except Exception as exc:
             self.error = str(exc)
@@ -988,6 +1135,9 @@ class DownloadTask:
             self.state = ERROR
             self.mgr.log(f"Hata ({self.filename}): {self._fatal}", "error")
             return
+        if self._external:
+            self._decide_external()
+            return
         if self._verify_complete():
             try:
                 self._finalize()
@@ -999,6 +1149,88 @@ class DownloadTask:
                 self.mgr.log(f"Tamamlanamadı ({self.filename}): {exc}", "error")
             return
         self.state = PAUSED
+
+    def _run_external(self):
+        """yt-dlp'ye devredilen indirmeyi yurutur ve ilerlemeyi goreve isler."""
+        from .extractor import external_download
+
+        stem = Path(self.filename).stem or "indirilen"
+        outtmpl = str(self.dest_dir / (stem + ".%(ext)s"))
+        self._external_final = None
+        last = {"bytes": 0}
+
+        def hook(data):
+            status = data.get("status")
+            if status == "downloading":
+                total = data.get("total_bytes") or data.get("total_bytes_estimate")
+                if total:
+                    with self._bytes_lock:
+                        self._size = int(total)
+                done = int(data.get("downloaded_bytes") or 0)
+                delta = done - last["bytes"]
+                last["bytes"] = done
+                if delta > 0:
+                    self._add_bytes(delta)
+                if self._should_stop():
+                    raise _ExternalAbort()
+            elif status == "finished" and data.get("filename"):
+                self._external_final = data["filename"]
+
+        try:
+            path = external_download(self._external["url"], outtmpl, self.settings, hook)
+            if path and not self._external_final:
+                self._external_final = path
+        except _ExternalAbort:
+            pass
+        except Exception as exc:
+            if not (self._pause_evt.is_set() or self._cancel_evt.is_set()):
+                self._fail(f"Video indirme hatası: {exc}")
+
+    def _resolve_external_final(self):
+        if not self.dest_dir or not self.dest_dir.exists():
+            if self._external_final and Path(self._external_final).exists():
+                return Path(self._external_final)
+            return None
+        stem = Path(self.filename).stem
+        real = [p for p in self.dest_dir.glob(stem + ".*")
+                if p.is_file() and p.suffix not in (".part", ".json")
+                and not re.search(r"\.f\d+\.", p.name)]
+        if real:
+            real.sort(key=lambda p: p.stat().st_mtime)
+            return real[-1]
+        if self._external_final and Path(self._external_final).exists():
+            return Path(self._external_final)
+        return None
+
+    def _decide_external(self):
+        final = self._resolve_external_final()
+        if final is None:
+            self.error = self.error or "Video dosyası oluşmadı"
+            self.state = ERROR
+            self.mgr.log(f"Hata ({self.filename}): {self.error}", "error")
+            return
+        try:
+            if final.stat().st_size <= 0:
+                raise OSError("dosya boş")
+        except OSError as exc:
+            self.error = f"Video dosyası oluşmadı: {exc}"
+            self.state = ERROR
+            self.mgr.log(f"Hata ({self.filename}): {self.error}", "error")
+            return
+        self.final_path = final
+        self.filename = final.name
+        self.dest_dir = final.parent
+        self._size = final.stat().st_size
+        with self._bytes_lock:
+            self._downloaded = self._size
+        try:
+            if self.meta_path and self.meta_path.exists():
+                self.meta_path.unlink()
+        except OSError:
+            pass
+        self.finished_at = time.time()
+        self.state = COMPLETED
+        self.error = None
 
     def _wait_idle(self, timeout=60.0):
         return self._idle_evt.wait(timeout)
@@ -1068,6 +1300,9 @@ class DownloadTask:
         self._probe_name = None
         self._force_single = False
         self._mirror_index = 0
+        self._resolve_depth = 0
+        self._external = None
+        self._external_final = None
         self._pause_evt.clear()
         self._cancel_evt.clear()
         self._abort_evt.clear()

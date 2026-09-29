@@ -1,4 +1,4 @@
-"""PyIDM — Internet Download Manager benzeri indirme modulu."""
+"""Retro+ Download Manager — IDM mantığında çok parçalı indirme modülü."""
 
 from .engine import (
     CANCELED,
