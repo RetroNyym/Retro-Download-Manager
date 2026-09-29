@@ -1,0 +1,3 @@
+-r requirements.txt
+pyftpdlib>=2.0
+pyflakes>=3.0
