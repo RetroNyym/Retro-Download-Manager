@@ -1,7 +1,8 @@
 # E-posta Şablonları — Başvuru / Tanıtım
 
 Portalda açık form yoksa bu metinlerle doğrudan yazılır. Göndermeden önce
-`[E-POSTA]`, portal adını ve varsa editör adını güncelleyin.
+**portal adını** ve varsa editör adını güncelleyin; gönderen adresi şu an
+`216476870+RetroNyym@users.noreply.github.com` (kendi adresiniz açılınca değiştirin).
 
 ---
 
@@ -40,7 +41,7 @@ incelenebilir. Yeni sürüm çıktığında haber vereceğim.
 
 İyi çalışmalar,
 Ad Soyad
-[E-POSTA]
+216476870+RetroNyym@users.noreply.github.com
 ```
 
 ---
@@ -80,7 +81,7 @@ code is fully reviewable. I will let you know when a new version is released.
 
 Best regards,
 Name Surname
-[EMAIL]
+216476870+RetroNyym@users.noreply.github.com
 ```
 
 ---
@@ -116,7 +117,7 @@ Yararlı olursa haberiniz olsun, sorularınızı yanıtlarım.
 
 İyi çalışmalar,
 Ad Soyad
-[E-POSTA]
+216476870+RetroNyym@users.noreply.github.com
 ```
 
 ---
@@ -138,7 +139,7 @@ Kaynak: https://github.com/RetroNyym/Retro-Download-Manager
 Eklemek/exlemek istediğiniz bir bilgi varsa memnuniyetle iletirim.
 Teşekkürler,
 Ad Soyad
-[E-POSTA]
+216476870+RetroNyym@users.noreply.github.com
 ```
 
 ---
@@ -162,7 +163,7 @@ SHA-256:    [hash]
 Sürüm notları: https://github.com/RetroNyym/Retro-Download-Manager/releases
 Teşekkürler,
 Ad Soyad
-[E-POSTA]
+216476870+RetroNyym@users.noreply.github.com
 ```
 
 ---

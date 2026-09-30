@@ -4,7 +4,9 @@ Copy-paste texts for international portals (SourceForge, FossHub, MajorGeeks,
 Softpedia, FileHippo, itch.io, UpdateStar, AlternativeTo ...).
 Turkish texts: `metinler-tr.md`.
 
-> **Contact e-mail:** replace the `[EMAIL]` placeholder before submitting.
+> **Contact e-mail:** currently `216476870+RetroNyym@users.noreply.github.com`
+> (GitHub noreply, forwarded to the address on the account). Replace it everywhere
+> in this file once a dedicated address exists.
 
 ---
 
@@ -25,7 +27,7 @@ Turkish texts: `metinler-tr.md`.
 | Download (mirror) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip |
 | File size | 266 KB (ZIP) |
 | SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
-| Contact | `[EMAIL]` |
+| Contact | `216476870+RetroNyym@users.noreply.github.com` |
 | Screenshots | 4 PNG files in `docs/screenshots/` |
 | Twitter/social | optional |
 | Keywords | download manager, segmented download, resume, queue, open source |
@@ -158,7 +160,7 @@ free software, FTP download, Turkish download manager
 
 | Question | Answer |
 | --- | --- |
-| Does it need installation? | Unzip the archive and run `python -m download_manager`; `baslat_gui.bat` is the Windows shortcut. |
+| Does it need installation? | Unzip the archive and run `python -m download_manager`; `baslat_gui.bat` is the Windows shortcut (no CMD window), `baslat_gui.vbs` starts it fully hidden. |
 | Any malware/bundled toolbars? | No. Single dependency `requests`; MIT-licensed open source code. |
 | Ads? | None, nothing is installed or modified. |
 | Works offline? | The UI works offline; downloads need internet. |

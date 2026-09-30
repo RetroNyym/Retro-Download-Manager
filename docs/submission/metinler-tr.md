@@ -4,8 +4,9 @@ Bu dosya, Türkçe yayın yapan portallara (Gezginler, Tamindir, CHIP, ShiftDele
 Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazırlanmıştır.
 İngilizce metinler için: `metinler-en.md`.
 
-> **İletişim e-postası:** `[E-POSTA]` yer tutucusunu portal başvurusundan önce kendi
-> adresinizle değiştirin. İletişim kanalı olarak ayrıca GitHub adresi kullanılabilir:
+> **İletişim e-postası:** şu an `216476870+RetroNyym@users.noreply.github.com`
+> kullanılıyor (GitHub noreply — hesabınızın bağlı olduğu adrese iletilir). Kendi
+> adresiniz açıldığında bu dosyadaki tabloyu ve şablonları güncelleyin. Ek kanal:
 > `https://github.com/RetroNyym`
 
 ---
@@ -27,7 +28,7 @@ Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazı
 | İndirme (ayna) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip |
 | Dosya boyutu | 266 KB (ZIP) |
 | SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
-| İletişim | `[E-POSTA]` |
+| İletişim | `216476870+RetroNyym@users.noreply.github.com` |
 | Ekran görüntüsü | `docs/screenshots/` altındaki 4 PNG |
 
 ---
@@ -165,7 +166,7 @@ açık kaynak, MIT, Türkçe program, dosya indirme programı, FTP indirme
 
 | Soru | Cevap |
 | --- | --- |
-| Kurulum gerektiriyor mu? | ZIP'i açıp `python -m download_manager` çalıştırılır; `baslat_gui.bat` Windows kısayoludur. |
+| Kurulum gerektiriyor mu? | ZIP'i açıp `python -m download_manager` çalıştırılır; `baslat_gui.bat` Windows kısayoludur (CMD penceresi açılmaz), `baslat_gui.vbs` ile tamamen gizli açılır. |
 | Kötü yazılım içerir mi? | Hayır; tek bağımlılık `requests`, kod MIT lisanslı ve açık kaynak. |
 | Reklam/toolbar ekler mi? | Hayır, hiçbir şey kurmaz. |
 | İnternetsiz çalışır mı? | İndirme için internet gerekir; arayüz ve yerel dosya işlemleri internetsiz çalışır. |

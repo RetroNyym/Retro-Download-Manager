@@ -17,7 +17,7 @@ def beep(kind="info"):
     try:
         import winsound
     except Exception:
-        for _ in range(1):
+        if sys.stdout is not None:  # konsolsuz (pythonw) modda None olur
             sys.stdout.write("\a")
             sys.stdout.flush()
         return

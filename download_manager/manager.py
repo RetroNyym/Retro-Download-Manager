@@ -672,8 +672,11 @@ class DownloadManager:
         full = command.replace("{file}", f'"{path}"')
         self.log(f"Virüs taraması başlatılıyor: {path}", "info")
         try:
+            # CREATE_NO_WINDOW: GUI konsolsuz (pythonw) calisirken tarama
+            # penceresinin CMD olarak acilmasini onler.
+            flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
             result = subprocess.run(full, shell=True, capture_output=True, text=True,
-                                    timeout=900)
+                                    timeout=900, creationflags=flags)
             if result.returncode == 0:
                 self.log(f"Tarama temiz: {path}", "success")
             else:

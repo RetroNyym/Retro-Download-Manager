@@ -30,7 +30,7 @@ Sürüm değişince yalnızca sürüm numarası ve linkleri güncelleyin.
 | Boyut | 266 KB (ZIP, kaynak kod) |
 | SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
 | Ekran görüntüsüleri | `docs/screenshots/gui-downloads.png` (ana), `gui-add-link.png`, `gui-grabber.png`, `gui-settings.png` |
-| İletişim e-postası | `[E-POSTA]` — başvurudan önce doldurun |
+| İletişim e-postası | `216476870+RetroNyym@users.noreply.github.com` (GitHub noreply — kendi adresiniz açılınca tüm dosyalarda güncelleyin) |
 
 ## Kısa açıklama (≤100 karakter)
 

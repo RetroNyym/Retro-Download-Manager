@@ -64,8 +64,9 @@ winget install Gyan.FFmpeg        # ses+video birleştirme için
 ## Çalıştırma
 
 ```bash
-python -m download_manager        # GUI
-baslat_gui.bat                   # Windows kısayolu
+python -m download_manager        # GUI (konsolda)
+baslat_gui.bat                    # Windows kısayolu (konsolsuz, pythonw)
+baslat_gui.vbs                    # Windows: tamamen gizli açılış, hiçbir pencere yok
 ```
 
 ## Kütüphane olarak kullanma

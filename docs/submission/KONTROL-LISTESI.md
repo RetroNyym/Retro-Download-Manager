@@ -74,7 +74,7 @@ e-posta/iletişim formu kullanılır. Hazır metin: `e-posta-sablonlari.md`.
 
 ## D. Başvuru öncesi zorunlu adımlar
 
-- [ ] **İletişim e-postası** oluşturuldu; `metinler-*.md` ve `e-posta-sablonlari.md` içindeki `[E-POSTA]` yer tutucusu değiştirildi
+- [x] **İletişim e-postası** belirlendi: `216476870+RetroNyym@users.noreply.github.com` (GitHub noreply — yeni adres açılınca `metinler-*.md`, `e-posta-sablonlari.md` ve bu dosyadaki alanları güncelleyin)
 - [ ] `SHA-256` doğrulandı: `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b`
 - [ ] GitHub Release `v1.0.0` linki çalışıyor (200) ✅
 - [ ] Ana site linki çalışıyor (https://retro-download-manager.netlify.app → 200) ✅
@@ -99,7 +99,7 @@ Ayna        : https://github.com/RetroNyym/Retro-Download-Manager/releases/downl
 Boyut       : 266 KB
 SHA-256     : 73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b
 Ekran görüntüsü: docs/screenshots/ (4 PNG)
-İletişim    : [E-POSTA]
+İletişim    : 216476870+RetroNyym@users.noreply.github.com
 ```
 
 ## F. Takip
