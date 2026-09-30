@@ -1,8 +1,16 @@
 # Retro+ Download Manager — Dağıtım / Gönderim Paketi
 
-Bu dosya, yazılım indirme sitelerine (SourceForge, FossHub, MajorGeeks,
-Softpedia, itch.io) yapılacak başvurular için hazır metinlerdir. Sürüm
-değişince yalnızca sürüm numarası ve linkleri güncelleyin.
+Bu dosya **indekstir**: yazılım indirme portallarına (global + Türkiye)
+başvuru için gereken her şey aşağıda ve `docs/submission/` klasöründedir.
+Sürüm değişince yalnızca sürüm numarası ve linkleri güncelleyin.
+
+| İhtiyaç | Dosya |
+| --- | --- |
+| Türkçe başvuru metinleri (kısa/uzun açıklama, künye, ekran görüntüleri, SSS) | [`docs/submission/metinler-tr.md`](docs/submission/metinler-tr.md) |
+| İngilizce başvuru metinleri | [`docs/submission/metinler-en.md`](docs/submission/metinler-en.md) |
+| Portal/tanıtım e-postası şablonları (TR + EN) | [`docs/submission/e-posta-sablonlari.md`](docs/submission/e-posta-sablonlari.md) |
+| **Başvuru durum takibi (ne, ne zaman, sonuç)** | [`docs/submission/KONTROL-LISTESI.md`](docs/submission/KONTROL-LISTESI.md) |
+| Ekran görüntüsü üretimi | `python tools/shots.py` |
 
 ## Temel bilgiler
 
@@ -20,7 +28,9 @@ değişince yalnızca sürüm numarası ve linkleri güncelleyin.
 | İndirme (site) | https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip |
 | İndirme (GitHub Release) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip |
 | Boyut | 266 KB (ZIP, kaynak kod) |
-| Ekran görüntüsü | docs/screenshots/gui-main.png |
+| SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
+| Ekran görüntüsüleri | `docs/screenshots/gui-downloads.png` (ana), `gui-add-link.png`, `gui-grabber.png`, `gui-settings.png` |
+| İletişim e-postası | `[E-POSTA]` — başvurudan önce doldurun |
 
 ## Kısa açıklama (≤100 karakter)
 
@@ -30,77 +40,36 @@ değişince yalnızca sürüm numarası ve linkleri güncelleyin.
 
 ## Uzun açıklama (portallar için)
 
-```
-Retro+ Download Manager is a free, open-source (MIT) download manager written
-in Python with a native Tkinter interface.
+Türkçe uzun açıklama → [`docs/submission/metinler-tr.md`](docs/submission/metinler-tr.md) §3,
+İngilizce uzun açıklama → [`docs/submission/metinler-en.md`](docs/submission/metinler-en.md) §3.
 
-Features:
-- Segmented downloading: up to 32 parallel connections with HTTP Range,
-  automatic fallback to a single connection when the server does not support it
-- Pause / resume / cancel at any point; progress is saved to disk, so downloads
-  survive application restarts
-- Download queue with concurrency limit, hourly/daily scheduled downloads
-- Automatic categories (Video, Music, Archives, Programs, Documents) with
-  custom rules
-- Web page and playlist resolution: og:video/source tag scanning for page
-  links, yt-dlp + ffmpeg integration for YouTube playlists and DASH streams
-  (audio+video merged automatically)
-- Quick site buttons: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
-- Browser bridge on 127.0.0.1:8877 + clipboard monitoring: paste a link and
-  it is queued automatically
-- Site Grabber: crawl a page and queue all media links with a depth filter
-- FTP support, mirror URLs, client-side speed limit, voice notifications
-- Usable as a Python library (DownloadManager class) without the GUI
+---
 
-Requirements: Python 3.11+ and the requests package. Optional for video and
-playlists: yt-dlp and ffmpeg.
+## Yayınlama sırası (önerilen)
 
-Turkish UI. Fully tested: 108 automated checks + pyflakes clean.
-```
+1. **GitHub Release** (zaten hazır: `v1.0.0`) — tüm portallar bunu referans alır
+2. **itch.io** (anında yayında) + **SourceForge** (en çok trafik)
+3. **MajorGeeks + Softpedia + FossHub** — manuel ama hızlı inceleme
+4. **Softonic, Uptodown, AlternativeTo** — self-servis hesap (ücretsiz)
+5. **UpdateStar (PAD dosyası), FileHippo (e-posta)** — doğrudan e-posta
+6. **Türkiye:** CHIP + Donanım Haber (gerçek form var), Tamindir, Webtekno;
+   ShiftDelete/Gezginler/Technopat'ta form yok → e-posta
+7. **TR teknoloji siteleri** — inceleme/haber önerisi e-postası + forum tanıtım konusu
 
-## Siteye göre başvuru notları
+> **Gerçek:** Türkiye'deki indirme portallarının çoğu editöryeldir, "program yükle"
+> formu yoktur. Bu yüzden TR'de açık form verenler (CHIP, Donanım Haber, Tamindir,
+> Webtekno) önceliklidir, kalanlar `e-posta-sablonlari.md` ile e-posta ile gidilir.
+> Doğrulanmış tüm URL'ler ve durumlar →
+> [`docs/submission/KONTROL-LISTESI.md`](docs/submission/KONTROL-LISTESI.md).
 
-### 1) SourceForge (öncelikli — en çok trafik)
-- https://sourceforge.net/projects/create/ → GitHub ile giriş
-- Proje adı: `retro-download-manager`
-- Kategori: `Internet/Networking` → `Download Managers`
-- License: `MIT`
-- Üretilecek dosyalar: Release ZIP + docs/screenshots/gui-main.png
-- Kaynak link: GitHub reposu; ana sayfa link: Netlify adresi
-- Release yükleme: Projects → Files → Add Release (`1.0.0` klasörü) → ZIP
-
-### 2) itch.io (anında yayında)
-- https://itch.io/signup → proje: `retro-download-manager`
-- Type: `Downloadable` > `Tool` (oyun değil)
-- Price: `No payment` / istenirse `Name your price`
-- Dosya: aynı ZIP; screenshots: gui-main.png
-- Açıklama: yukarıdaki kısa + uzun açıklama
-
-### 3) FossHub (manuel onay, FOSS şartı)
-- https://www.fosshub.com/ → Contact/Submit
-- MIT lisans + GitHub linki şart; malware/paketsiz dağıtım
-- Yükleme: Release ZIP
-
-### 4) MajorGeeks (manuel inceleme)
-- https://www.majorgeeks.com/files/submit.html
-- Title: Retro+ Download Manager
-- Version: 1.0.0
-- Download URL: GitHub Release linki (versiyonlu, kalıcı)
-- More Info URL: ana sayfa
-- Category: Internet / Download Managers
-- License: Freeware / Open Source (MIT)
-- Ekran görüntüsü: docs/screenshots/gui-main.png
-- Not: yeni sürümde "Report New Version" ile güncellenir
-
-### 5) Softpedia (manuel inceleme)
-- https://www.softpedia.com/ → Submit
-- Aynı alanlar; kategori: Internet > Download Managers
-- Freeware + open source olarak işaretlenir
+---
 
 ## Sürüm güncelleme akışı (her yeni sürümde)
 
 1. Repo'da yeni tag + GitHub Release oluşturun, ZIP'i asset olarak ekleyin
 2. ZIP'i `download/` klasörüne kopyalayıp `indir.html` içindeki linki güncelleyin
-3. Siteyi yeniden deploy edin (Netlify + Cloudflare + GitHub Pages)
-4. SourceForge'a Files → Add Release
-5. MajorGeeks'e "Report New Version"
+3. `SHA-256`'yı yeni ZIP için üretip bu dosyadaki ve `metinler-*.md` içindeki hash'i güncelleyin
+4. Siteyi yeniden deploy edin (Netlify + Cloudflare + GitHub Pages)
+5. `python tools/shots.py` ile ekran görüntülerini yenileyin (arayüz değiştiyse)
+6. SourceForge'a Files → Add Release; MajorGeeks'e "Report New Version"
+7. `KONTROL-LISTESI.md` içindeki tarih/sürümleri güncelleyin

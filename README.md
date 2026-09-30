@@ -151,6 +151,29 @@ python tests/test_page_media.py
 
 Lint: `python -m pyflakes download_manager`.
 
+## Ekran görüntüsü üretimi
+
+Portal başvuruları için dört ekran görüntüsü tek komutla üretilir (internet
+kullanmaz, yerel `Range` destekli sunucu açar):
+
+```bash
+python tools/shots.py
+# docs/screenshots/gui-downloads.png, gui-add-link.png, gui-grabber.png, gui-settings.png
+```
+
+## Başvuru / dağıtım paketi
+
+Yazılım indirme portallarına (global ve Türkiye) yapılacak başvurular için hazır
+metinler ve kontrol listesi `docs/submission/` klasöründedir; genel bakış
+[SUBMISSION.md](SUBMISSION.md) dosyasındadır.
+
+| Dosya | İçerik |
+| --- | --- |
+| `docs/submission/metinler-tr.md` | Türkçe kısa/uzun açıklama, künye alanları, ekran görüntüleri, SSS |
+| `docs/submission/metinler-en.md` | İngilizce karşılıkları |
+| `docs/submission/e-posta-sablonlari.md` | Portal/tanıtım e-postası şablonları (TR + EN) |
+| `docs/submission/KONTROL-LISTESI.md` | Hangi portaala başvuruldu, durum, tarih |
+
 ## Sınırlamalar
 
 - Tarayıcı entegrasyonu eklenti yerine **yerel köprü + pano izleme** ile sağlanır.
