@@ -48,7 +48,10 @@ Türkçe uzun açıklama → [`docs/submission/metinler-tr.md`](docs/submission/
 ## Yayınlama sırası (önerilen)
 
 1. **GitHub Release** (zaten hazır: `v1.0.0`) — tüm portallar bunu referans alır
-2. **itch.io** (anında yayında) + **SourceForge** (en çok trafik)
+2. ✅ **itch.io** — **yayında**: https://retronym.itch.io/retro-download-manager (01.10.2026,
+   hesap Retronym, ücretsiz + MIT, kapak +4 ekran görüntüsü + ZIP) ·
+   🟨 **SourceForge** (en çok trafik; telefon doğrulaması `POST /p/verify_phone` →
+   Cloudflare 403, destek/sonraki oturum bekliyor)
 3. **MajorGeeks + Softpedia + FossHub** — manuel ama hızlı inceleme
 4. **Softonic, Uptodown, AlternativeTo** — self-servis hesap (ücretsiz)
 5. **UpdateStar (PAD dosyası), FileHippo (e-posta)** — doğrudan e-posta
