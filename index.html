@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retro+ Download Manager — Çok Parçalı İndirme Yöneticisi</title>
+<meta name="description" content="Retro+ Download Manager: çok parçalı indirme, duraklat/devam, kuyruk, zamanlama, web sayfası ve playlist çözümleme (yt-dlp), Türkçe Tkinter arayüzü. MIT lisanslı, bağımsız Python modülü.">
+<link rel="icon" href="assets/logo_small.png" type="image/png">
+<style>
+  :root{
+    --bg:#0b1622; --panel:#122235; --panel2:#0e2a3f;
+    --line:#1d3348; --text:#e8eaed; --muted:#9aa0a6; --accent:#19c37d;
+    --accent2:#3b9eff; --warn:#fdd663;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+       line-height:1.6}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{background:linear-gradient(135deg,var(--panel2),#0b1622 70%);
+         border-bottom:1px solid var(--line);padding:34px 0 30px}
+  .hero{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+  .hero img.logo{width:96px;height:96px;border-radius:22px;
+                 box-shadow:0 8px 26px rgba(0,0,0,.45)}
+  h1{margin:0 0 6px;font-size:34px}
+  .tag{color:var(--accent);font-weight:600;margin:0 0 10px}
+  .sub{color:var(--muted);margin:0;max-width:640px}
+  .btns{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;
+       border:1px solid transparent}
+  .btn:hover{text-decoration:none;transform:translateY(-1px)}
+  .btn.primary{background:var(--accent);color:#04140d}
+  .btn.ghost{border-color:#2c4763;color:var(--text);background:#10202f}
+  .badges{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{background:#10202f;border:1px solid var(--line);border-radius:20px;
+         padding:4px 12px;font-size:12px;color:var(--muted)}
+  nav{background:#0d1a28;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  nav .wrap{display:flex;gap:18px;overflow:auto;padding:10px 20px;font-size:14px}
+  nav a{color:var(--muted);white-space:nowrap}
+  nav a:hover{color:var(--text);text-decoration:none}
+  section{padding:34px 0}
+  h2{font-size:22px;margin:0 0 14px;border-left:4px solid var(--accent);
+     padding-left:10px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+        padding:16px 16px 14px}
+  .card h3{margin:0 0 6px;font-size:15.5px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  table{width:100%;border-collapse:collapse;background:var(--panel);
+        border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14.5px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#0f2337;color:var(--muted);font-weight:600}
+  tr:last-child td{border-bottom:none}
+  .ok{color:var(--accent);font-weight:700}
+  .no{color:#f28b82;font-weight:700}
+  pre{background:#091420;border:1px solid var(--line);border-radius:12px;
+      padding:14px;overflow:auto;font-size:13.5px;line-height:1.55}
+  code{font-family:Consolas,"Courier New",monospace;color:#8fd4cb}
+  .banner{width:100%;border-radius:16px;border:1px solid var(--line);display:block}
+  .note{background:#10202f;border:1px solid var(--line);border-left:4px solid var(--warn);
+        border-radius:10px;padding:12px 14px;color:var(--muted);font-size:14px}
+  footer{border-top:1px solid var(--line);padding:22px 0 34px;color:var(--muted);
+         font-size:13.5px}
+  @media(max-width:640px){h1{font-size:26px} .hero img.logo{width:72px;height:72px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hero">
+    <img class="logo" src="assets/logo.png" alt="Retro+ logosu">
+    <div>
+      <h1>Retro+ Download Manager</h1>
+      <p class="tag">Çok parçalı indirme yöneticisi · Python + Tkinter</p>
+      <p class="sub">32 parçaya kadar paralel indirme, duraklat/devam, kuyruk ve
+        zamanlama, otomatik kategoriler, tarayıcı köprüsü, web sayfası ve playlist
+        çözümleme (yt-dlp) — hepsi tek, bağımsız, MIT lisanslı modülde.</p>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/RetroNyym/Retro-Download-Manager/archive/refs/heads/main.zip">Kaynağı İndir (.zip)</a>
+        <a class="btn ghost" href="https://github.com/RetroNyym/Retro-Download-Manager">GitHub</a>
+        <a class="btn ghost" href="#kurulum">Kurulum</a>
+      </div>
+      <div class="badges">
+        <span class="badge">Python 3.11+</span>
+        <span class="badge">Windows · Linux · macOS</span>
+        <span class="badge">108 test kontrolü</span>
+        <span class="badge">MIT lisansı</span>
+        <span class="badge">Tek bağımlılık: requests</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#ozellikler">Özellikler</a>
+    <a href="#site">Site indirme</a>
+    <a href="#mimari">Mimari</a>
+    <a href="#kurulum">Kurulum</a>
+    <a href="#kullanim">Kullanım</a>
+    <a href="#testler">Testler</a>
+    <a href="#sinirlamalar">Sınırlamalar</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <img class="banner" src="assets/banner.png" alt="Retro+ Download Manager afiş"
+       style="margin-top:26px">
+
+  <section id="ozellikler">
+    <h2>Özellikler</h2>
+    <div class="grid">
+      <div class="card"><h3>Çok parçalı indirme</h3>
+        <p>Varsayılan 8, en fazla 32 parça. 206 Range ile paralel segment;
+           sunucu desteklemiyorsa otomatik tek parçaya düşer.</p></div>
+      <div class="card"><h3>Duraklat / devam / iptal</h3>
+        <p>Her noktadan duraklatıp kaldığı yerden devam; ilerleme dosyaya yazılır,
+           uygulama kapansa bile kaybolmaz.</p></div>
+      <div class="card"><h3>Kuyruk ve zamanlayıcı</h3>
+        <p>Eşzamanlılık sınırı, saatlik/günlük tekrarlayan indirmeler,
+           kuyruğu tek tuşla durdur/başlat.</p></div>
+      <div class="card"><h3>Otomatik kategoriler</h3>
+        <p>Video, müzik, arşiv, program, belge… uzantı ve anahtar kelimeye göre
+           klasörlere ayırır; kurallar tamamen kendi kural setimizle çalışır.</p></div>
+      <div class="card"><h3>Web sayfası / playlist</h3>
+        <p>Uzantısız linklerde <code>og:video</code> ve kaynaklar taranır; YouTube
+           vb. playlist'ler tek görevden tüm videolara genişler.</p></div>
+      <div class="card"><h3>Hızlı site butonları</h3>
+        <p>YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo için tek tıkla
+           ekleme penceresi ve Siteler menüsü.</p></div>
+      <div class="card"><h3>Tarayıcı köprüsü</h3>
+        <p>Yerel HTTP köprüsü (<code>127.0.0.1:8877</code>) + pano izleme ile
+           bağlantıları tarayıcıdan tek tuşla kuyruğa taşıyın.</p></div>
+      <div class="card"><h3>Site Grabber</h3>
+        <p>Bir sayfadaki tüm medya bağlantılarını derinlik filtresiyle tarar ve
+           toplu olarak ekler.</p></div>
+      <div class="card"><h3>Kütüphane olarak kullanım</h3>
+        <p>GUI olmadan <code>DownloadManager</code> sınıfını kendi programınıza
+           bağlayabilirsiniz; ayarlar ve geçmiş kalıcıdır.</p></div>
+    </div>
+  </section>
+
+  <section id="site">
+    <h2>Web sitesi ve video linkleri</h2>
+    <table>
+      <tr><th>Girdi</th><th>Davranış</th></tr>
+      <tr><td>Doğrudan dosya (<code>.zip</code>, <code>.mp4</code>, ...)</td>
+          <td>Çok parçalı HTTP/FTP indirme</td></tr>
+      <tr><td><code>.html</code> / <code>.htm</code> uzantılı bağlantı</td>
+          <td>Sayfa dosya olarak iner</td></tr>
+      <tr><td>Web sayfası (uzantısız, PHP, ...)</td>
+          <td><code>og:video</code> / <code>&lt;source&gt;</code> / JSON-LD ile medya adresi çözümlenir</td></tr>
+      <tr><td>Medya bulunamayan sayfa</td>
+          <td>Net hata mesajı, dosya oluşturmaz</td></tr>
+      <tr><td>Playlist / video sayfası (YouTube vb.)</td>
+          <td>yt-dlp ile liste çözümlenir, tüm videolar kuyruğa eklenir</td></tr>
+      <tr><td>Ses+video ayrı akış (DASH)</td>
+          <td>yt-dlp indirir, ffmpeg ile tek dosyada birleştirir</td></tr>
+    </table>
+    <p class="note">Video/playlist için opsiyonel <code>yt-dlp</code> + <code>ffmpeg</code>
+       gerekir; kurulu değilse normal indirmeler sorunsuz devam eder. Gizli/kişisel
+       içerikte (Instagram, Facebook) Ayarlar → Çerez alanına tarayıcı çerezini
+       girmeniz gerekir.</p>
+  </section>
+
+  <section id="mimari">
+    <h2>Mimari</h2>
+    <table>
+      <tr><th>Dosya</th><th>Görev</th></tr>
+      <tr><td><code>engine.py</code></td><td>Çok parçalı indirme motoru (HTTP/FTP, duraklat/devam, yeniden deneme, ayna URL, dış indirme modu)</td></tr>
+      <tr><td><code>manager.py</code></td><td>Kuyruk, zamanlayıcı, kategoriler, grabber, köprü, geçmiş, ayarlar</td></tr>
+      <tr><td><code>extractor.py</code></td><td>Web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme</td></tr>
+      <tr><td><code>gui.py</code></td><td>Tkinter arayüz: kategori paneli, ikonlu araç çubuğu, hızlı site butonları</td></tr>
+      <tr><td><code>util.py</code> / <code>notify.py</code></td><td>Kategori tespiti, biçimlendirme, sesli bildirim</td></tr>
+      <tr><td><code>tests/</code></td><td>108 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya)</td></tr>
+    </table>
+  </section>
+
+  <section id="kurulum">
+    <h2>Kurulum</h2>
+<pre><code>git clone https://github.com/RetroNyym/Retro-Download-Manager.git
+cd Retro-Download-Manager
+python -m pip install -r requirements.txt
+
+# video/playlist desteği için (opsiyonel):
+python -m pip install yt-dlp
+winget install Gyan.FFmpeg</code></pre>
+    <p>Kaynak kodu zip olarak:
+       <a href="https://github.com/RetroNyym/Retro-Download-Manager/archive/refs/heads/main.zip">main.zip</a></p>
+  </section>
+
+  <section id="kullanim">
+    <h2>Çalıştırma ve kütüphane kullanımı</h2>
+<pre><code>python -m download_manager      # GUI
+baslat_gui.bat                  # Windows kısayolu
+
+# kütüphane olarak:
+from download_manager import DownloadManager
+
+mgr = DownloadManager(max_tasks=4)
+mgr.add(["https://ornek.com/dosya.zip", "https://ornek.com/bolum-01.mkv"],
+        segments=16, speed_limit=2048)   # parça, KB/sn
+mgr.start()</code></pre>
+    <p>Durum ve sonuçlar <code>mgr.tasks</code> üzerinden okunur; yeniden
+       başlatıldığında yarım kalan indirmeler kaldığı yerden devam eder.</p>
+  </section>
+
+  <section id="testler">
+    <h2>Testler</h2>
+    <table>
+      <tr><th>Dosya</th><th>Kapsam</th><th>Kontrol</th></tr>
+      <tr><td><code>test_download_manager.py</code></td><td>Çok parçalı, Range yok, bilinmeyen boyut, duraklat/devam, iptal, kuyruk, grabber</td><td>37</td></tr>
+      <tr><td><code>test_restart_resume.py</code></td><td>Kapanınca duraklat → açılınca devam + gerçek internet indirmesi</td><td>8</td></tr>
+      <tr><td><code>test_ftp.py</code></td><td>FTP parça/duraklat/iptal</td><td>10</td></tr>
+      <tr><td><code>test_bridge.py</code></td><td>Köprü uçları (<code>/add</code>, <code>/links</code>, <code>/status</code>)</td><td>7</td></tr>
+      <tr><td><code>test_gui.py</code></td><td>Diyaloglar, hızlı site butonları, arayüz</td><td>24</td></tr>
+      <tr><td><code>test_page_media.py</code></td><td>Sayfa çözümleme, hata davranışı, site adları</td><td>22</td></tr>
+      <tr><td><strong>Toplam</strong></td><td></td><td><strong>108</strong></td></tr>
+    </table>
+<pre><code>python tests/test_download_manager.py
+python tests/test_gui.py        # grafik oturum gerekir
+python -m pyflakes download_manager</code></pre>
+  </section>
+
+  <section id="sinirlamalar">
+    <h2>Sınırlamalar</h2>
+    <table>
+      <tr><td>Tarayıcı entegrasyonu</td><td>Eklenti yerine yerel köprü + pano izleme</td></tr>
+      <tr><td><code>Range</code> desteklemeyen sunucu</td><td>Paralel segment kullanılmaz, tek parça iner</td></tr>
+      <tr><td>Video indirmeleri</td><td>yt-dlp tarafından yürütülür; duraklat/devam yerine iptal → yeniden başlatma mantığı</td></tr>
+      <tr><td>FTPS</td><td>Deneme amaçlı; bazı sunucularda <code>MLSD</code> yerine <code>NLST</code>'ye düşer</td></tr>
+      <tr><td>Hız sınırı</td><td>İstemci tarafıdır; sunucunun izin verdiği kadar hızlanır</td></tr>
+    </table>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <strong>Retro+ Download Manager</strong> — MIT lisansı ©
+    <a href="https://github.com/RetroNyym">RetroNyym</a> ·
+    <a href="https://github.com/RetroNyym/Retro-Download-Manager">Kaynak kod</a> ·
+    <a href="https://github.com/RetroNyym/Retro-Download-Manager/issues">Sorun bildir</a>
+    <div style="margin-top:6px">Bu site GitHub Pages ile ücretsiz barındırılmaktadır.</div>
+  </div>
+</footer>
+
+</body>
+</html>
