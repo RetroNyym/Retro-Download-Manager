@@ -21,6 +21,7 @@ from .engine import (
     SCHEDULED,
     STATE_LABELS,
 )
+from .extractor import SUPPORTED_SITES
 from .manager import DownloadManager
 from .util import (
     CATEGORIES,
@@ -53,6 +54,14 @@ TREE_WIDTHS = {
 }
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 HEADER_BG = "#0e2a3f"
+SITE_ICONS = {
+    "YouTube": "youtube",
+    "Instagram": "instagram",
+    "X (Twitter)": "twitter",
+    "Facebook": "facebook",
+    "TikTok": "tiktok",
+    "Vimeo": "vimeo",
+}
 CATEGORY_ITEMS = (
     ("all", "Tüm indirmeler"),
     ("active", "Devam eden"),
@@ -133,12 +142,16 @@ def _grid_label(parent, row, text):
 
 
 class AddDialog(tk.Toplevel):
-    def __init__(self, parent, manager, initial="", batch=False):
+    def __init__(self, parent, manager, initial="", batch=False, site=None):
         super().__init__(parent)
         self.manager = manager
         self.batch = batch
+        self.site = site
         self.result = None
-        self.title("Toplu Bağlantı Ekle" if batch else "İndirme Ekle")
+        if site:
+            self.title(f"{site} İndirme Ekle")
+        else:
+            self.title("Toplu Bağlantı Ekle" if batch else "İndirme Ekle")
         self.transient(parent)
         self.resizable(True, True)
 
@@ -157,11 +170,17 @@ class AddDialog(tk.Toplevel):
                 self.txt_urls.insert("1.0", initial)
             row = 2
         else:
-            _grid_label(body, row, "URL:")
+            _grid_label(body, row, (f"{site} bağlantısı:" if site else "URL:"))
             self.var_url = tk.StringVar(value=initial)
             self.ent_url = ttk.Entry(body, textvariable=self.var_url, width=64)
             self.ent_url.grid(row=row, column=1, sticky="we", padx=8, pady=4)
             row += 1
+            if site:
+                ttk.Label(body, foreground="#5f6368",
+                          text=f"{site} video/post bağlantısını yapıştırın; "
+                               "indirme site çözümleyicisiyle otomatik yapılır.").grid(
+                    row=row, column=0, columnspan=3, sticky="w", padx=8, pady=(0, 4))
+                row += 1
 
         _grid_label(body, row, "Kategori:")
         self.var_category = tk.StringVar(value="Otomatik")
@@ -844,6 +863,7 @@ class App:
         self._build_header()
         self._build_menu()
         self._build_toolbar()
+        self._build_site_bar()
         self._build_body()
         self._build_statusbar()
         self._bind_keys()
@@ -952,6 +972,12 @@ class App:
         tools_menu.add_command(label="Kuyruğu Hemen Güncelle", command=self.mgr._tick)
         menubar.add_cascade(label="Araçlar", menu=tools_menu)
 
+        site_menu = tk.Menu(menubar, tearoff=0)
+        for site_name, *_domains in SUPPORTED_SITES:
+            site_menu.add_command(label=site_name,
+                                  command=lambda n=site_name: self.add_site(n))
+        menubar.add_cascade(label="Siteler", menu=site_menu)
+
         help_menu = tk.Menu(menubar, tearoff=0)
         help_menu.add_command(label="Hakkında", command=self.show_about)
         menubar.add_cascade(label="Yardım", menu=help_menu)
@@ -989,6 +1015,24 @@ class App:
 
         self.btn_limit = ttk.Button(bar, text="Hız: Sınırsız", command=self._show_limits)
         self.btn_limit.pack(side="right", padx=6)
+
+    def _build_site_bar(self):
+        bar = ttk.Frame(self.root, padding=(6, 0))
+        bar.pack(fill="x")
+        ttk.Label(bar, text="Hızlı site indirme:", foreground="#5f6368",
+                  font=("Segoe UI", 9, "bold")).pack(side="left", padx=(2, 6))
+        self.site_buttons = []
+        for name, *_domains in SUPPORTED_SITES:
+            icon = SITE_ICONS.get(name, "add")
+            image = load_photo(f"icons/site_{icon}.png", self._photos)
+            widget = ttk.Button(bar, text=name, image=image, compound="left",
+                                command=lambda n=name: self.add_site(n))
+            widget.pack(side="left", padx=2)
+            self.site_buttons.append(widget)
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
+        ttk.Label(bar, foreground="#9aa0a6", font=("Segoe UI", 8),
+                  text="Bağlantıyı yapıştırıp indirin · gizli içerik için "
+                       "Ayarlar > Çerez").pack(side="left", padx=4)
 
     def _show_limits(self):
         menu = tk.Menu(self.root, tearoff=0)
@@ -1193,11 +1237,16 @@ class App:
             elif action == "restart":
                 task.restart()
 
-    def add_url(self, initial=""):
-        dialog = AddDialog(self.root, self.mgr, initial=initial, batch=False)
+    def add_url(self, initial="", site=None):
+        dialog = AddDialog(self.root, self.mgr, initial=initial, batch=False,
+                           site=site)
         self.root.wait_window(dialog)
         if dialog.result:
             self._create_tasks(dialog.result)
+        return dialog
+
+    def add_site(self, site):
+        return self.add_url(site=site)
 
     def add_batch(self):
         dialog = AddDialog(self.root, self.mgr, batch=True)

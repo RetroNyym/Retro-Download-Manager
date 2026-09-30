@@ -525,14 +525,17 @@ class DownloadTask:
         return True
 
     def _set_external(self, page_url, filename=None):
-        from .extractor import has_ffmpeg, ytdlp_available
+        from .extractor import has_ffmpeg, site_name, ytdlp_available
 
         if not ytdlp_available():
             return False
         self._external = {"url": page_url, "filename": filename}
         if filename and not self.user_filename:
             self._probe_name = sanitize_filename(filename)
-        self.mgr.log("Ses ve video ayrı akışlar; indirme yt-dlp ile yürütülecek"
+        label = site_name(page_url)
+        prefix = f"{label}: " if label else ""
+        self.mgr.log(prefix + "Ses ve video ayrı akışlar; indirme yt-dlp ile "
+                     "yürütülecek"
                      + ("" if has_ffmpeg() else " (ffmpeg bulunamadı, birleştirme sınırlı)"),
                      "info")
         return True
@@ -1158,6 +1161,15 @@ class DownloadTask:
         outtmpl = str(self.dest_dir / (stem + ".%(ext)s"))
         self._external_final = None
         last = {"bytes": 0}
+        headers = {}
+        ua = self.user_agent or self.settings.user_agent
+        if ua:
+            headers["User-Agent"] = ua
+        if self.referer:
+            headers["Referer"] = self.referer
+        cookies = self.cookies or self.settings.cookies
+        if cookies:
+            headers["Cookie"] = cookies
 
         def hook(data):
             status = data.get("status")
@@ -1177,7 +1189,8 @@ class DownloadTask:
                 self._external_final = data["filename"]
 
         try:
-            path = external_download(self._external["url"], outtmpl, self.settings, hook)
+            path = external_download(self._external["url"], outtmpl, self.settings,
+                                     hook, headers)
             if path and not self._external_final:
                 self._external_final = path
         except _ExternalAbort:

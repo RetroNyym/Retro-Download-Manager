@@ -7,7 +7,7 @@
   <img alt="Lisans" src="https://img.shields.io/badge/Lisans-MIT-yellow.svg">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
   <img alt="Parça" src="https://img.shields.io/badge/indirme-32%20par%C3%A7a-brightgreen">
-  <img alt="Test" src="https://img.shields.io/badge/test-97%20kontrol-blue">
+  <img alt="Test" src="https://img.shields.io/badge/test-107%20kontrol-blue">
 </p>
 
 **Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
@@ -35,6 +35,7 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 | Kategori kuralı (video/müzik/arşiv...) | ✅ | Uzantı + anahtar kelime, eşleşene göre klasöre ayırır |
 | Tarayıcı bağlantı grabber'ı | ✅ | Pano izleme + yerel HTTP köprüsü (`/links`, `/add`) |
 | Web sayfası / playlist linki çözümleme | ✅ | `og:video`/kaynak tarayıcı + yt-dlp (56 videoluk liste tek tuşla kuyruğa) |
+| Hızlı site butonları | ✅ | YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo — tek tıkla ekleme |
 | Video indirme (ses+video birleştirme) | ✅ | YouTube vb. için yt-dlp + ffmpeg otomatik birleştirme |
 | Site şifresi / çerez desteği | ✅ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
 | FTP / FTPS | ✅ | Parçalı FTP indirme, duraklat/devam |
@@ -94,6 +95,7 @@ Adres çubuğuna yapıştırılan link taranır ve doğru motor otomatik seçili
 | Medya bulunamayan sayfa | net hata mesajı, dosya oluşturmaz |
 | Playlist / video sayfası (YouTube vb.) | yt-dlp ile liste çözümlenir, tüm videolar kuyruğa eklenir |
 | Ses+video ayrı akış (DASH) | yt-dlp indirir, ffmpeg ile tek dosyada birleştirir |
+| Site bağlantısı (YouTube/Instagram/X/Facebook/TikTok/Vimeo) | hızlı site butonu → yapıştır → otomatik site çözümleyicisiyle indirme |
 
 Tek parça indirme ayrıca **Site Grabber** (aynı sayfadaki tüm medya bağlantıları) ile de
 toplu eklenebilir.
@@ -125,7 +127,7 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
 | `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
-| `tests/` | 97 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
+| `tests/` | 107 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
 
 ## Testler
 
@@ -135,8 +137,8 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `tests/test_restart_resume.py` | kapanınca duraklat → açılınca devam + gerçek internet indirmesi | 8 |
 | `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
 | `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
-| `tests/test_gui.py` | diyaloglar ve arayüz (ekran/`tkinter` gerektirir) | 20 |
-| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` dosya davranışı | 15 |
+| `tests/test_gui.py` | diyaloglar, hızlı site butonları ve arayüz (ekran/`tkinter` gerektirir) | 24 |
+| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 21 |
 
 ```bash
 python tests/test_download_manager.py

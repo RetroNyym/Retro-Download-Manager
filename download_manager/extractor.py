@@ -29,6 +29,27 @@ MEDIA_EXTENSIONS = (
 )
 STREAM_EXTENSIONS = (".m3u8", ".mpd")
 
+SUPPORTED_SITES = (
+    ("YouTube", "youtube.com", "youtu.be"),
+    ("Instagram", "instagram.com", "cdninstagram.com"),
+    ("X (Twitter)", "twitter.com", "x.com", "t.co"),
+    ("Facebook", "facebook.com", "fb.watch", "fb.com"),
+    ("TikTok", "tiktok.com"),
+    ("Vimeo", "vimeo.com"),
+)
+
+
+def site_name(url):
+    """URL'in ait oldugu bilinen site adini dondurur (bilinmiyorsa None)."""
+    host = (urlparse(str(url or "")).hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    for name, *domains in SUPPORTED_SITES:
+        for domain in domains:
+            if host == domain or host.endswith("." + domain):
+                return name
+    return None
+
 _OG_VIDEO = re.compile(
     r"<meta[^>]+(?:property|name)\s*=\s*[\"'](?:og:video(?::secure_url|:url)?|"
     r"twitter:player:stream)[\"'][^>]+content\s*=\s*[\"']([^\"']+)[\"']", re.I)
@@ -120,7 +141,7 @@ def sniff_media(html, base_url=""):
     return found
 
 
-def _ydl_options(settings, playlist=True):
+def _ydl_options(settings, playlist=True, headers=None):
     opts = {
         "quiet": True,
         "no_warnings": True,
@@ -133,9 +154,12 @@ def _ydl_options(settings, playlist=True):
         "noplaylist": not playlist,
         "cachedir": False,
     }
+    http_headers = dict(headers or {})
     ua = str(getattr(settings, "user_agent", "") or "")
-    if ua:
-        opts["http_headers"] = {"User-Agent": ua}
+    if ua and "User-Agent" not in http_headers:
+        http_headers["User-Agent"] = ua
+    if http_headers:
+        opts["http_headers"] = http_headers
     proxy = str(getattr(settings, "proxy", "") or "").strip()
     if proxy:
         opts["proxy"] = proxy
@@ -275,13 +299,13 @@ def _final_from_outtmpl(outtmpl, fallback=None):
     return None
 
 
-def external_download(url, outtmpl, settings=None, hook=None):
+def external_download(url, outtmpl, settings=None, hook=None, headers=None):
     """yt-dlp ile indirme yapar, biten dosyanin yolunu dondurur (bulunamazsa None)."""
     if not ytdlp_available():
         raise RuntimeError("yt-dlp kurulu değil: pip install yt-dlp")
     import yt_dlp
 
-    opts = _ydl_options(settings, playlist=False)
+    opts = _ydl_options(settings, playlist=False, headers=headers)
     opts.update({
         "noplaylist": True,
         "skip_download": False,

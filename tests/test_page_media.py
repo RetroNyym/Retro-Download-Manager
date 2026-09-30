@@ -167,12 +167,32 @@ def main():
         check("dict giris header", added.extra_headers.get("X-Test") == "1",
               str(added.extra_headers))
 
-        from download_manager.extractor import sniff_media, ytdlp_available
+        from download_manager.extractor import (
+            SUPPORTED_SITES,
+            site_name,
+            sniff_media,
+            ytdlp_available,
+        )
         found = sniff_media(PAGE.decode(), base + "/watch")
         check("sniff og:video", found == [f"{base}/files/movie.mp4"], str(found))
         check("sniff stream atlama",
               not sniff_media('<video src="https://x.test/a.m3u8"></video>', "https://x.test/"))
         check("yt-dlp gorunurluk", ytdlp_available() is True, str(ytdlp_available()))
+        check("site listesi", len(SUPPORTED_SITES) >= 6, str(len(SUPPORTED_SITES)))
+        check("site adi youtube",
+              site_name("https://www.youtube.com/watch?v=abc") == "YouTube",
+              str(site_name("https://www.youtube.com/watch?v=abc")))
+        check("site adi kisa youtube",
+              site_name("https://youtu.be/abc") == "YouTube",
+              str(site_name("https://youtu.be/abc")))
+        check("site adi instagram",
+              site_name("https://www.instagram.com/p/xyz/") == "Instagram",
+              str(site_name("https://www.instagram.com/p/xyz/")))
+        check("site adi x",
+              site_name("https://x.com/kullanici/status/1") == "X (Twitter)",
+              str(site_name("https://x.com/kullanici/status/1")))
+        check("site adi bilinmeyen", site_name("https://ornek.com/video.mp4") is None,
+              str(site_name("https://ornek.com/video.mp4")))
     finally:
         mgr.shutdown()
         server.shutdown()

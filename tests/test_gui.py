@@ -73,6 +73,18 @@ def main():
 
     pump()
 
+    site_buttons = getattr(app, "site_buttons", [])
+    check("site butonlari", len(site_buttons) >= 6, str(len(site_buttons)))
+    check("site buton yazilari",
+          any(b.cget("text") == "YouTube" for b in site_buttons),
+          ",".join(b.cget("text") for b in site_buttons))
+    site_dialog = AddDialog(root, mgr, site="YouTube")
+    check("site penceresi basligi", "YouTube" in site_dialog.title(),
+          site_dialog.title())
+    check("site penceresi url alani",
+          site_dialog.var_url.get() == "" and site_dialog.winfo_exists())
+    site_dialog.destroy()
+
     dialog = AddDialog(root, mgr, initial=f"{base}/files/one.zip")
     check("ekle penceresi acildi", dialog.winfo_exists())
     dialog.var_url.set(f"{base}/files/two.zip")
