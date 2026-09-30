@@ -177,6 +177,11 @@ def main():
         check("sniff og:video", found == [f"{base}/files/movie.mp4"], str(found))
         check("sniff stream atlama",
               not sniff_media('<video src="https://x.test/a.m3u8"></video>', "https://x.test/"))
+        check("sniff dogrudan medya",
+              sniff_media('metin https://ornek.test/dosya.mp4 bitti', "https://ornek.test/")
+              == ["https://ornek.test/dosya.mp4"],
+              str(sniff_media("metin https://ornek.test/dosya.mp4 bitti",
+                              "https://ornek.test/")))
         check("yt-dlp gorunurluk", ytdlp_available() is True, str(ytdlp_available()))
         check("site listesi", len(SUPPORTED_SITES) >= 6, str(len(SUPPORTED_SITES)))
         check("site adi youtube",

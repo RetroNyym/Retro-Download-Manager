@@ -7,7 +7,7 @@
   <img alt="Lisans" src="https://img.shields.io/badge/Lisans-MIT-yellow.svg">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
   <img alt="Parça" src="https://img.shields.io/badge/indirme-32%20par%C3%A7a-brightgreen">
-  <img alt="Test" src="https://img.shields.io/badge/test-107%20kontrol-blue">
+  <img alt="Test" src="https://img.shields.io/badge/test-108%20kontrol-blue">
 </p>
 
 **Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
@@ -127,7 +127,7 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
 | `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
-| `tests/` | 107 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
+| `tests/` | 108 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
 
 ## Testler
 
@@ -138,7 +138,7 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
 | `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
 | `tests/test_gui.py` | diyaloglar, hızlı site butonları ve arayüz (ekran/`tkinter` gerektirir) | 24 |
-| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 21 |
+| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 22 |
 
 ```bash
 python tests/test_download_manager.py

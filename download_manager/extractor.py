@@ -126,7 +126,8 @@ def sniff_media(html, base_url=""):
         return found
     for pattern in (_OG_VIDEO, _OG_VIDEO_FLIP, _MEDIA_SRC, _JSON_URL, _DIRECT_MEDIA):
         for match in pattern.finditer(html):
-            candidate = (match.group(1) or "").strip()
+            raw = match.group(1) if match.lastindex else match.group(0)
+            candidate = (raw or "").strip()
             if not candidate or candidate.startswith(("data:", "javascript:")):
                 continue
             absolute = urljoin(base_url, candidate)
