@@ -1,0 +1,71 @@
+:root{
+  --bg:#0b1622; --panel:#122235; --panel2:#0e2a3f;
+  --line:#1d3348; --text:#e8eaed; --muted:#9aa0a6; --accent:#19c37d;
+  --accent2:#3b9eff; --warn:#fdd663;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+     font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+     line-height:1.6}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+header{background:linear-gradient(135deg,var(--panel2),#0b1622 70%);
+       border-bottom:1px solid var(--line);padding:34px 0 30px}
+.hero{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.hero img.logo{width:96px;height:96px;border-radius:22px;
+               box-shadow:0 8px 26px rgba(0,0,0,.45)}
+h1{margin:0 0 6px;font-size:34px}
+.tag{color:var(--accent);font-weight:600;margin:0 0 10px}
+.sub{color:var(--muted);margin:0;max-width:640px}
+.btns{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;
+     border:1px solid transparent}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:#04140d}
+.btn.ghost{border-color:#2c4763;color:var(--text);background:#10202f}
+.badges{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:#10202f;border:1px solid var(--line);border-radius:20px;
+       padding:4px 12px;font-size:12px;color:var(--muted)}
+nav{background:#0d1a28;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav .wrap{display:flex;gap:18px;overflow:auto;padding:10px 20px;font-size:14px}
+nav a{color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--text);text-decoration:none}
+nav a.here{color:var(--accent)}
+section{padding:34px 0}
+h2{font-size:22px;margin:0 0 14px;border-left:4px solid var(--accent);
+   padding-left:10px}
+h3{font-size:17px;margin:22px 0 8px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+      padding:16px 16px 14px}
+.card h3{margin:0 0 6px;font-size:15.5px}
+.card p{margin:0;color:var(--muted);font-size:14px}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+      border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14.5px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#0f2337;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+.ok{color:var(--accent);font-weight:700}
+.no{color:#f28b82;font-weight:700}
+pre{background:#091420;border:1px solid var(--line);border-radius:12px;
+    padding:14px;overflow:auto;font-size:13.5px;line-height:1.55}
+code{font-family:Consolas,"Courier New",monospace;color:#8fd4cb}
+.banner{width:100%;border-radius:16px;border:1px solid var(--line);display:block}
+.note{background:#10202f;border:1px solid var(--line);border-left:4px solid var(--warn);
+      border-radius:10px;padding:12px 14px;color:var(--muted);font-size:14px}
+.dlbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+       padding:22px;text-align:center}
+.dlbox .big{display:inline-block;background:var(--accent);color:#04140d;
+            padding:14px 30px;border-radius:12px;font-weight:700;font-size:17px}
+.dlbox .big:hover{text-decoration:none;transform:translateY(-1px)}
+.dlbox .meta{color:var(--muted);font-size:13.5px;margin-top:10px}
+.adbox{background:#0e1c2b;border:1px dashed #2c4763;border-radius:12px;
+       min-height:90px;display:flex;align-items:center;justify-content:center;
+       color:#5b6b7d;font-size:13px;margin:18px 0}
+ul.clean{padding-left:20px}
+ul.clean li{margin:6px 0;color:var(--muted)}
+ul.clean li strong,.card p strong{color:var(--text)}
+footer{border-top:1px solid var(--line);padding:22px 0 34px;color:var(--muted);
+       font-size:13.5px}
+@media(max-width:640px){h1{font-size:26px} .hero img.logo{width:72px;height:72px}}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İndir — Retro+ Download Manager v1.0.0</title>
+<meta name="description" content="Retro+ Download Manager 1.0.0 ücretsiz indirme sayfası: Windows, Linux, macOS için Python sürümü, sistem gereksinimleri ve kurulum.">
+<link rel="icon" href="assets/logo_small.png" type="image/png">
+<link rel="stylesheet" href="assets/site.css">
+<!-- ADSENSE: hesap onaylaninca <script async> kodunu yapistir -->
+</head>
+<body>
+
+<header>
+  <div class="wrap hero">
+    <img class="logo" src="assets/logo.png" alt="Retro+ logosu">
+    <div>
+      <h1>İndir</h1>
+      <p class="tag">Retro+ Download Manager 1.0.0 · Sürüm notları ve kurulum</p>
+      <p class="sub">Ücretsiz, açık kaynak (MIT) ve reklamsız masaüstü uygulaması.
+         Kurulum dosyası GitHub Releases üzerinden, sınırsız indirme bant genişliğiyle dağıtılır.</p>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html">Ana sayfa</a>
+    <a href="indir.html" class="here">İndir</a>
+    <a href="index.html#ozellikler">Özellikler</a>
+    <a href="index.html#kurulum">Kurulum</a>
+    <a href="hakkimizda.html">Hakkında</a>
+    <a href="iletisim.html">İletişim</a>
+    <a href="gizlilik.html">Gizlilik</a>
+    <a href="kosullar.html">Kullanım Şartları</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section>
+    <h2>Sürüm 1.0.0 (son kararlı)</h2>
+    <div class="dlbox">
+      <a class="big" href="https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip">
+        Retro-Download-Manager-v1.0.0.zip indir
+      </a>
+      <div class="meta">
+        ZIP arşivi · Python 3.11+ · Windows / Linux / macOS · MIT lisansı ·
+        <a href="https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip">doğrudan link</a> ·
+        <a href="https://github.com/RetroNyym/Retro-Download-Manager/releases">tüm sürümler ve indirme sayısı</a>
+      </div>
+    </div>
+    <div class="adbox" id="ad-dl">Reklam alanı</div>
+  </section>
+
+  <section>
+    <h2>Sistem gereksinimleri</h2>
+    <table>
+      <tr><th>Öğe</th><th>Gereken</th></tr>
+      <tr><td>Python</td><td>3.11 veya üzeri (Windows / Linux / macOS)</td></tr>
+      <tr><td>Ek paket</td><td><code>requests</code> (zorunlu tek bağımlılık)</td></tr>
+      <tr><td>Video / playlist</td><td><code>yt-dlp</code> + <code>ffmpeg</code> (opsiyonel; yoksa normal indirmeler çalışır)</td></tr>
+      <tr><td>Ekran</td><td>1024×640 ve üzeri önerilir</td></tr>
+      <tr><td>Disk</td><td>Program ~2 MB + indirdiğiniz dosyalar</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Kurulum (3 adım)</h2>
+<pre><code># 1) Zip'i bir klasöre açın, klasöre girin
+cd Retro-Download-Manager
+
+# 2) Bağımlılıkları kurun
+python -m pip install -r requirements.txt
+
+# 3) Çalıştırın
+python -m download_manager      # Windows: baslat_gui.bat</code></pre>
+    <p>Video/playlist desteği için ayrıca:</p>
+<pre><code>python -m pip install yt-dlp
+winget install Gyan.FFmpeg      # Linux: sudo apt install ffmpeg</code></pre>
+  </section>
+
+  <section>
+    <h2>v1.0.0 değişiklikleri</h2>
+    <ul class="clean">
+      <li><strong>32 parçaya kadar</strong> paralel indirme, duraklat/devam/iptal, kuyruk ve zamanlayıcı</li>
+      <li><strong>Web sayfası çözümleme:</strong> <code>og:video</code>, kaynak etiketleri, JSON-LD; medya yoksa net hata</li>
+      <li><strong>Playlist:</strong> YouTube vb. listeler tek görevden tüm videolara genişler; DASH'ta ffmpeg ile birleştirme</li>
+      <li><strong>Hızlı site butonları:</strong> YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo</li>
+      <li><strong>Tarayıcı köprüsü</strong> + pano izleme, Site Grabber, FTP, ayna URL, hız sınırı, sesli bildirim</li>
+      <li><strong>108 test kontrolü</strong> ve <code>pyflakes</code> temiz</li>
+    </ul>
+    <p class="note">Not: İndirme işlemi uygulamanın kendisi için değildir — bu sayfadaki
+       ZIP dosyası doğrudan GitHub'ın resmi <em>Releases</em> altyapısından gelir
+       (bant genişliği sınırı yok). Uygulama içinden yapılan indirmeler için
+       limit sunucuya göre değişir; çoğu sunucuda <code>Range</code> ile sınırsızdır.</p>
+  </section>
+
+  <section>
+    <h2>Doğrulama (güvenli indirme)</h2>
+<pre><code># PowerShell
+Get-FileHash .\Retro-Download-Manager-v1.0.0.zip -Algorithm SHA256</code></pre>
+    <p>Hash değerini
+       <a href="https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.0.0">Releases → v1.0.0</a>
+       sayfasındaki sürüm notlarıyla karşılaştırın. Uygulama açık kaynaktır;
+       kodu GitHub'da satır satır inceleyebilirsiniz.</p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <strong>Retro+ Download Manager</strong> — MIT lisansı ©
+    <a href="https://github.com/RetroNyym">RetroNyym</a> ·
+    <a href="index.html">Ana sayfa</a> ·
+    <a href="hakkimizda.html">Hakkında</a> ·
+    <a href="iletisim.html">İletişim</a> ·
+    <a href="gizlilik.html">Gizlilik Politikası</a> ·
+    <a href="kosullar.html">Kullanım Şartları</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hakkında — Retro+ Download Manager</title>
+<meta name="description" content="Retro+ Download Manager hakkında: proje amacı, açık kaynak lisansı, geliştirici ve teknolojiler.">
+<link rel="icon" href="assets/logo_small.png" type="image/png">
+<link rel="stylesheet" href="assets/site.css">
+<!-- ADSENSE: hesap onaylaninca <script async> kodunu yapistir -->
+</head>
+<body>
+
+<header>
+  <div class="wrap hero">
+    <img class="logo" src="assets/logo.png" alt="Retro+ logosu">
+    <div>
+      <h1>Hakkında</h1>
+      <p class="tag">Proje, lisans ve geliştirici</p>
+      <p class="sub">Retro+ Download Manager; Türkçe arayüzlü, açık kaynak ve
+         bağımsız bir Python indirme yöneticisi projesidir.</p>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html">Ana sayfa</a>
+    <a href="indir.html">İndir</a>
+    <a href="index.html#ozellikler">Özellikler</a>
+    <a href="index.html#mimari">Mimari</a>
+    <a href="hakkimizda.html" class="here">Hakkında</a>
+    <a href="iletisim.html">İletişim</a>
+    <a href="gizlilik.html">Gizlilik</a>
+    <a href="kosullar.html">Kullanım Şartları</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section>
+    <h2>Proje nedir?</h2>
+    <p style="color:var(--muted)">Retro+ Download Manager, dosyaları çok parçalı
+      (segmentli) indiren, duraklat/devam ve kuyruk/zamanlama özellikleri olan,
+      web sayfası ve playlist linklerini çözebilen bir masaüstü indirme
+      yöneticisidir. Arayüzü Türkçe'tir ve tamamen Python'un yerleşik
+      <code>tkinter</code> kütüphanesiyle yazılmıştır — ağır GUI çatıları yoktur.</p>
+  </section>
+
+  <section>
+    <h2>İlkeler</h2>
+    <div class="grid">
+      <div class="card"><h3>Açık kaynak</h3>
+        <p>Tüm kod MIT lisansıyla GitHub'da yayımlanır; inceleyebilir,
+           değiştirebilir, kendi projenizde kullanabilirsiniz.</p></div>
+      <div class="card"><h3>Tek bağımlılık</h3>
+        <p>Zorunlu tek paket <code>requests</code>. Video özellikleri için
+           <code>yt-dlp</code> ve <code>ffmpeg</code> opsiyoneldir.</p></div>
+      <div class="card"><h3>Kullanıcı verisi</h3>
+        <p>Program indirdikleriniz dışarıda göndermez; indirme doğrudan
+           kaynak sunucuya gider. Ayrıntılar
+           <a href="gizlilik.html">Gizlilik Politikası</a>'ndadır.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Teknolojiler</h2>
+    <table>
+      <tr><th>Katman</th><th>Kullanılan</th></tr>
+      <tr><td>Arayüz</td><td>Python <code>tkinter</code> (yerleşik)</td></tr>
+      <tr><td>Ağ</td><td><code>requests</code> + <code>http.client</code> (HTTP), <code>ftplib</code> (FTP)</td></tr>
+      <tr><td>Video</td><td><code>yt-dlp</code> (dış indirme), <code>ffmpeg</code> (birleştirme)</td></tr>
+      <tr><td>Kalıcılık</td><td>JSON ayarlar/geçmiş, kuyruk durumu (<code>data/</code>)</td></tr>
+      <tr><td>Test</td><td>108 kontrol, <code>pyflakes</code> analizi</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Geliştirici</h2>
+    <p style="color:var(--muted)"><strong>RetroNyym</strong> —
+       <a href="https://github.com/RetroNyym">github.com/RetroNyym</a><br>
+       Proje ve kaynak kod:
+       <a href="https://github.com/RetroNyym/Retro-Download-Manager">Retro-Download-Manager</a><br>
+       Sorun bildirimi ve iletişim için <a href="iletisim.html">İletişim</a> sayfasını kullanın.</p>
+    <div class="adbox" id="ad-about">Reklam alanı</div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <strong>Retro+ Download Manager</strong> — MIT lisansı ©
+    <a href="https://github.com/RetroNyym">RetroNyym</a> ·
+    <a href="index.html">Ana sayfa</a> ·
+    <a href="indir.html">İndir</a> ·
+    <a href="iletisim.html">İletişim</a> ·
+    <a href="gizlilik.html">Gizlilik Politikası</a> ·
+    <a href="kosullar.html">Kullanım Şartları</a>
+  </div>
+</footer>
+
+</body>
+</html>
