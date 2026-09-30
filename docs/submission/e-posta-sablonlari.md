@@ -174,3 +174,56 @@ Ad Soyad
 - Ekran görüntüsünü **ekle değil link** olarak ver (portal sunucusu ağırlaşmasın).
 - Her portala **aynı gün** yazma; 1–2 gün arayla yayılır, spam filtresine takılmaz.
 - Yanıt gelmezse **7–10 gün** sonra yalnızca **bir kez** takip yaz.
+
+---
+
+## 7. SourceForge — telefon doğrulama engeli (destek talebi, EN)
+
+**Durum (2026-09-30):** `POST https://sourceforge.net/p/verify_phone` isteği iki farklı
+tarayıcıda da **HTTP 403 (Cloudflare block)** dönüyor; form üzerinden gerçek kullanıcı
+tıklamasıyla da aynı sonuç. SMS hiç gönderilmiyor. Giriş ve e-posta doğrulaması sorunsuz.
+
+**Gönderim yolu:** SourceForge hesabında giriş yap → https://sourceforge.net/support
+→ "Get Support" (telefon doğrulama formundaki "Problems with verification?" bağlantısı
+da aynı sayfaya gider). Konu: *Phone verification fails with 403 / cannot register project*.
+
+**Konu satırı:**
+
+```
+Phone verification returns 403 (Cloudflare) - cannot register a new project
+```
+
+**Gövde:**
+
+```
+Hello SourceForge team,
+
+I am trying to register a new project but the one-time phone verification
+step cannot be completed: every POST to /p/verify_phone returns HTTP 403
+from Cloudflare ("Sorry, you have been blocked"). This happens from two
+different browsers (same account, signed in), including a normal click on
+the Submit button in the phone verification widget, so it is not a client-
+side scripting issue.
+
+Account e-mail: [E-POSTA]
+Attempted number format: +905412641149 (also tried with spaces)
+Cloudflare Ray ID (one of them): a435e1491cd82c4a
+Date: 2026-09-30
+
+Project I want to register:
+  Name:     Retro+ Download Manager
+  URL name: retro-download-manager
+  Category: Internet/Networking > Download Managers
+  Homepage: https://retro-download-manager.netlify.app
+  License:  MIT (open source)
+  Files:    ready to upload (ZIP + SHA-256)
+
+Could you either lift the block on the verification endpoint for my
+account, verify my phone number manually, or register the project on my
+behalf? I am happy to provide any extra information needed.
+
+Thank you.
+```
+
+**Not:** Aynı metin İngilizce olduğu için SourceForge destek formuna doğrudan
+yapıştırılır; `a435e1491cd82c4a` Ray ID'si yeniden denemede **güncellenir**.
