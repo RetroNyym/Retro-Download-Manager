@@ -1,4 +1,4 @@
-"""Retro+ Download Manager — IDM mantığında çok parçalı indirme modülü."""
+"""Retro+ Download Manager — çok parçalı indirme modülü."""
 
 from .engine import (
     CANCELED,

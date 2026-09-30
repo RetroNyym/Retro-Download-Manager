@@ -1,4 +1,4 @@
-"""Cok parcali HTTP indirme motoru (IDM tarzi segmentli indirme)."""
+"""Cok parcali HTTP indirme motoru (segmentli indirme, duraklat/devam)."""
 
 from __future__ import annotations
 

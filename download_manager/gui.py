@@ -876,7 +876,7 @@ class App:
         tk.Label(titles, text="Retro+ Download Manager", foreground="#ffffff",
                  background=HEADER_BG, font=("Segoe UI Semibold", 14)).pack(
             anchor="w", pady=(8, 0))
-        tk.Label(titles, text="IDM mantığında çok parçalı indirme · duraklat/devam · "
+        tk.Label(titles, text="Çok parçalı indirme · duraklat/devam · "
                               "kuyruk ve zamanlama · tarayıcı köprüsü",
                  foreground="#8fd4cb", background=HEADER_BG,
                  font=("Segoe UI", 8)).pack(anchor="w")
@@ -1263,7 +1263,7 @@ class App:
         about = [
             f"Retro+ Download Manager {__version__}",
             "",
-            "Internet Download Manager mantığında çalışan bağımsız Python modülü:",
+            "Bağımsız Python indirme modülü:",
             "• Çok parçalı (32 parça) indirme, duraklat / devam / iptal",
             "• Web sayfası ve playlist algılama (yt-dlp ile site desteği)",
             "• Kuyruk, zamanlayıcı, görev başına hız sınırı",
@@ -1642,7 +1642,7 @@ def run(argv=None):
     manager = DownloadManager()
     app = App(manager)
     try:
-        if os.environ.get("PYIDM_SMOKE"):
+        if os.environ.get("RETRO_SMOKE"):
             app.root.after(1500, app.root.destroy)
         app.run()
     finally:

@@ -7,7 +7,7 @@ indirme sayfasi) motor buraya duser:
 2. yt-dlp kuruluysa site cozumleyicisi olarak kullanilir (YouTube dahil
    binlerce site, playlist girisleri dahil).
    - Tek dosyada ses+video varsa dogrudan URL verilir: indirme motorumuz
-     cok parcali olarak indirir (IDM davranisi).
+     cok parcali olarak indirir.
    - Ses/video ayrilysa (DASH/HLS) indirme yt-dlp'ye devredilir; birlestirme
      icin ffmpeg kullanilir.
 3. Bulunamazsa indirme acik bir hata ile durur; indirilmis bir HTML dosyasi

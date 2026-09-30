@@ -10,9 +10,9 @@
   <img alt="Test" src="https://img.shields.io/badge/test-97%20kontrol-blue">
 </p>
 
-**Retro+ Download Manager**, Internet Download Manager'ın indirme becerilerini bağımsız bir Python
-modülüne taşıyan bir araçtır: çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
-otomatik dosya kategorileri, bağlantı grabber'ı, tarayıcı köprüsü ve Türkçe Tkinter arayüzü.
+**Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
+otomatik dosya kategorileri, bağlantı grabber'ı, web sayfası/playlist çözümleme, tarayıcı köprüsü
+ve Türkçe Tkinter arayüzü sunan bağımsız bir Python indirme yöneticisidir.
 
 Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kullanılabilir — GUI olmadan
 `DownloadManager` sınıfını doğrudan kendi programınıza bağlayabilirsiniz.
@@ -22,9 +22,9 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 
 ---
 
-## IDM ile Karşılaştırma
+## Özellikler
 
-| IDM yeteneği | Retro+ | Not |
+| Özellik | Durum | Not |
 | --- | :---: | --- |
 | Çok parçalı indirme (paralel segment) | ✅ | Varsayılan 8, en fazla 32 parça |
 | Duraklat / devam (her noktadan) | ✅ | 206 Range ile ilerleme dosyasına yazılır |
@@ -36,9 +36,9 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 | Tarayıcı bağlantı grabber'ı | ✅ | Pano izleme + yerel HTTP köprüsü (`/links`, `/add`) |
 | Web sayfası / playlist linki çözümleme | ✅ | `og:video`/kaynak tarayıcı + yt-dlp (56 videoluk liste tek tuşla kuyruğa) |
 | Video indirme (ses+video birleştirme) | ✅ | YouTube vb. için yt-dlp + ffmpeg otomatik birleştirme |
-| Site şifresi / çerez desteği | ⚠️ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
-| MMS/RTSP, FTPS'te özel tunnel | ❌ | HTTP(S), HTTP range, FTP/FTPS desteklenir |
-| Site entegrasyonu (site yöneticisi) | ❌ | Yerel köprü ve pano ile ikame edildi |
+| Site şifresi / çerez desteği | ✅ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
+| FTP / FTPS | ✅ | Parçalı FTP indirme, duraklat/devam |
+| MMS/RTSP, FTPS'te özel tunnel | ❌ | Desteklenmez |
 
 ---
 
@@ -64,7 +64,7 @@ winget install Gyan.FFmpeg        # ses+video birleştirme için
 
 ```bash
 python -m download_manager        # GUI
-baslat_idm.bat                    # Windows kısayolu
+baslat_gui.bat                   # Windows kısayolu
 ```
 
 ## Kütüphane olarak kullanma
@@ -89,7 +89,7 @@ Adres çubuğuna yapıştırılan link taranır ve doğru motor otomatik seçili
 | Girdi | Davranış |
 | --- | --- |
 | Doğrudan dosya (`.zip`, `.mp4`, ...) | çok parçalı HTTP/FTP indirme |
-| `.html`/`.htm` uzantılı bağlantı | sayfa dosya olarak iner (IDM davranışı) |
+| `.html`/`.htm` uzantılı bağlantı | sayfa dosya olarak iner |
 | Web sayfası (uzantısız, PHP, ...) | `og:video`/`<source>`/JSON-LD ile medya adresi çözümlenir |
 | Medya bulunamayan sayfa | net hata mesajı, dosya oluşturmaz |
 | Playlist / video sayfası (YouTube vb.) | yt-dlp ile liste çözümlenir, tüm videolar kuyruğa eklenir |
@@ -121,7 +121,7 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | --- | --- |
 | `download_manager/engine.py` | çok parçalı indirme motoru (HTTP/FTP, duraklat/devam, yeniden deneme, ayna URL) |
 | `download_manager/manager.py` | kuyruk, zamanlayıcı, kategoriler, grabber, köprü, geçmiş, ayarlar |
-| `download_manager/gui.py` | Tkinter arayüz (IDM düzeni: kategori paneli, ikonlu araç çubuğu, segment görünürlüğü) |
+| `download_manager/gui.py` | Tkinter arayüz (kategori paneli, ikonlu araç çubuğu, segment görünürlüğü) |
 | `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
 | `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
