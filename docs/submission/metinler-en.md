@@ -1,4 +1,4 @@
-# Submission Texts — English
+﻿# Submission Texts — English
 
 Copy-paste texts for international portals (SourceForge, FossHub, MajorGeeks,
 Softpedia, FileHippo, itch.io, UpdateStar, AlternativeTo ...).
@@ -88,7 +88,7 @@ Features:
 Requirements: Python 3.11 or newer on Windows 10/11, Linux or macOS. yt-dlp and ffmpeg
 are optional and only needed for video/playlist downloads.
 
-Fully tested: 108 automated checks and a clean pyflakes run. Source code is published on
+Fully tested: 165 automated checks and a clean pyflakes run. Source code is published on
 GitHub for inspection.
 ```
 
@@ -141,7 +141,7 @@ Display: 1024x640 or higher
 - Quick site buttons: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
 - Browser bridge + clipboard monitoring, Site Grabber, FTP, mirror URLs, speed limit,
   voice notifications
-- 108 automated checks, clean pyflakes
+- 165 automated checks, clean pyflakes
 ```
 
 ---

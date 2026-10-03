@@ -36,6 +36,7 @@ from .util import (
     PAGE_EXTENSIONS,
     format_bytes,
 )
+from .whatsapp import WhatsAppWatcher
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -73,6 +74,12 @@ class Settings:
         "scan_enabled": False,
         "scan_command": "",
         "exit_when_done": False,
+        "update_enabled": True,
+        "update_source": "",
+        "wa_enabled": False,
+        "wa_watch_folder": "",
+        "wa_output_folder": "",
+        "wa_whitelist": [],
     }
 
     def __init__(self, path):
@@ -216,6 +223,13 @@ class DownloadManager:
         self._start_bridge()
         self._scheduler = threading.Thread(target=self._scheduler_loop, daemon=True)
         self._scheduler.start()
+        self.wa_watcher = WhatsAppWatcher(self)
+        self.wa_watcher.start()
+        self._updater_thread = None
+        if bool(getattr(self.settings, "update_enabled", True)) and \
+                (self.settings.update_source or "").strip():
+            from .updater import start_auto_update
+            self._updater_thread = start_auto_update(self)
         self.log("Retro+ Download Manager hazır.", "info")
 
     def _setup_logger(self):
@@ -581,6 +595,11 @@ class DownloadManager:
         except OSError:
             pass
         self._restart_bridge(values)
+        if values and any(key.startswith("wa_") for key in values):
+            try:
+                self.wa_watcher.restart()
+            except Exception as exc:
+                self.log(f"WhatsApp izleyici yeniden başlatılamadı: {exc}", "error")
         self.save_queue()
 
     def _in_window(self):
@@ -839,6 +858,12 @@ class DownloadManager:
 
     def shutdown(self):
         self._stop.set()
+        watcher = getattr(self, "wa_watcher", None)
+        if watcher is not None:
+            try:
+                watcher.stop()
+            except Exception:
+                pass
         if self._scheduler.is_alive():
             self._scheduler.join(timeout=3.0)
         self._stop_bridge()

@@ -1,0 +1,7 @@
+session/
+node_modules/
+qr.png
+listener.log
+status.json
+chats.json
+config.json

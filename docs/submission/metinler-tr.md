@@ -1,4 +1,4 @@
-# Başvuru Metinleri — Türkçe
+﻿# Başvuru Metinleri — Türkçe
 
 Bu dosya, Türkçe yayın yapan portallara (Gezginler, Tamindir, CHIP, ShiftDelete,
 Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazırlanmıştır.
@@ -88,7 +88,7 @@ yoktur; tek çalışma zamanı bağımlılığı "requests" paketidir.
 Sistem gereksinimleri: Python 3.11 veya üzeri (Windows 10/11, Linux, macOS). Video ve
 playlist için isteğe bağlı yt-dlp ve ffmpeg.
 
-Tamamen test edilmiş: 108 otomatik kontrol ve pyflakes temiz. Kaynak kod GitHub'da
+Tamamen test edilmiş: 165 otomatik kontrol ve pyflakes temiz. Kaynak kod GitHub'da
 açıkça incelenebilir.
 ```
 
@@ -147,7 +147,7 @@ görüntüleri 1280×800'e ölçekleyin.
 - Hızlı site butonları: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
 - Tarayıcı köprüsü + pano izleme, Site Grabber, FTP, ayna URL, hız sınırı,
   sesli bildirim
-- 108 test kontrolü ve pyflakes temiz
+- 165 test kontrolü ve pyflakes temiz
 ```
 
 ---

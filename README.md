@@ -7,7 +7,7 @@
   <img alt="Lisans" src="https://img.shields.io/badge/Lisans-MIT-yellow.svg">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
   <img alt="Parça" src="https://img.shields.io/badge/indirme-32%20par%C3%A7a-brightgreen">
-  <img alt="Test" src="https://img.shields.io/badge/test-108%20kontrol-blue">
+  <img alt="Test" src="https://img.shields.io/badge/test-165%20kontrol-blue">
 </p>
 
 **Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
@@ -39,6 +39,8 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 | Video indirme (ses+video birleştirme) | ✅ | YouTube vb. için yt-dlp + ffmpeg otomatik birleştirme |
 | Site şifresi / çerez desteği | ✅ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
 | FTP / FTPS | ✅ | Parçalı FTP indirme, duraklat/devam |
+| Yerel güncelleme (uzaktan, linke dokunmadan) | ✅ | `version.json` + zip + SHA-256; klasör/UNC/HTTP kaynağı, sessiz kurulum + yeniden başlatma |
+| WhatsApp PDF yakalama | ✅ | Bağlı cihaz (QR) dinleyici + beyaz liste; yalnızca seçili grup/kişilerin PDF'leri iner |
 | MMS/RTSP, FTPS'te özel tunnel | ❌ | Desteklenmez |
 
 ---
@@ -118,6 +120,33 @@ Tarayıcıya ekleyebileceğiniz imleç (bookmarklet):
 javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent(location.href))})()
 ```
 
+## Otomatik güncelleme (yerel kaynak)
+
+Sürüm dağıtımı GitHub'a bağlı olmadan çalışır: güncelleme klasörü (yerel disk,
+UNC paylaşımı veya HTTP) içinde `version.json` + zip paketi bulunur.
+
+```bash
+python tools\\pack_update.py --out \\\\sunucu\\paylasim\\retro
+```
+
+Program açılışında (6 saatte bir de arka planda) kaynağı kontrol eder; yeni
+sürüm varsa indirmeler bitmesini bekler, SHA-256 doğrular, kurar ve kendini
+yeniden başlatır — kullanıcının herhangi bir linke tıklaması gerekmez.
+Kaynak: Ayarlar → Güncelleştirme. Kullanıcı verisi (`data/`), `.git` ve WhatsApp
+oturumu güncellemede korunur; hata olursa yedekten geri alınır.
+
+## WhatsApp PDF yakalama
+
+```bash
+cd whatsapp_listener
+npm install        # bir kez (Node.js 18+)
+```
+
+Ayarlar → WhatsApp: izleme/hedef klasör + **beyaz liste** (yalnızca seçtiğiniz
+grup/kişiler). **Dinleyiciyi başlat** → `qr.png`'yi telefondan okutun →
+**Sohbetleri yükle** ile izin verilecekleri seçin. Beyaz liste dışındaki
+hiçbir sohbetten dosya indirilmez (dinleyici + Python tarafında çift kontrol).
+
 ## Mimari
 
 | Dosya | Görev |
@@ -128,7 +157,11 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
 | `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
-| `tests/` | 108 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya) |
+| `download_manager/updater.py` | yerel güncelleme kanalı (manifest, SHA-256, staging, geri alma, yeniden başlatma) |
+| `download_manager/whatsapp.py` | WhatsApp PDF izleyici (üst veri + beyaz liste + hedefe taşıma) |
+| `whatsapp_listener/` | Node/Baileys bağlı cihaz dinleyicisi (QR, sohbet listesi, PDF indirme) |
+| `tools/pack_update.py` | yerel güncelleme paketi üretici (`dist/` → zip + `version.json`) |
+| `tests/` | 165 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya, güncelleme, WhatsApp) |
 
 ## Testler
 
@@ -138,8 +171,10 @@ javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent
 | `tests/test_restart_resume.py` | kapanınca duraklat → açılınca devam + gerçek internet indirmesi | 8 |
 | `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
 | `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
-| `tests/test_gui.py` | diyaloglar, hızlı site butonları ve arayüz (ekran/`tkinter` gerektirir) | 24 |
+| `tests/test_gui.py` | diyaloglar, hızlı site butonları ve arayüz (ekran/`tkinter` gerektirir) | 29 |
 | `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 22 |
+| `tests/test_updater.py` | sürüm karşılaştırma, manifest, SHA-256 reddi, zip-slip, geri alma, kurulum | 29 |
+| `tests/test_whatsapp.py` | beyaz liste eşleşme, üst veri, izleyici teslimi, kapalı/boş durumlar | 23 |
 
 ```bash
 python tests/test_download_manager.py
@@ -148,6 +183,8 @@ python tests/test_bridge.py
 python tests/test_ftp.py        # pip install pyftpdlib
 python tests/test_gui.py        # grafik oturum gerekir
 python tests/test_page_media.py
+python tests/test_updater.py
+python tests/test_whatsapp.py
 ```
 
 Lint: `python -m pyflakes download_manager`.
@@ -183,6 +220,7 @@ metinler ve kontrol listesi `docs/submission/` klasöründedir; genel bakış
   başlatma mantığı kullanılır (tek parça `Range` indirmesi gibi değildir).
 - `FTP over explicit TLS` (FTPS) deneme amaçlıdır; bazı sunucularda `MLSD` yerine `NLST`'ye düşer.
 - Saloon / çoklu parça her zaman sunucunun izin verdiği kadar hızlanır; hız sınırı istemci tarafıdır.
+- WhatsApp dinleyicisi resmi API değil, WhatsApp Web protokolü (Baileys) kullanır; Node.js kurulumu ve QR eşleştirmesi gerektirir.
 
 ## Lisans
 

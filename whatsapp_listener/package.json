@@ -1,0 +1,15 @@
+{
+  "name": "retro-whatsapp-listener",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Retro+ Download Manager icin WhatsApp PDF dinleyici (Baileys)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "pino": "^9.5.0",
+    "qrcode": "^1.5.4"
+  }
+}

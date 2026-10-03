@@ -29,7 +29,7 @@
       <div class="badges">
         <span class="badge">Python 3.11+</span>
         <span class="badge">Windows · Linux · macOS</span>
-        <span class="badge">108 test kontrolü</span>
+        <span class="badge">165 test kontrolü</span>
         <span class="badge">MIT lisansı</span>
         <span class="badge">Tek bağımlılık: requests</span>
       </div>
@@ -151,7 +151,9 @@
       <tr><td><code>extractor.py</code></td><td>Web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme</td></tr>
       <tr><td><code>gui.py</code></td><td>Tkinter arayüz: kategori paneli, ikonlu araç çubuğu, hızlı site butonları</td></tr>
       <tr><td><code>util.py</code> / <code>notify.py</code></td><td>Kategori tespiti, biçimlendirme, sesli bildirim</td></tr>
-      <tr><td><code>tests/</code></td><td>108 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya)</td></tr>
+      <tr><td><code>updater.py</code></td><td>Yerel güncelleme: manifest + SHA-256 + sessiz kurulum + geri alma</td></tr>
+      <tr><td><code>whatsapp.py</code> + <code>whatsapp_listener/</code></td><td>WhatsApp PDF: beyaz liste, QR dinleyici, üst veriyle teslim</td></tr>
+      <tr><td><code>tests/</code></td><td>165 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya, güncelleme, WhatsApp)</td></tr>
     </table>
   </section>
 
@@ -194,9 +196,11 @@ mgr.start()</code></pre>
       <tr><td><code>test_restart_resume.py</code></td><td>Kapanınca duraklat → açılınca devam + gerçek internet indirmesi</td><td>8</td></tr>
       <tr><td><code>test_ftp.py</code></td><td>FTP parça/duraklat/iptal</td><td>10</td></tr>
       <tr><td><code>test_bridge.py</code></td><td>Köprü uçları (<code>/add</code>, <code>/links</code>, <code>/status</code>)</td><td>7</td></tr>
-      <tr><td><code>test_gui.py</code></td><td>Diyaloglar, hızlı site butonları, arayüz</td><td>24</td></tr>
+      <tr><td><code>test_gui.py</code></td><td>Diyaloglar, hızlı site butonları, arayüz</td><td>29</td></tr>
       <tr><td><code>test_page_media.py</code></td><td>Sayfa çözümleme, hata davranışı, site adları</td><td>22</td></tr>
-      <tr><td><strong>Toplam</strong></td><td></td><td><strong>108</strong></td></tr>
+      <tr><td><code>test_updater.py</code></td><td>Güncelleme: manifest, SHA-256, zip-slip, geri alma, kurulum</td><td>29</td></tr>
+      <tr><td><code>test_whatsapp.py</code></td><td>Beyaz liste, üst veri, izleyici teslimi</td><td>23</td></tr>
+      <tr><td><strong>Toplam</strong></td><td></td><td><strong>165</strong></td></tr>
     </table>
 <pre><code>python tests/test_download_manager.py
 python tests/test_gui.py        # grafik oturum gerekir

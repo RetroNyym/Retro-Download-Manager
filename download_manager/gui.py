@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import tkinter as tk
@@ -23,6 +24,7 @@ from .engine import (
 )
 from .extractor import SUPPORTED_SITES
 from .manager import DownloadManager
+from .whatsapp import normalize_whitelist
 from .util import (
     CATEGORIES,
     CATEGORY_LABELS,
@@ -351,7 +353,7 @@ class SettingsDialog(tk.Toplevel):
         notebook.pack(fill="both", expand=True, padx=8, pady=8)
         self.notebook = notebook
         tabs = {"general": 0, "connection": 1, "queue": 2, "categories": 3,
-                "security": 4}
+                "security": 4, "update": 5, "whatsapp": 6}
         if tab in tabs:
             index = tabs[tab]
             self.after(50, lambda: notebook.select(str(index)))
@@ -544,6 +546,122 @@ class SettingsDialog(tk.Toplevel):
             "-ScanType 3 -File {file}")
         ).grid(row=row, column=1, sticky="w", pady=(8, 4))
 
+        # -- Güncelleme sekmesi (yerel kaynak: klasör/UNC/HTTP) --------------
+        update = ttk.Frame(notebook, padding=10)
+        notebook.add(update, text="Güncelleme")
+        update.columnconfigure(1, weight=1)
+        row = 0
+        self.var_update_on = tk.BooleanVar(
+            value=bool(getattr(st, "update_enabled", True)))
+        ttk.Checkbutton(update, text="Güncelleştirmeleri etkinleştir",
+                        variable=self.var_update_on).grid(
+            row=row, column=1, sticky="w", pady=4)
+        row += 1
+        _grid_label(update, row, "Güncelleme kaynağı:")
+        self.var_update_src = tk.StringVar(
+            value=str(getattr(st, "update_source", "")))
+        ttk.Entry(update, textvariable=self.var_update_src).grid(
+            row=row, column=1, sticky="we", pady=4)
+        row += 1
+        ttk.Label(update, wraplength=460, foreground="#5f6368", text=(
+            "Kaynak yerel klasör, UNC paylaşımı (\\\\sunucu\\paylasim) veya "
+            "http(s) adresi olabilir; içinde version.json + zip paketi bulunur. "
+            "Yeni sürüm geldiğinde indirmeler bitince otomatik uygulanır ve "
+            "program kendini yeniden başlatır — hiçbir bağlantıya tıklamak "
+            "gerekmez.")
+        ).grid(row=row, column=1, sticky="w", pady=(0, 6))
+        row += 1
+        update_btns = ttk.Frame(update)
+        update_btns.grid(row=row, column=1, sticky="w", pady=4)
+        ttk.Button(update_btns, text="Şimdi kontrol et",
+                   command=self._update_check_now).pack(side="left", padx=(0, 6))
+        ttk.Button(update_btns, text="Şimdi güncelle",
+                   command=self._update_apply_now).pack(side="left")
+        row += 1
+        self.var_update_status = tk.StringVar(value="Kontrol edilmedi.")
+        ttk.Label(update, textvariable=self.var_update_status,
+                  wraplength=460).grid(row=row, column=1, sticky="w", pady=4)
+
+        # -- WhatsApp sekmesi ------------------------------------------------
+        whatsapp = ttk.Frame(notebook, padding=10)
+        notebook.add(whatsapp, text="WhatsApp")
+        whatsapp.columnconfigure(1, weight=1)
+        row = 0
+        self.var_wa_on = tk.BooleanVar(value=bool(getattr(st, "wa_enabled", False)))
+        ttk.Checkbutton(whatsapp, text="WhatsApp PDF yakalamayı aç",
+                        variable=self.var_wa_on).grid(
+            row=row, column=1, sticky="w", pady=4)
+        row += 1
+        _grid_label(whatsapp, row, "İzleme klasörü:")
+        frame_watch = ttk.Frame(whatsapp)
+        frame_watch.grid(row=row, column=1, sticky="we", pady=4)
+        frame_watch.columnconfigure(0, weight=1)
+        self.var_wa_watch = tk.StringVar(
+            value=str(getattr(st, "wa_watch_folder", "")))
+        ttk.Entry(frame_watch, textvariable=self.var_wa_watch).grid(
+            row=0, column=0, sticky="we")
+        ttk.Button(frame_watch, text="Gözat", command=self._wa_browse_watch).grid(
+            row=0, column=1, padx=(6, 0))
+        row += 1
+        _grid_label(whatsapp, row, "Hedef klasör:")
+        frame_out = ttk.Frame(whatsapp)
+        frame_out.grid(row=row, column=1, sticky="we", pady=4)
+        frame_out.columnconfigure(0, weight=1)
+        self.var_wa_out = tk.StringVar(
+            value=str(getattr(st, "wa_output_folder", "")))
+        ttk.Entry(frame_out, textvariable=self.var_wa_out).grid(
+            row=0, column=0, sticky="we")
+        ttk.Button(frame_out, text="Gözat", command=self._wa_browse_out).grid(
+            row=0, column=1, padx=(6, 0))
+        row += 1
+        ttk.Label(whatsapp, text="İzin verilen sohbetler (grup/kişi — beyaz liste):",
+                  ).grid(row=row, column=1, sticky="w", pady=(8, 2))
+        row += 1
+        frame_wl = ttk.Frame(whatsapp)
+        frame_wl.grid(row=row, column=1, sticky="nsew", pady=2)
+        whatsapp.rowconfigure(row, weight=1)
+        frame_wl.columnconfigure(0, weight=1)
+        frame_wl.rowconfigure(0, weight=1)
+        self.wa_list = tk.Listbox(frame_wl, height=6, activestyle="none",
+                                  selectmode="extended")
+        self.wa_list.grid(row=0, column=0, sticky="nsew")
+        wl_scroll = ttk.Scrollbar(frame_wl, orient="vertical",
+                                  command=self.wa_list.yview)
+        wl_scroll.grid(row=0, column=1, sticky="ns")
+        self.wa_list.configure(yscrollcommand=wl_scroll.set)
+        self._whitelist_entries = list(
+            normalize_whitelist(getattr(st, "wa_whitelist", [])))
+        for entry in self._whitelist_entries:
+            self.wa_list.insert("end", f"{entry['label']}  ({entry['jid']})")
+        row += 1
+        frame_wl_btns = ttk.Frame(whatsapp)
+        frame_wl_btns.grid(row=row, column=1, sticky="w", pady=4)
+        ttk.Button(frame_wl_btns, text="Sohbetleri yükle",
+                   command=self._wa_load_chats).pack(side="left", padx=(0, 6))
+        ttk.Button(frame_wl_btns, text="Ekle",
+                   command=self._wa_add_entry).pack(side="left", padx=(0, 6))
+        ttk.Button(frame_wl_btns, text="Seçileni kaldır",
+                   command=self._wa_remove_selected).pack(side="left")
+        row += 1
+        self.var_wa_status = tk.StringVar(value="Dinleyici durmadı.")
+        ttk.Label(whatsapp, textvariable=self.var_wa_status,
+                  wraplength=460).grid(row=row, column=1, sticky="w", pady=(6, 2))
+        row += 1
+        frame_wa_ctrl = ttk.Frame(whatsapp)
+        frame_wa_ctrl.grid(row=row, column=1, sticky="w", pady=4)
+        ttk.Button(frame_wa_ctrl, text="Dinleyiciyi başlat",
+                   command=self._wa_start_listener).pack(side="left", padx=(0, 6))
+        ttk.Button(frame_wa_ctrl, text="QR'ı göster",
+                   command=self._wa_show_qr).pack(side="left", padx=(0, 6))
+        ttk.Button(frame_wa_ctrl, text="Durdur",
+                   command=self._wa_stop_listener).pack(side="left")
+        row += 1
+        ttk.Label(whatsapp, wraplength=460, foreground="#5f6368", text=(
+            "Dinleyici telefondaki WhatsApp'ın \"bağlı cihaz\" olarak QR ile "
+            "eşleşir; yalnızca beyaz listedeki gruplardan/kişilerden gelen "
+            "PDF'leri indirir. Node.js kurulu olmalıdır (node komutu).")
+        ).grid(row=row, column=1, sticky="w", pady=(6, 0))
+
         buttons = ttk.Frame(self, padding=(8, 0, 8, 8))
         buttons.pack(fill="x")
         ttk.Button(buttons, text="Kaydet", command=self._ok).pack(side="right", padx=4)
@@ -568,6 +686,262 @@ class SettingsDialog(tk.Toplevel):
             messagebox.showwarning("Bulunamadı",
                                    "MpCmdRun.exe bulunamadı, komutu elle girin.",
                                    parent=self)
+
+    # -- Güncelleme yardimcilari --------------------------------------------
+    def _update_check_now(self):
+        source = self.var_update_src.get().strip()
+        if not source:
+            self.var_update_status.set("Önce bir güncelleme kaynağı girin.")
+            return
+        if getattr(self, "_update_worker", None) is not None:
+            return
+        self.var_update_status.set("Kontrol ediliyor…")
+        self._update_worker = "pending"
+
+        def work():
+            from .updater import check_for_update
+            try:
+                result = check_for_update(source)
+            except Exception as exc:  # pragma: no cover - beklenmedik IO
+                result = {"status": "error", "error": str(exc)}
+            self._update_worker = result
+
+        threading.Thread(target=work, daemon=True).start()
+        self.after(150, self._poll_update_worker)
+
+    def _poll_update_worker(self):
+        result = getattr(self, "_update_worker", None)
+        if result is None or result == "pending":
+            self.after(150, self._poll_update_worker)
+            return
+        self._update_worker = None
+        if result.get("status") == "update_available":
+            self.var_update_status.set(
+                f"Yeni sürüm var: {result['version']} "
+                f"(mevcut: {result['current']}) — \"Şimdi güncelle\" ile kurun.")
+        elif result.get("status") == "up_to_date":
+            self.var_update_status.set(
+                f"Güncel (sürüm {result.get('current', __version__)}).")
+        elif result.get("status") == "disabled":
+            self.var_update_status.set("Güncelleme kapalı veya kaynak boş.")
+        else:
+            self.var_update_status.set(
+                f"Hata: {result.get('error', 'bilinmeyen')}")
+
+    def _update_apply_now(self):
+        source = self.var_update_src.get().strip()
+        if not source:
+            self.var_update_status.set("Önce bir güncelleme kaynağı girin.")
+            return
+        if getattr(self, "_update_worker", None) is not None:
+            return
+        self.var_update_status.set("Paket indirilip doğrulanıyor…")
+        self._update_worker = "pending"
+
+        def work():
+            from .updater import install_update
+            try:
+                result = install_update(
+                    source,
+                    progress=lambda msg: self._update_notes.append(msg))
+            except Exception as exc:
+                result = {"status": "error", "error": str(exc)}
+            self._update_worker = result
+
+        self._update_notes = []
+        threading.Thread(target=work, daemon=True).start()
+        self.after(150, self._poll_update_apply)
+
+    def _poll_update_apply(self):
+        result = getattr(self, "_update_worker", None)
+        if result is None or result == "pending":
+            self.after(200, self._poll_update_apply)
+            return
+        self._update_worker = None
+        if result.get("status") == "installed":
+            self.var_update_status.set(
+                f"Sürüm {result.get('version', '?')} uygulandı.")
+            if messagebox.askyesno("Güncelleme uygulandı",
+                                   "Yeni sürüm hazır. Program şimdi yeniden "
+                                   "başlatılsın mı?", parent=self):
+                from .updater import prepare_restart
+                app_root = Path(__file__).resolve().parent.parent
+                self.manager.settings.save()
+                self.manager.shutdown()
+                self.destroy()
+                prepare_restart(app_root)
+        elif result.get("status") == "update_available":
+            self.var_update_status.set(
+                f"Yeni sürüm var: {result.get('version')} — tekrar deneyin.")
+        elif result.get("status") == "up_to_date":
+            self.var_update_status.set("Zaten güncel.")
+        else:
+            self.var_update_status.set(f"Hata: {result.get('error', 'bilinmeyen')}")
+
+    # -- WhatsApp yardimcilari ----------------------------------------------
+    @property
+    def _listener_dir(self):
+        return Path(__file__).resolve().parent.parent / "whatsapp_listener"
+
+    def _wa_browse_watch(self):
+        folder = filedialog.askdirectory(parent=self,
+                                         initialdir=self.var_wa_watch.get() or "")
+        if folder:
+            self.var_wa_watch.set(folder)
+
+    def _wa_browse_out(self):
+        folder = filedialog.askdirectory(parent=self,
+                                         initialdir=self.var_wa_out.get() or "")
+        if folder:
+            self.var_wa_out.set(folder)
+
+    def _wa_load_chats(self):
+        path = self._listener_dir / "chats.json"
+        if not path.is_file():
+            messagebox.showwarning(
+                "Sohbet yok",
+                "chats.json bulunamadı. Önce \"Dinleyiciyi başlat\" ile QR'ı "
+                "okutun, bağlantı kurulunca sohbetler otomatik listelensin.",
+                parent=self)
+            return
+        try:
+            chats = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            messagebox.showwarning("Okunamadı", f"chats.json: {exc}", parent=self)
+            return
+        if not isinstance(chats, list) or not chats:
+            messagebox.showwarning("Boş", "Sohbet listesi boş.", parent=self)
+            return
+        picker = tk.Toplevel(self)
+        picker.title("Sohbet seç (beyaz liste)")
+        picker.transient(self)
+        picker.resizable(True, True)
+        ttk.Label(picker, padding=8,
+                  text="PDF alınacak grup/kişileri seçin (Ctrl ile çoklu):").pack(
+            anchor="w")
+        box_frame = ttk.Frame(picker, padding=(8, 0))
+        box_frame.pack(fill="both", expand=True)
+        listbox = tk.Listbox(box_frame, selectmode="extended", height=14,
+                             activestyle="none")
+        scroll = ttk.Scrollbar(box_frame, orient="vertical",
+                               command=listbox.yview)
+        listbox.configure(yscrollcommand=scroll.set)
+        listbox.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        labels = []
+        for chat in chats:
+            if not isinstance(chat, dict) or not chat.get("jid"):
+                continue
+            label = str(chat.get("label") or chat.get("name") or chat["jid"])
+            labels.append({"jid": str(chat["jid"]), "label": label})
+            listbox.insert("end", f"{label}  ({chat['jid']})")
+        existing = {e["jid"] for e in self._whitelist_entries}
+        for index, entry in enumerate(labels):
+            if entry["jid"] in existing:
+                listbox.selection_set(index)
+
+        def confirm():
+            for index in listbox.curselection():
+                entry = labels[index]
+                if entry["jid"] not in existing:
+                    self._whitelist_entries.append(entry)
+                    self.wa_list.insert("end",
+                                        f"{entry['label']}  ({entry['jid']})")
+                    existing.add(entry["jid"])
+            picker.destroy()
+
+        buttons = ttk.Frame(picker, padding=8)
+        buttons.pack(fill="x")
+        ttk.Button(buttons, text="Seçilenleri ekle",
+                   command=confirm).pack(side="right", padx=4)
+        ttk.Button(buttons, text="Vazgeç",
+                   command=picker.destroy).pack(side="right", padx=4)
+        center_window(picker, self)
+
+    def _wa_add_entry(self):
+        from tkinter import simpledialog
+        label = simpledialog.askstring("Sohbet adı",
+                                       "Grup/kişi adı (günlük görünen ad):",
+                                       parent=self)
+        if label is None or not label.strip():
+            return
+        jid = simpledialog.askstring("JID / numara",
+                                     "Grup JID'i (ör. 123456789-1111@g.us) veya "
+                                     "telefon numarası (ör. 905xx…):", parent=self)
+        if jid is None or not jid.strip():
+            return
+        entry = {"jid": jid.strip(), "label": label.strip()}
+        if entry["jid"] not in {e["jid"] for e in self._whitelist_entries}:
+            self._whitelist_entries.append(entry)
+            self.wa_list.insert("end", f"{entry['label']}  ({entry['jid']})")
+
+    def _wa_remove_selected(self):
+        selection = list(self.wa_list.curselection())
+        for index in reversed(selection):
+            self.wa_list.delete(index)
+            del self._whitelist_entries[index]
+
+    def _wa_write_listener_config(self):
+        watch = self.var_wa_watch.get().strip()
+        if not watch:
+            watch = str(Path(self.var_dir.get().strip() or
+                             str(Path.home() / "Downloads")) / "WhatsApp PDF")
+            self.var_wa_watch.set(watch)
+        config = {
+            "watchFolder": watch,
+            "whitelist": [entry["jid"] for entry in self._whitelist_entries],
+        }
+        self._listener_dir.mkdir(parents=True, exist_ok=True)
+        (self._listener_dir / "config.json").write_text(
+            json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
+        return config
+
+    def _wa_start_listener(self):
+        import shutil as _shutil
+        if not _shutil.which("node"):
+            self.var_wa_status.set(
+                "Node.js bulunamadı — kurulum: https://nodejs.org (LTS).")
+            return
+        if not (self._listener_dir / "index.js").is_file():
+            self.var_wa_status.set("whatsapp_listener/index.js bulunamadı.")
+            return
+        process = getattr(self.manager, "wa_listener", None)
+        if process is not None and process.poll() is None:
+            self.var_wa_status.set("Dinleyici zaten çalışıyor.")
+            return
+        self._wa_write_listener_config()
+        import subprocess
+        log_path = self._listener_dir / "listener.log"
+        try:
+            log_handle = open(log_path, "a", encoding="utf-8", errors="ignore")
+            kwargs = {"cwd": str(self._listener_dir),
+                      "stdin": subprocess.DEVNULL,
+                      "stdout": log_handle, "stderr": log_handle}
+            if os.name == "nt":
+                kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            process = subprocess.Popen(["node", "index.js"], **kwargs)
+            self.manager.wa_listener = process
+            self.var_wa_status.set(
+                "Dinleyici başladı — telefonla QR'ı okutun (\"QR'ı göster\").")
+        except OSError as exc:
+            self.var_wa_status.set(f"Başlatılamadı: {exc}")
+
+    def _wa_show_qr(self):
+        qr_path = self._listener_dir / "qr.png"
+        if qr_path.is_file():
+            open_path(qr_path)
+        else:
+            self.var_wa_status.set(
+                "qr.png yok — dinleyiciyi başlatıp bekleyin (QR üretilince "
+                "otomatik açılır).")
+
+    def _wa_stop_listener(self):
+        process = getattr(self.manager, "wa_listener", None)
+        if process is not None and process.poll() is None:
+            process.terminate()
+            self.var_wa_status.set("Dinleyici durduruldu.")
+        else:
+            self.var_wa_status.set("Dinleyici zaten çalışmıyor.")
 
     def _ok(self):
         values = {
@@ -599,6 +973,12 @@ class SettingsDialog(tk.Toplevel):
             "scan_command": self.var_scan_cmd.get().strip(),
             "category_folders": {k: v.get().strip() or CATEGORY_LABELS[k]
                                  for k, v in self.var_folders.items()},
+            "update_enabled": bool(self.var_update_on.get()),
+            "update_source": self.var_update_src.get().strip(),
+            "wa_enabled": bool(self.var_wa_on.get()),
+            "wa_watch_folder": self.var_wa_watch.get().strip(),
+            "wa_output_folder": self.var_wa_out.get().strip(),
+            "wa_whitelist": [dict(entry) for entry in self._whitelist_entries],
         }
         self.result = values
         self.destroy()

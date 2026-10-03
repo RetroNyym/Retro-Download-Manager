@@ -124,6 +124,16 @@ def main():
     settings.var_bridge.set(True)
     settings.var_bridge_port.set(8901)
     settings.var_folders["other"].set("DigerKlasor")
+    settings.var_update_src.set(r"C:\Guncelleme")
+    settings.var_update_on.set(True)
+    settings.var_wa_on.set(True)
+    settings.var_wa_watch.set(r"C:\WA\izleme")
+    settings.var_wa_out.set(r"C:\WA\cikti")
+    settings._whitelist_entries.append({"jid": "1-2@g.us", "label": "TestGrup"})
+    settings.wa_list.insert("end", "TestGrup  (1-2@g.us)")
+    pump()
+    check("ayarlar sekmeleri", len(settings.notebook.tabs()) == 7,
+          str(len(settings.notebook.tabs())))
     settings._ok()
     values = settings.result
     check("ayarlar sonucu", values is not None)
@@ -136,10 +146,25 @@ def main():
         check("ayarlar kategori klasoru",
               values["category_folders"].get("other") == "DigerKlasor",
               str(values["category_folders"].get("other")))
+        check("ayarlar guncelleme alani",
+              values["update_source"] == r"C:\Guncelleme" and
+              values["update_enabled"] is True,
+              str((values.get("update_source"), values.get("update_enabled"))))
+        check("ayarlar whatsapp alani",
+              values["wa_enabled"] is True and
+              values["wa_watch_folder"] == r"C:\WA\izleme" and
+              values["wa_output_folder"] == r"C:\WA\cikti",
+              str((values.get("wa_enabled"), values.get("wa_watch_folder"))))
+        check("ayarlar beyaz liste",
+              values["wa_whitelist"] == [{"jid": "1-2@g.us", "label": "TestGrup"}],
+              str(values.get("wa_whitelist")))
         mgr.apply_settings(values)
         check("ayarlar uygulandi",
               mgr.settings.segments == 12 and mgr.settings.speed_limit == 4096,
               f"{mgr.settings.segments} {mgr.settings.speed_limit}")
+        check("beyaz liste kaydedildi",
+              mgr.settings.wa_whitelist[0]["jid"] == "1-2@g.us",
+              str(mgr.settings.wa_whitelist))
 
     grabber = GrabberDialog(root, mgr)
     grabber.var_url.set(f"{base}/page")
