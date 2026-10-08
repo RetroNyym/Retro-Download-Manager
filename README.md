@@ -10,6 +10,12 @@
   <img alt="Test" src="https://img.shields.io/badge/test-165%20kontrol-blue">
 </p>
 
+# Retro+ Download Manager — çok parçalı (segmentli) indirme yöneticisi
+
+> **EN:** Multi-segment download manager with pause/resume, queue, scheduler,
+> webpage & playlist parsing and a browser bridge. Turkish Tkinter GUI, usable
+> as a library too.
+
 **Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
 otomatik dosya kategorileri, bağlantı grabber'ı, web sayfası/playlist çözümleme, tarayıcı köprüsü
 ve Türkçe Tkinter arayüzü sunan bağımsız bir Python indirme yöneticisidir.
