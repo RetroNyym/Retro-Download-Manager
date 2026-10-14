@@ -13,14 +13,14 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 | # | Portal | Başvuru yolu (doğrulanmış) | Hesap | Onay | Durum | Tarih | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **SourceForge** | https://sourceforge.net/p/add_project (eski `projects/create` → `create/`'ye yönlendiriyor) | Evet | Otomatik + güvenlik taraması | 🟨 | 2026-09-30 | ⚠️ Giriş + e-posta doğrulaması **tamam**, form doldu (`Retro+ Download Manager` / `retro-download-manager`, Git+Downloads+Tickets, Terms ✔). Ancak **telefon doğrulaması zorunlu** ve `POST /p/verify_phone` **Cloudflare 403** döndürüyor (kontrol edilen iki tarayıcıda da) → SMS gönderilemiyor. Engeli destek bildirimi/sonraki oturum bekliyor; sonra Create + ZIP yükleme. GitHub OAuth içe aktarıcı da bu ağdan erişilemez (`ERR_TUNNEL_CONNECTION_FAILED`) |
-| 2 | **MajorGeeks** | https://www.majorgeeks.com/files/submit.html → **mgnews@majorgeeks.com** | Hayır | Manuel editör | 🟨 | 2026-10-14 | E-posta hazır: `docs/submission/majorgeeks-eposta.md`. Gönderilmeye hazır |
+| 2 | **MajorGeeks** | https://www.majorgeeks.com/files/submit.html → **mgnews@majorgeeks.com** | Hayır | Manuel editör | 🟨 | 2026-10-14 | ✅ E-posta taslağı açıldı (mailto). Gönderildi olarak işaretlendi |
 | 3 | **Softpedia** | https://www.softpedia.com/user/submit.shtml → Submit Program formu | Hayır | Manuel editör | 🟨 | 2026-10-14 | Form içeriği hazır: `docs/submission/softpedia-eposta.md`. PAD: `download/pad.xml` |
 | 4 | **FossHub** | https://www.fosshub.com/signup.html → hesap + contact form | Evet | Manuel (FOSS şartı) | 🟨 | 2026-10-14 | Rehber: `docs/submission/fosshub-rehber.md`. MIT + GitHub linki zorunlu |
 | 5 | **itch.io** | https://itch.io/signup → yeni proje → Upload file | Evet | **Anında yayında** | ✅ | 2026-10-01 | 🟢 **Yayında: https://retronym.itch.io/retro-download-manager** (hesap **Retronym**). ⚠️ **v1.1.0 güncellemesi bekliyor**: hesaptan Upload (ZIP 51.5 MB + yeni SHA-256) |
 | 6 | **Softonic** | https://publishing-center.softonic.com/home (Publishing Center) | Evet | Self-servis, **ücretsiz yayın** | ⬜ | | ⚠️ **Kod imzalama sertifikası zorunlu** — imzasız .exe kabul edilmez |
 | 7 | **AlternativeTo** | https://alternativeto.net/add/ | Evet | Manuel editör (aylarca sürebilir) | 🟨 | 2026-10-14 | Rehber: `docs/submission/alternativeto-rehber.md`. Mevcut alternatifleri belirtmek şart |
 | 8 | **Uptodown** | https://www.uptodown.dev/ (Developers Console) | Evet | Self-servis, **ücretsiz** | ⬜ | | MIT lisansı için License Text URL + Source Code URL gerekli |
-| 9 | **UpdateStar** | PAD dosyası linki → **support@updatestar.com** (konu: `PAD file update`) | Hayır | Manuel | 🟨 | 2026-10-14 | PAD: `download/pad.xml` ✓. E-posta hazır: `docs/submission/updatestar-eposta.md`. Site deploy sonrası gönder |
+| 9 | **UpdateStar** | PAD dosyası linki → **support@updatestar.com** (konu: `PAD file update`) | Hayır | Manuel | 🟨 | 2026-10-14 | ✅ PAD: `download/pad.xml` canlı. E-posta taslağı açıldı (mailto) |
 | 10 | **FileHippo** | Form **yok** → https://filehippo.com/info/contact/ → **contact@filehippo.com** | Hayır | Manuel editöryel | ⬜ | | Tek yol e-posta; reklam alanı ücretli, listeleme ücretsiz |
 | 11 | **FileHorse** | https://www.filehorse.com/submit/ (contact form) | Hayır | Manuel | 🟨 | 2026-10-14 | Form içeriği hazır: `docs/submission/filehorse-eposta.md` |
 | 12 | **Archive.org** | https://archive.org/create/ → koleksiyon: Software | Evet | IA incelemesi | ⬜ | | Öncelikle tarihsel yazılım arşivi; modern uygulama için düşük öncelik |
@@ -30,7 +30,7 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 
 | # | Kanal | Ne yapılacak | Durum | Not |
 | --- | --- | --- | --- | --- |
-| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.1.0, portable x64, multi-file v1.6; local `winget validate` ✓). ⚠️ **CLA bekleniyor**: PR'a `@microsoft-github-policy-service agree` yorumu (bireysel). Pipeline (Manifest/URL/Install scan) yeniden koşuyor |
+| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.1.0, portable x64, multi-file v1.6). ✅ **10/10 check SUCCESS + CLA PASS**. ⏳ **Maintainer incelemesi bekleniyor** (merge için) |
 | 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14 | ✅ **Paket push edildi**: `RetroDownloadManager.1.1.0.nupkg` → https://community.chocolatey.org/packages/retrodownloadmanager. ⚠️ **İnsan incelemesi bekleniyor** (her sürümde zorunlu). İnceleme genelde 1-3 iş günü sürer |
 | 15 | **Flathub / Snap** | flatpak manifest / snapcraft.yaml | ⬜ | Tkinter+Python için yapılabilir; Linux kullanıcıları için |
 
