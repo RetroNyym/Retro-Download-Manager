@@ -30,8 +30,8 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 
 | # | Kanal | Ne yapılacak | Durum | Not |
 | --- | --- | --- | --- | --- |
-| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.2.0, portable x64, multi-file v1.6). ✅ **10/10 check SUCCESS + CLA PASS**. ⏳ **Maintainer incelemesi bekleniyor** (merge için) |
-| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14 | ✅ **Paket push edildi**: `RetroDownloadManager.1.2.0.nupkg` → https://community.chocolatey.org/packages/retrodownloadmanager. ⚠️ **İnsan incelemesi bekleniyor** (her sürümde zorunlu). İnceleme genelde 1-3 iş günü sürer |
+| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **v1.2.0 PR https://github.com/microsoft/winget-pkgs/pull/452631** (portable x64, multi-file v1.6). Önceki v1.1.0 PR #452456 hala açık. ⏳ **Maintainer incelemesi bekleniyor** |
+| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14: v1.2.0 nupkg oluşturuldu ama **push 403 Forbidden** → API key yenilenmeli (community.chocolatey.org → My API Keys). Manuel push: `choco push chocolatey/RetroDownloadManager.1.2.0.nupkg --source https://push.chocolatey.org/ --api-key YENI_KEY` |
 | 15 | **Flathub / Snap** | flatpak manifest / snapcraft.yaml | ⬜ | Tkinter+Python için yapılabilir; Linux kullanıcıları için |
 
 ---
