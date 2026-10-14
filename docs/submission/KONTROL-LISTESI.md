@@ -16,7 +16,7 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 | 2 | **MajorGeeks** | https://www.majorgeeks.com/files/submit.html → **mgnews@majorgeeks.com** | Hayır | Manuel editör | 🟨 | 2026-10-14 | ✅ E-posta taslağı açıldı (mailto). Gönderildi olarak işaretlendi |
 | 3 | **Softpedia** | https://www.softpedia.com/user/submit.shtml → Submit Program formu | Hayır | Manuel editör | 🟨 | 2026-10-14 | Form içeriği hazır: `docs/submission/softpedia-eposta.md`. PAD: `download/pad.xml` |
 | 4 | **FossHub** | https://www.fosshub.com/signup.html → hesap + contact form | Evet | Manuel (FOSS şartı) | 🟨 | 2026-10-14 | Rehber: `docs/submission/fosshub-rehber.md`. MIT + GitHub linki zorunlu |
-| 5 | **itch.io** | https://itch.io/signup → yeni proje → Upload file | Evet | **Anında yayında** | ✅ | 2026-10-01 | 🟢 **Yayında: https://retronym.itch.io/retro-download-manager** (hesap **Retronym**). ⚠️ **v1.1.0 güncellemesi bekliyor**: hesaptan Upload (ZIP 51.5 MB + yeni SHA-256) |
+| 5 | **itch.io** | https://itch.io/signup → yeni proje → Upload file | Evet | **Anında yayında** | ✅ | 2026-10-01 | 🟢 **Yayında: https://retronym.itch.io/retro-download-manager** (hesap **Retronym**). ⚠️ **v1.2.0 güncellemesi bekliyor**: hesaptan Upload (ZIP 51.5 MB + yeni SHA-256) |
 | 6 | **Softonic** | https://publishing-center.softonic.com/home (Publishing Center) | Evet | Self-servis, **ücretsiz yayın** | ⬜ | | ⚠️ **Kod imzalama sertifikası zorunlu** — imzasız .exe kabul edilmez |
 | 7 | **AlternativeTo** | https://alternativeto.net/add/ | Evet | Manuel editör (aylarca sürebilir) | 🟨 | 2026-10-14 | Rehber: `docs/submission/alternativeto-rehber.md`. Mevcut alternatifleri belirtmek şart |
 | 8 | **Uptodown** | https://www.uptodown.dev/ (Developers Console) | Evet | Self-servis, **ücretsiz** | ⬜ | | MIT lisansı için License Text URL + Source Code URL gerekli |
@@ -30,8 +30,8 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 
 | # | Kanal | Ne yapılacak | Durum | Not |
 | --- | --- | --- | --- | --- |
-| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.1.0, portable x64, multi-file v1.6). ✅ **10/10 check SUCCESS + CLA PASS**. ⏳ **Maintainer incelemesi bekleniyor** (merge için) |
-| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14 | ✅ **Paket push edildi**: `RetroDownloadManager.1.1.0.nupkg` → https://community.chocolatey.org/packages/retrodownloadmanager. ⚠️ **İnsan incelemesi bekleniyor** (her sürümde zorunlu). İnceleme genelde 1-3 iş günü sürer |
+| 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.2.0, portable x64, multi-file v1.6). ✅ **10/10 check SUCCESS + CLA PASS**. ⏳ **Maintainer incelemesi bekleniyor** (merge için) |
+| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14 | ✅ **Paket push edildi**: `RetroDownloadManager.1.2.0.nupkg` → https://community.chocolatey.org/packages/retrodownloadmanager. ⚠️ **İnsan incelemesi bekleniyor** (her sürümde zorunlu). İnceleme genelde 1-3 iş günü sürer |
 | 15 | **Flathub / Snap** | flatpak manifest / snapcraft.yaml | ⬜ | Tkinter+Python için yapılabilir; Linux kullanıcıları için |
 
 ---
@@ -77,8 +77,8 @@ e-posta/iletişim formu kullanılır. Hazır metin: `e-posta-sablonlari.md`.
 
 - [x] **İletişim e-postası** belirlendi: `216476870+RetroNyym@users.noreply.github.com` (GitHub noreply — yeni adres açılınca `metinler-*.md`, `e-posta-sablonlari.md` ve bu dosyadaki alanları güncelleyin)
 - [x] **İletişim e-postası** belirlendi: `216476870+RetroNyym@users.noreply.github.com` (GitHub noreply — yeni adres açılınca `metinler-*.md`, `e-posta-sablonlari.md` ve bu dosyadaki alanları güncelleyin)
-- [x] `SHA-256` doğrulandı: **v1.1.0 exe**: `4caeb72fb43f4bceb17481a63974417684dc705b61c190866e8aead11d1c05b1` (52 MB); v1.0.0 ZIP: `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b`
-- [x] GitHub Release **v1.1.0** yayında (2026-10-14): https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.1.0 (asset: `RetroDownloadManager.exe`, WACK GENEL PASS notu dahil)
+- [x] `SHA-256` doğrulandı: **v1.2.0 exe**: `6d0231acd6a7c76707174aacc3c9549b3bd2b83d7bb5502cca4d5d8ed2e22b89` (52 MB); v1.0.0 ZIP: `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b`
+- [x] GitHub Release **v1.2.0** yayında (2026-10-14): https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.2.0 (asset: `RetroDownloadManager.exe`, WACK GENEL PASS notu dahil)
 - [ ] Ana site linki çalışıyor (https://retro-download-manager.netlify.app → 200) ✅
 - [ ] 4 ekran görüntüsü hazır ✅ (`docs/screenshots/`)
 - [ ] 1280×800 isteyen portallar için ölçeklenmiş kopya üretildi
@@ -90,16 +90,16 @@ Kaynak: `metinler-tr.md` §1 / `metinler-en.md` §1
 
 ```
 Program adı : Retro+ Download Manager
-Sürüm       : 1.1.0
+Sürüm       : 1.2.0
 Lisans      : MIT (ücretsiz)
 Kategori    : Internet > Download Managers
 İşletim sistemi: Windows 10/11 (x64 taşınabilir exe; kaynak Python 3.11+ ile Linux/macOS)
 Ana sayfa   : https://retro-download-manager.netlify.app
 Kaynak kod  : https://github.com/RetroNyym/Retro-Download-Manager
-İndirme     : https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager.exe
+İndirme     : https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager.exe
 Ayna        : (aynı URL — GitHub Release)
 Boyut       : 52 MB
-SHA-256     : 4caeb72fb43f4bceb17481a63974417684dc705b61c190866e8aead11d1c05b1
+SHA-256     : 6d0231acd6a7c76707174aacc3c9549b3bd2b83d7bb5502cca4d5d8ed2e22b89
 Ekran görüntüsü: docs/screenshots/ (store-1920x1080-main.png + 4 PNG)
 İletişim    : 216476870+RetroNyym@users.noreply.github.com
 ```
@@ -129,7 +129,7 @@ URL'sini de ekleyin).
 
 - [x] PAD dosyası oluşturuldu (2026-10-14): `docs/pad.xml` → kopya `download/pad.xml`
   - Hosted URL (site deploy edilince): `https://retro-download-manager.netlify.app/download/pad.xml`
-  - Tüm alanlar dolduruldu: program adı, sürüm 1.1.0, açıklama, indirme linki,
+  - Tüm alanlar dolduruldu: program adı, sürüm 1.2.0, açıklama, indirme linki,
     SHA-256, ekran görüntüsü linkleri, lisans (MIT), kaynak kod URL
 - [ ] Site deploy edildikten sonra `support@updatestar.com`'a e-posta gönder
       (konu: `PAD file update`, ürün: Retro+ Download Manager, UpdateStar URL: yok henüz)

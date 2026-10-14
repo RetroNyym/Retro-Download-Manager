@@ -15,7 +15,7 @@ Turkish texts: `metinler-tr.md`.
 | Field | Value |
 | --- | --- |
 | Software name | Retro+ Download Manager |
-| Version | 1.1.0 |
+| Version | 1.2.0 |
 | License | MIT (free, open source) |
 | Price | Free — ad-free, no trial period |
 | Operating systems | Windows 10/11 (x64); portable exe — no Python needed |
@@ -23,10 +23,10 @@ Turkish texts: `metinler-tr.md`.
 | Category | Internet > Download Managers (fallback: System Utilities) |
 | Homepage | https://retro-download-manager.netlify.app |
 | Source code | https://github.com/RetroNyym/Retro-Download-Manager |
-| Download (primary) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip |
-| Download (mirror) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip |
+| Download (primary) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip |
+| Download (mirror) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip |
 | File size | 51.5 MB (ZIP; portable exe + bundled aria2 torrent engine) |
-| SHA-256 | `9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb` |
+| SHA-256 | `7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7` |
 | Contact | `216476870+RetroNyym@users.noreply.github.com` |
 | Screenshots | 4 PNG files in `docs/screenshots/` |
 | Twitter/social | optional |
@@ -135,10 +135,10 @@ Display: 1024x640 or higher
 
 ---
 
-## 7. Release notes v1.1.0
+## 7. Release notes v1.2.0
 
 ```
-New in v1.1.0:
+New in v1.2.0:
 - Torrent downloads: built-in aria2 engine, magnet links and .torrent files
 - magnet: protocol support — click a magnet link in your browser and the app
   opens automatically

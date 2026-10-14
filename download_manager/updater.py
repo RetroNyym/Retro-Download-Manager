@@ -1,7 +1,7 @@
 """Yerel güncelleme kanalı: yerel klasör/UNC/HTTP kaynağından sürüm paketi indirme.
 
 Manifest (version.json):
-    {"version": "1.1.0", "file": "Retro-Download-Manager-1.1.0.zip",
+    {"version": "1.2.0", "file": "Retro-Download-Manager-1.1.0.zip",
      "sha256": "<64 hex>", "notes": "..."}
 
 Kaynak (Settings.update_source):

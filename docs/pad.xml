@@ -2,7 +2,7 @@
 <PAD>
   <Program_Info>
     <Program_Name>Retro+ Download Manager</Program_Name>
-    <Program_Version>1.1.0</Program_Version>
+    <Program_Version>1.2.0</Program_Version>
     <Program_Release_Date>2026-10-14</Program_Release_Date>
     <Program_Category>Internet | Download Managers</Program_Category>
     <Program_Sub_Category>HTTP/FTP/Torrent Download Manager</Program_Sub_Category>
@@ -38,9 +38,9 @@
   </Company_Info>
 
   <Download_Info>
-    <Download_URL>https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip</Download_URL>
-    <Download_Mirror_URL>https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip</Download_Mirror_URL>
-    <File_Name>RetroDownloadManager-v1.1.0.zip</File_Name>
+    <Download_URL>https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip</Download_URL>
+    <Download_Mirror_URL>https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip</Download_Mirror_URL>
+    <File_Name>RetroDownloadManager-v1.2.0.zip</File_Name>
     <File_Size>51.5 MB</File_Size>
     <OS>Windows 10 (64-bit), Windows 11 (64-bit)</OS>
     <Requires_32bit>False</Requires_32bit>
@@ -96,6 +96,6 @@
 
   <Checksum_Info>
     <Checksum_Type>SHA-256</Checksum_Type>
-    <Checksum_Value>9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb</Checksum_Value>
+    <Checksum_Value>7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7</Checksum_Value>
   </Checksum_Info>
 </PAD>

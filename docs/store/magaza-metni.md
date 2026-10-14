@@ -1,6 +1,6 @@
 # Mağaza metinleri — Microsoft Store gönderimi
 
-Partner Center'daki alanlara buradan yapıştırın. Sürüm: **1.1.0**.
+Partner Center'daki alanlara buradan yapıştırın. Sürüm: **1.2.0**.
 
 ## Ürün kimliği
 
@@ -98,7 +98,7 @@ olmamalı. Türkçe arayüz görselleri tercih edilir; gerekirse EN görsel de e
 
 ## Sürüm güncelleme akışı
 
-1. `download_manager/__init__.py` → `__version__` (örn. 1.1.1.0)
-2. `docs/store/Package.appxmanifest` → `Version="1.1.1.0"`
+1. `download_manager/__init__.py` → `__version__` (örn. 1.1.2.0)
+2. `docs/store/Package.appxmanifest` → `Version="1.1.2.0"`
 3. PyInstaller build + `make_msix.ps1`
 4. Partner Center → güncelleme yükle (aynı sürüm numarası tekrar kullanılamaz)

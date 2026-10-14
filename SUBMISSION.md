@@ -19,7 +19,7 @@ Sürüm değişince yalnızca sürüm numarası ve linkleri güncelleyin.
 | Alan | Değer |
 | --- | --- |
 | Yazılım adı | Retro+ Download Manager |
-| Sürüm | 1.1.0 |
+| Sürüm | 1.2.0 |
 | Lisans | MIT (ücretsiz, açık kaynak) |
 | İşletim sistemleri | Windows 10/11 (x64, taşınabilir exe — Python gerekmez); kaynak: Python 3.11+ (Linux/macOS) |
 | Kategori | Internet > Download Managers / System Utilities |
@@ -27,10 +27,10 @@ Sürüm değişince yalnızca sürüm numarası ve linkleri güncelleyin.
 | Fiyat | Ücretsiz |
 | Ana sayfa | https://retro-download-manager.netlify.app |
 | Kaynak kod | https://github.com/RetroNyym/Retro-Download-Manager |
-| İndirme (site) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip |
-| İndirme (GitHub Release) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip |
+| İndirme (site) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip |
+| İndirme (GitHub Release) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip |
 | Boyut | 51.5 MB (ZIP, taşınabilir exe + aria2 torrent motoru) |
-| SHA-256 | `9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb` |
+| SHA-256 | `7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7` |
 | Ekran görüntüsüleri | `docs/screenshots/store-1920x1080-main.png` (ana), `gui-downloads.png`, `gui-add-link.png`, `gui-grabber.png`, `gui-settings.png` |
 | İletişim e-postası | `216476870+RetroNyym@users.noreply.github.com` (GitHub noreply — kendi adresiniz açılınca tüm dosyalarda güncelleyin) |
 
@@ -49,7 +49,7 @@ Türkçe uzun açıklama → [`docs/submission/metinler-tr.md`](docs/submission/
 
 ## Yayınlama sırası (önerilen)
 
-1. **GitHub Release** (zaten hazır: `v1.1.0` — exe + ZIP, SmartScreen'süz kurulum notlu) — tüm portallar bunu referans alır
+1. **GitHub Release** (zaten hazır: `v1.2.0` — exe + ZIP, SmartScreen'süz kurulum notlu) — tüm portallar bunu referans alır
 2. ✅ **itch.io** — **yayında**: https://retronym.itch.io/retro-download-manager (01.10.2026,
    hesap Retronym, ücretsiz + MIT, kapak +4 ekran görüntüsü + ZIP) ·
    🟨 **SourceForge** (en çok trafik; telefon doğrulaması `POST /p/verify_phone` →

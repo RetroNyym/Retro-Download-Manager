@@ -1,7 +1,7 @@
 # UpdateStar E-postası
 
 **Kime:** support@updatestar.com  
-**Konu:** PAD file update — Retro+ Download Manager 1.1.0
+**Konu:** PAD file update — Retro+ Download Manager 1.2.0
 
 ---
 
@@ -10,7 +10,7 @@ Hello UpdateStar team,
 Please add Retro+ Download Manager to your catalog. Below is the product information:
 
 **Product name:** Retro+ Download Manager  
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Release date:** 2026-10-14  
 **License:** MIT (free, open source)  
 **Category:** Internet > Download Managers  
@@ -21,10 +21,10 @@ https://retro-download-manager.netlify.app/download/pad.xml
 *(Note: The PAD file will be available after site deployment. If not yet accessible, the full product information is below.)*
 
 **Download URL:**  
-https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip
 
 **SHA-256:**  
-9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
+7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7
 
 **File size:** 51.5 MB
 

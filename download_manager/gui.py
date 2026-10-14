@@ -1675,59 +1675,54 @@ class App:
         self.root.config(menu=menubar)
 
     def _build_toolbar(self):
-        bar = ttk.Frame(self.root, padding=(6, 5))
+        bar = ttk.Frame(self.root, padding=(6, 3))
         bar.pack(fill="x")
 
         def btn(icon, text, command):
             image = load_photo(f"icons/{icon}.png", self._photos)
             widget = ttk.Button(bar, text=text, image=image, compound="left",
                                 command=command)
-            widget.pack(side="left", padx=2)
+            widget.pack(side="left", padx=1)
             return widget
 
-        btn("add", "URL Ekle", self.add_url)
-        btn("batch", "Toplu Ekle", self.add_batch)
-        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
+        btn("add", "Ekle", self.add_url)
+        btn("batch", "Toplu", self.add_batch)
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=4)
         btn("play", "Başlat", lambda: self._apply("start"))
         btn("pause", "Duraklat", lambda: self._apply("pause"))
         btn("stop", "İptal", lambda: self._apply("cancel"))
-        btn("retry", "Yeniden Başlat", lambda: self._apply("restart"))
-        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
+        btn("retry", "Yenile", lambda: self._apply("restart"))
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=4)
         btn("delete", "Sil", self.remove_selected)
         btn("folder", "Klasör", self.open_selected_folder)
-        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
-        btn("grabber", "Site Grabber", self.open_grabber)
-        btn("schedule", "Zamanlayıcı", self.open_scheduler)
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=4)
+        btn("grabber", "Grabber", self.open_grabber)
+        btn("schedule", "Zamanla", self.open_scheduler)
+        btn("add", "Twitch", lambda: self.add_site("Twitch"))
 
-        self.btn_queue = ttk.Button(bar, text="Kuyruğu Durdur", command=self.toggle_queue)
-        self.btn_queue.pack(side="right", padx=2)
-        btn("settings", "Ayarlar", self.open_settings).pack(side="right", padx=2)
+        self.btn_queue = ttk.Button(bar, text="Kuyruk", command=self.toggle_queue)
+        self.btn_queue.pack(side="right", padx=1)
+        btn("settings", "Ayarlar", self.open_settings).pack(side="right", padx=1)
 
-        self.btn_limit = ttk.Button(bar, text="Hız: Sınırsız", command=self._show_limits)
-        self.btn_limit.pack(side="right", padx=6)
+        self.btn_limit = ttk.Button(bar, text="Hız: ∞", command=self._show_limits)
+        self.btn_limit.pack(side="right", padx=4)
 
     def _build_site_bar(self):
         bar = ttk.Frame(self.root, padding=(6, 0))
         bar.pack(fill="x")
-        ttk.Label(bar, text="Hızlı site indirme:", foreground=COLORS["text2"],
-                  font=("Segoe UI", 9, "bold")).pack(side="left", padx=(2, 6))
+        ttk.Label(bar, text="Hızlı site:", foreground=COLORS["text2"],
+                  font=("Segoe UI", 8, "bold")).pack(side="left", padx=(2, 4))
         self.site_buttons = []
-        # Popüler siteler buton olarak
         for name in QUICK_SITES:
             icon = SITE_ICONS.get(name, "add")
             image = load_photo(f"icons/site_{icon}.png", self._photos)
             widget = ttk.Button(bar, text=name, image=image, compound="left",
                                 command=lambda n=name: self.add_site(n))
-            widget.pack(side="left", padx=2)
+            widget.pack(side="left", padx=1)
             self.site_buttons.append(widget)
-        # Tüm siteler dropdown
-        self.btn_all_sites = ttk.Button(bar, text="⚡ Tüm Siteler ▼",
+        self.btn_all_sites = ttk.Button(bar, text="Tüm Siteler ▼",
                                         command=self._show_all_sites_menu)
-        self.btn_all_sites.pack(side="left", padx=(6, 2))
-        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
-        ttk.Label(bar, foreground=COLORS["text3"], font=("Segoe UI", 8),
-                  text="Bağlantıyı yapıştırıp indirin · gizli içerik için "
-                       "Ayarlar > Çerez").pack(side="left", padx=4)
+        self.btn_all_sites.pack(side="left", padx=(4, 2))
 
     def _show_all_sites_menu(self):
         """Tüm desteklenen siteleri kategorili menüde gösterir."""
@@ -1753,7 +1748,7 @@ class App:
             def choose(value=kbps, text=label):
                 self.mgr.set_global_limit(value)
                 self.btn_limit.configure(
-                    text="Hız: Sınırsız" if value == 0 else f"Hız: {text}")
+                    text="Hız: ∞" if value == 0 else f"Hız: {text}")
                 self.mgr.log(f"Toplam hız sınırı: {text}", "info")
             menu.add_command(label=("\u2713  " if kbps == current else "") + label,
                              command=choose)
@@ -2361,10 +2356,10 @@ class App:
         self.var_header_active.set(
             f"İndiriliyor: {active}   ·   Tamamlanan: {done}   ·   Toplam: {total}")
         self.btn_queue.configure(
-            text="Kuyruğu Durdur" if self.mgr.queue_running else "Kuyruğu Başlat")
+            text="Kuyruk ⏸" if self.mgr.queue_running else "Kuyruk ▶")
         limit = int(getattr(st, "speed_limit", 0) or 0)
         self.btn_limit.configure(
-            text="Hız: Sınırsız" if limit <= 0 else f"Hız: {format_speed(limit * 1024)}")
+            text="Hız: ∞" if limit <= 0 else f"Hız: {format_speed(limit * 1024)}")
 
     def _drain_logs(self):
         entries = list(self.mgr.log_lines)

@@ -16,7 +16,7 @@ Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazı
 | Alan | Değer |
 | --- | --- |
 | Program adı | Retro+ Download Manager |
-| Sürüm | 1.1.0 |
+| Sürüm | 1.2.0 |
 | Lisans | MIT (ücretsiz, açık kaynak) |
 | Fiyat | Ücretsiz — reklamsız, deneme süresi yok |
 | İşletim sistemi | Windows 10/11 (x64); taşınabilir exe — Python gerekmez |
@@ -24,10 +24,10 @@ Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazı
 | Kategori | İnternet › İndirme Yöneticileri (yoksa: Sistem Araçları) |
 | Ana sayfa | https://retro-download-manager.netlify.app |
 | Kaynak kod | https://github.com/RetroNyym/Retro-Download-Manager |
-| İndirme (ana) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip |
-| İndirme (ayna) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip |
+| İndirme (ana) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip |
+| İndirme (ayna) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip |
 | Dosya boyutu | 51.5 MB (ZIP; taşınabilir exe + aria2 torrent motoru) |
-| SHA-256 | `9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb` |
+| SHA-256 | `7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7` |
 | İletişim | `216476870+RetroNyym@users.noreply.github.com` |
 | Ekran görüntüsü | `docs/screenshots/` altındaki 4 PNG |
 
@@ -142,10 +142,10 @@ görüntüleri 1280×800'e ölçekleyin.
 
 ---
 
-## 7. Sürüm 1.1.0 notları (TR)
+## 7. Sürüm 1.2.0 notları (TR)
 
 ```
-Yeni v1.1.0'da:
+Yeni v1.2.0'da:
 - Torrent indirme: yerleşik aria2 motoru; magnet ve .torrent dosyaları
 - magnet: protokolü desteği — tarayıcınızdan magnet bağlantısına tıklayın,
   uygulama otomatik açılıp kuyruğa ekler

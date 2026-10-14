@@ -1,6 +1,6 @@
 ﻿{
-  "version": "1.1.0",
-  "file": "RetroDownloadManager-v1.1.0.zip",
-  "sha256": "9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb",
-  "notes": "Torrent (aria2) + magnet: destegi; MSIX/WACK PASS; SmartScreen icin ZIP indirin."
+  "version": "1.2.0",
+  "file": "RetroDownloadManager-v1.2.0.zip",
+  "sha256": "7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7",
+  "notes": "Modern dark/light tema; 60+ site; kalite/format secimi; kompakt arayuz."
 }

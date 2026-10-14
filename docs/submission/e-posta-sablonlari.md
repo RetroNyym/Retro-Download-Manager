@@ -8,7 +8,7 @@ Portalda açık form yoksa bu metinlerle doğrudan yazılır. Göndermeden önce
 
 ## 1. İndirme portalına program ekleme talebi (TR)
 
-**Konu:** `Yeni ücretsiz yazılım başvurusu: Retro+ Download Manager 1.1.0 (MIT)`
+**Konu:** `Yeni ücretsiz yazılım başvurusu: Retro+ Download Manager 1.2.0 (MIT)`
 
 ```
 Merhaba,
@@ -17,16 +17,16 @@ Merhaba,
 eklemek için başvuruyorum.
 
 Ad:            Retro+ Download Manager
-Sürüm:         1.1.0
+Sürüm:         1.2.0
 Lisans:        MIT (ücretsiz, açık kaynak, reklamsız, deneme süresi yok)
 Sistem:        Windows 10/11 (x64, taşınabilir exe — Python gerekmez)
 Kategori:      İnternet > İndirme Yöneticileri
 Ana sayfa:     https://retro-download-manager.netlify.app
 Kaynak kod:    https://github.com/RetroNyym/Retro-Download-Manager
-İndirme (ZIP): https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
-Ayna (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+İndirme (ZIP): https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip
+Ayna (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip
 Boyut:         51.5 MB
-SHA-256:       9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
+SHA-256:       7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7
 Ekran görüntüsü: 4 adet PNG (isteğe göre iletirim)
 
 Kısa tanım:
@@ -49,7 +49,7 @@ Ad Soyad
 
 ## 2. İndirme portalına başvuru (EN)
 
-**Subject:** `New free software submission: Retro+ Download Manager 1.1.0 (MIT)`
+**Subject:** `New free software submission: Retro+ Download Manager 1.2.0 (MIT)`
 
 ```
 Hello,
@@ -58,16 +58,16 @@ I would like to submit a free, open-source download manager for inclusion in
 [PORTAL] listings.
 
 Name:            Retro+ Download Manager
-Version:         1.1.0
+Version:         1.2.0
 License:         MIT (free, open source, no ads, no trial)
 Platforms:       Windows 10/11 (x64, portable exe — no Python required)
 Category:        Internet > Download Managers
 Homepage:        https://retro-download-manager.netlify.app
 Source code:     https://github.com/RetroNyym/Retro-Download-Manager
-Download (ZIP):  https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
-Mirror (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+Download (ZIP):  https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip
+Mirror (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip
 Size:            51.5 MB
-SHA-256:         9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
+SHA-256:         7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7
 Screenshots:     4 PNG files available on request
 
 Short description:
@@ -111,7 +111,7 @@ desteği sunan ücretsiz (MIT) bir indirme yöneticisi.
 - Ana sayfa: https://retro-download-manager.netlify.app
 
 İndirme (51.5 MB):
-https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
+https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip
 Ekran görüntüsü ve uzun tanım için hazırım; isterseniz Türkçe basın metni ve
 logo dosyalarını da iletirim.
 
@@ -126,16 +126,16 @@ Ad Soyad
 
 ## 4. Takip e-postası (7–10 gün sonra, TR)
 
-**Konu:** `Takip: Retro+ Download Manager 1.1.0 başvurusu`
+**Konu:** `Takip: Retro+ Download Manager 1.2.0 başvurusu`
 
 ```
 Merhaba,
 
-[ TARİH ] tarihinde gönderdiğim "Retro+ Download Manager 1.1.0" başvurusu
+[ TARİH ] tarihinde gönderdiğim "Retro+ Download Manager 1.2.0" başvurusu
 hakkında kısa bir hatırlatma yazıyorum. Program ücretsiz, MIT lisanslı ve
 kaynak kodu açık; indirme linkleri hâlâ aktif:
 
-ZIP:   https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
+ZIP:   https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.2.0.zip
 Kaynak: https://github.com/RetroNyym/Retro-Download-Manager
 
 Eklemek/exlemek istediğiniz bir bilgi varsa memnuniyetle iletirim.

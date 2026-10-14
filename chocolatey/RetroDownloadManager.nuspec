@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>RetroDownloadManager</id>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <title>Retro+ Download Manager</title>
     <authors>RetroNyym</authors>
     <owners>RetroNyym</owners>
@@ -29,7 +29,7 @@
 - Portable Windows executable (no Python required)</description>
     <tags>download manager segmented parallel multi-part aria2 torrent magnet pause resume queue scheduler ftp https open-source</tags>
     <copyright>MIT License © 2026 RetroNyym</copyright>
-    <releaseNotes>https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.1.0</releaseNotes>
+    <releaseNotes>https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.2.0</releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />

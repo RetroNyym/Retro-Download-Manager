@@ -39,7 +39,7 @@ Retro+ Download Manager is a free, open-source (MIT) download manager with:
 - Portable Windows executable (no Python required)
 
 **Download URL:**  
-https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip
 
 **Homepage:**  
 https://retro-download-manager.netlify.app
@@ -59,7 +59,7 @@ https://github.com/RetroNyym/Retro-Download-Manager
 **Screenshots:** 2-3 PNG files (1280×800+)
 
 **SHA-256:**  
-9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
+7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7
 
 **File size:** 51.5 MB
 

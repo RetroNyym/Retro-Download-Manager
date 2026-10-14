@@ -1,7 +1,7 @@
 # MajorGeeks E-postası
 
 **Kime:** mgnews@majorgeeks.com  
-**Konu:** New free software submission: Retro+ Download Manager 1.1.0 (MIT)
+**Konu:** New free software submission: Retro+ Download Manager 1.2.0 (MIT)
 
 ---
 
@@ -10,16 +10,16 @@ Hello MajorGeeks team,
 I would like to submit Retro+ Download Manager for inclusion on MajorGeeks.
 
 **Name:** Retro+ Download Manager  
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **License:** MIT (free, open source, no ads, no trial)  
 **Platform:** Windows 10/11 (64-bit, portable exe — no Python required)  
 **Category:** Internet > Download Managers  
 
 **Download URL:**  
-https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.2.0/RetroDownloadManager-v1.2.0.zip
 
 **SHA-256:**  
-9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
+7809cacfeb47da65231e98e13a986c028b00ce076ed60651e079c757bb6598e7
 
 **Size:** 51.5 MB
 
