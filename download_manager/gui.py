@@ -23,6 +23,7 @@ from .engine import (
     STATE_LABELS,
 )
 from .manager import DownloadManager
+from .theme import ThemeManager, detect_system_theme
 from .whatsapp import normalize_whitelist
 from .util import (
     CATEGORIES,
@@ -57,26 +58,22 @@ TREE_WIDTHS = {
     "state": 120,
 }
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
-HEADER_BG = "#12141c"
 
-# ─── Modern koyu tema paleti ────────────────────────────────────────────────
-COLORS = {
-    "bg":            "#12141c",
-    "surface":       "#1a1d29",
-    "surface2":      "#21242f",
-    "surface3":      "#282c3a",
-    "border":        "#2e3242",
-    "primary":       "#6366f1",
-    "primary_hover": "#818cf8",
-    "accent":        "#22d3ee",
-    "success":       "#10b981",
-    "warning":       "#f59e0b",
-    "danger":        "#ef4444",
-    "text":          "#e5e7eb",
-    "text2":         "#9ca3af",
-    "text3":         "#6b7280",
-    "white":         "#ffffff",
-}
+# ─── Aktif tema paleti (ThemeManager tarafından güncellenir) ─────────────────
+# Modül seviyesinde tutulur; tüm bileşenler bu sözlüğü okur.
+COLORS = {}
+_HEADER_BG = ["#12151c"]
+
+
+def _sync_palette(palette: dict):
+    """ThemeManager paletini modül sözlüğüne ve HEADER_BG'ye eşitler."""
+    COLORS.clear()
+    COLORS.update(palette)
+    _HEADER_BG[0] = palette.get("header_bg", "#12151c")
+
+
+def _header_bg() -> str:
+    return _HEADER_BG[0]
 SITE_ICONS = {
     "YouTube": "youtube",
     "Instagram": "instagram",
@@ -180,16 +177,20 @@ STATE_TAGS = {
     ERROR: "error",
     CANCELED: "canceled",
 }
-STATE_COLORS = {
-    "queued":     COLORS["text3"],
-    "scheduled":  "#a78bfa",
-    "probing":    COLORS["accent"],
-    "downloading":COLORS["primary"],
-    "paused":     COLORS["warning"],
-    "completed":  COLORS["success"],
-    "error":      COLORS["danger"],
-    "canceled":   COLORS["text3"],
-}
+
+
+def _state_colors() -> dict:
+    """Aktif temaya göre durum renklerini döndürür."""
+    return {
+        "queued":      COLORS.get("text3", "#6e7689"),
+        "scheduled":   "#a78bfa",
+        "probing":     COLORS.get("accent", "#3ec6e0"),
+        "downloading": COLORS.get("primary", "#6c7bff"),
+        "paused":      COLORS.get("warning", "#f0b429"),
+        "completed":   COLORS.get("success", "#2ecc96"),
+        "error":       COLORS.get("danger", "#e5484d"),
+        "canceled":    COLORS.get("text3", "#6e7689"),
+    }
 
 
 def load_photo(relative, store=None):
@@ -203,130 +204,6 @@ def load_photo(relative, store=None):
     if store is not None:
         store[str(path)] = photo
     return photo
-
-
-def setup_theme(root):
-    """Modern koyu ttk teması uygular."""
-    style = ttk.Style(root)
-    try:
-        style.theme_use("clam")
-    except Exception:
-        pass
-
-    style.configure(".", background=COLORS["bg"], foreground=COLORS["text"],
-                    fieldbackground=COLORS["surface"], bordercolor=COLORS["border"],
-                    lightcolor=COLORS["surface2"], darkcolor=COLORS["surface2"],
-                    troughcolor=COLORS["surface2"], selectbackground=COLORS["primary"],
-                    selectforeground=COLORS["white"], font=("Segoe UI", 10))
-    style.configure("TFrame", background=COLORS["bg"])
-    style.configure("Surface.TFrame", background=COLORS["surface"])
-    style.configure("TLabel", background=COLORS["bg"], foreground=COLORS["text"])
-    style.configure("Surface.TLabel", background=COLORS["surface"],
-                    foreground=COLORS["text"])
-    style.configure("Muted.TLabel", background=COLORS["bg"],
-                    foreground=COLORS["text2"])
-    style.configure("TButton", background=COLORS["surface2"],
-                    foreground=COLORS["text"], bordercolor=COLORS["border"],
-                    focuscolor=COLORS["primary"], padding=(12, 6))
-    style.map("TButton",
-              background=[("active", COLORS["surface3"]),
-                          ("pressed", COLORS["primary"])],
-              foreground=[("disabled", COLORS["text3"])])
-    style.configure("Primary.TButton", background=COLORS["primary"],
-                    foreground=COLORS["white"], font=("Segoe UI", 10, "bold"))
-    style.map("Primary.TButton", background=[("active", COLORS["primary_hover"])])
-    style.configure("TEntry", fieldbackground=COLORS["surface"],
-                    foreground=COLORS["text"], insertcolor=COLORS["text"],
-                    bordercolor=COLORS["border"], lightcolor=COLORS["border"],
-                    darkcolor=COLORS["border"])
-    style.map("TEntry", bordercolor=[("focus", COLORS["primary"])],
-              lightcolor=[("focus", COLORS["primary"])],
-              darkcolor=[("focus", COLORS["primary"])])
-    style.configure("TCombobox", fieldbackground=COLORS["surface"],
-                    foreground=COLORS["text"], background=COLORS["surface2"],
-                    arrowcolor=COLORS["text2"], bordercolor=COLORS["border"],
-                    selectbackground=COLORS["surface"],
-                    selectforeground=COLORS["text"])
-    style.map("TCombobox",
-              fieldbackground=[("readonly", COLORS["surface"])],
-              foreground=[("readonly", COLORS["text"])],
-              selectbackground=[("readonly", COLORS["surface3"])],
-              selectforeground=[("readonly", COLORS["text"])],
-              arrowcolor=[("active", COLORS["text"])])
-    style.configure("TSpinbox", fieldbackground=COLORS["surface"],
-                    foreground=COLORS["text"], arrowcolor=COLORS["text2"],
-                    bordercolor=COLORS["border"], background=COLORS["surface2"])
-    style.map("TSpinbox", bordercolor=[("focus", COLORS["primary"])])
-    style.configure("TCheckbutton", background=COLORS["bg"],
-                    foreground=COLORS["text"], focuscolor=COLORS["bg"])
-    style.map("TCheckbutton", background=[("active", COLORS["bg"])],
-              foreground=[("active", COLORS["primary"])])
-    style.configure("TCheckbutton", indicatorbackground=COLORS["surface2"],
-                    indicatorcolor=COLORS["text2"],
-                    indicatorrelief="flat")
-    style.map("TCheckbutton",
-              indicatorbackground=[("selected", COLORS["primary"]),
-                                   ("active", COLORS["surface3"])],
-              indicatorcolor=[("selected", COLORS["white"]),
-                              ("active", COLORS["text"])])
-    style.configure("TNotebook", background=COLORS["bg"], borderwidth=0)
-    style.configure("TNotebook.Tab", background=COLORS["surface2"],
-                    foreground=COLORS["text2"], padding=(14, 7),
-                    borderwidth=0, font=("Segoe UI", 10))
-    style.map("TNotebook.Tab",
-              background=[("selected", COLORS["surface3"])],
-              foreground=[("selected", COLORS["primary"])],
-              expand=[("selected", (0, 0, 0, 2))])
-    style.configure("Treeview", background=COLORS["surface"],
-                    foreground=COLORS["text"], fieldbackground=COLORS["surface"],
-                    bordercolor=COLORS["border"], rowheight=30,
-                    font=("Segoe UI", 10))
-    style.configure("Treeview.Heading", background=COLORS["surface2"],
-                    foreground=COLORS["text2"], relief="flat",
-                    padding=(8, 7), font=("Segoe UI", 9, "bold"))
-    style.map("Treeview.Heading", background=[("active", COLORS["surface3"])])
-    style.map("Treeview",
-              background=[("selected", COLORS["primary"])],
-              foreground=[("selected", COLORS["white"])])
-    style.configure("Vertical.TScrollbar", background=COLORS["surface2"],
-                    troughcolor=COLORS["bg"], bordercolor=COLORS["bg"],
-                    arrowcolor=COLORS["text2"],
-                    relief="flat", borderwidth=0)
-    style.map("Vertical.TScrollbar",
-              background=[("active", COLORS["surface3"]),
-                          ("pressed", COLORS["primary"])],
-              arrowcolor=[("active", COLORS["text"])])
-    style.configure("Horizontal.TScrollbar", background=COLORS["surface2"],
-                    troughcolor=COLORS["bg"], bordercolor=COLORS["bg"],
-                    arrowcolor=COLORS["text2"],
-                    relief="flat", borderwidth=0)
-    style.map("Horizontal.TScrollbar",
-              background=[("active", COLORS["surface3"]),
-                          ("pressed", COLORS["primary"])],
-              arrowcolor=[("active", COLORS["text"])])
-    style.configure("TPanedwindow", background=COLORS["border"],
-                    sashwidth=4, sashrelief="flat")
-    style.configure("TPanedwindow.Pane", background=COLORS["bg"])
-    style.configure("TLabelframe", background=COLORS["bg"],
-                    foreground=COLORS["text2"], bordercolor=COLORS["border"])
-    style.configure("TLabelframe.Label", background=COLORS["bg"],
-                    foreground=COLORS["text2"], font=("Segoe UI", 9, "bold"))
-    style.configure("Horizontal.TProgressbar", background=COLORS["primary"],
-                    troughcolor=COLORS["surface2"], bordercolor=COLORS["bg"],
-                    lightcolor=COLORS["primary"], darkcolor=COLORS["primary"])
-    style.configure("TScale", background=COLORS["bg"],
-                    troughcolor=COLORS["surface2"], bordercolor=COLORS["bg"],
-                    slidercolor=COLORS["primary"])
-    style.configure("TSeparator", background=COLORS["border"])
-    style.configure("TMenubar", background=COLORS["surface"],
-                    foreground=COLORS["text"], bordercolor=COLORS["surface"])
-    style.map("TMenubar", background=[("active", COLORS["surface2"])],
-              foreground=[("active", COLORS["primary"])])
-    root.configure(background=COLORS["bg"])
-    try:
-        root.tk.call("tk", "scaling", 1.0)
-    except Exception:
-        pass
 
 
 def center_window(window, parent=None):
@@ -1522,7 +1399,10 @@ class App:
         self._filter = "all"
         self._cat_texts = {}
 
-        setup_theme(self.root)
+        saved_theme = getattr(self.mgr.settings, "theme", "") or ""
+        self.theme = ThemeManager(self.root, saved_theme or None)
+        _sync_palette(self.theme.c)
+        self.theme.on_change(self._on_theme_change)
 
         self._set_window_icon()
 
@@ -1547,6 +1427,92 @@ class App:
         self.mgr.on_all_done = self._on_all_done
         self._ui_tick()
 
+    def _on_theme_change(self, name: str):
+        """Tema değiştiğinde: paleti senkronla, stilleri uygula, widget'ları yenile."""
+        _sync_palette(self.theme.c)
+        try:
+            self.mgr.settings.theme = name
+        except Exception:
+            pass
+        self._refresh_widget_colors()
+
+    def _refresh_widget_colors(self):
+        """Tema değişiminde tk widget renklerini ve tree tag'lerini yeniler."""
+        c = self.theme.c
+        try:
+            # Header
+            for child in self.root.winfo_children():
+                pass  # header alt widget'lar rebuild yerine renk güncellenir
+        except Exception:
+            pass
+        # Tree tag renkleri
+        try:
+            for tag, color in _state_colors().items():
+                self.tree.tag_configure(tag, foreground=color)
+        except Exception:
+            pass
+        # Log tag renkleri
+        try:
+            for tag, color in (("error", "#fca5a5"), ("warning", "#fcd34d"),
+                               ("success", "#6ee7b7"), ("info", c["text"])):
+                self.log_text.tag_configure(tag, foreground=color)
+        except Exception:
+            pass
+        # Torrent tree tag renkleri
+        try:
+            for tag, color in (("active", c["primary"]), ("complete", c["success"]),
+                               ("paused", c["warning"]), ("error", c["danger"]),
+                               ("waiting", c["text3"])):
+                self.torrent_tree.tag_configure(tag, foreground=color)
+        except Exception:
+            pass
+        # Menüleri yeniden tema'la
+        try:
+            if self.root.config("menu"):
+                menubar = self.root.nametowidget(self.root.config("menu"))
+                self.theme.apply_menu(menubar)
+        except Exception:
+            pass
+        # Başlık arka planları — header frame'leri yeniden çiz
+        try:
+            self._rebuild_header_colors()
+        except Exception:
+            pass
+
+    def _rebuild_header_colors(self):
+        """Header içindeki tk.Frame/Tk.Label arka planlarını günceller."""
+        c = self.theme.c
+        bg = c["header_bg"]
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                try:
+                    # header yüksekliği ~54 → üstteki frame
+                    if abs(widget.winfo_height() - 54) < 10 or widget.winfo_height() <= 1:
+                        widget.configure(background=bg)
+                        for sub in widget.winfo_children():
+                            if isinstance(sub, (tk.Frame, tk.Label)):
+                                sub.configure(background=bg)
+                            if isinstance(sub, tk.Frame):
+                                for sub2 in sub.winfo_children():
+                                    if isinstance(sub2, (tk.Frame, tk.Label)):
+                                        sub2.configure(background=bg)
+                except Exception:
+                    pass
+        # Status bar
+        try:
+            status = self.root.nametowidget(self.root.winfo_children()[-1])
+            if isinstance(status, tk.Frame):
+                status.configure(background=c["status_bg"])
+                for sub in status.winfo_children():
+                    if isinstance(sub, tk.Label):
+                        sub.configure(background=c["status_bg"], foreground=c["text2"])
+        except Exception:
+            pass
+
+    def toggle_theme(self):
+        """Koyu ↔ Açık tema geçişi."""
+        self.theme.toggle()
+
     def _set_window_icon(self):
         logo = load_photo("logo.png", self._photos)
         if logo is None:
@@ -1557,37 +1523,58 @@ class App:
             pass
 
     def _build_header(self):
-        header = tk.Frame(self.root, background=HEADER_BG, height=54)
+        c = self.theme.c
+        header = tk.Frame(self.root, background=c["header_bg"], height=54)
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
+        self._header_frame = header
 
         logo = load_photo("logo_small.png", self._photos)
         if logo is not None:
-            tk.Label(header, image=logo, background=HEADER_BG).pack(
+            tk.Label(header, image=logo, background=c["header_bg"]).pack(
                 side="left", padx=(14, 10), pady=7)
-        titles = tk.Frame(header, background=HEADER_BG)
+        titles = tk.Frame(header, background=c["header_bg"])
         titles.pack(side="left", fill="y")
-        tk.Label(titles, text="Retro+ Download Manager", foreground=COLORS["white"],
-                 background=HEADER_BG, font=("Segoe UI Semibold", 14)).pack(
+        tk.Label(titles, text="Retro+ Download Manager", foreground=c["text"],
+                 background=c["header_bg"], font=("Segoe UI Semibold", 14)).pack(
             anchor="w", pady=(8, 0))
         tk.Label(titles, text="Çok parçalı indirme · duraklat/devam · "
                               "kuyruk ve zamanlama · tarayıcı köprüsü",
-                 foreground=COLORS["accent"], background=HEADER_BG,
+                 foreground=c["text2"], background=c["header_bg"],
                  font=("Segoe UI", 8)).pack(anchor="w")
 
         self.var_header_speed = tk.StringVar(value="")
-        tk.Label(header, textvariable=self.var_header_speed, foreground=COLORS["text"],
-                 background=HEADER_BG, font=("Segoe UI", 11, "bold")).pack(
+        tk.Label(header, textvariable=self.var_header_speed, foreground=c["text"],
+                 background=c["header_bg"], font=("Segoe UI", 11, "bold")).pack(
             side="right", padx=18)
         self.var_header_active = tk.StringVar(value="")
-        tk.Label(header, textvariable=self.var_header_active, foreground=COLORS["accent"],
-                 background=HEADER_BG, font=("Segoe UI", 9)).pack(
+        tk.Label(header, textvariable=self.var_header_active, foreground=c["accent"],
+                 background=c["header_bg"], font=("Segoe UI", 9)).pack(
             side="right", padx=(0, 6))
+
+        # Tema değiştir butonu (header sağında, hızdan önce)
+        theme_label = "Açık" if self.theme.name == "dark" else "Koyu"
+        self.btn_theme = tk.Button(
+            header, text=f"◐ {theme_label}", command=self.toggle_theme,
+            background=c["surface3"], foreground=c["text"],
+            activebackground=c["surface4"], activeforeground=c["primary"],
+            relief="flat", font=("Segoe UI", 9), padx=10, pady=3, cursor="hand2")
+        self.btn_theme.pack(side="right", padx=(0, 10), pady=13)
+        # Buton metnini tema değişiminde güncelle
+        self.theme.on_change(
+            lambda name: self.btn_theme.configure(
+                text=f"◐ {'Açık' if name == 'dark' else 'Koyu'}",
+                background=self.theme.c["surface3"],
+                foreground=self.theme.c["text"],
+                activebackground=self.theme.c["surface4"],
+                activeforeground=self.theme.c["primary"]))
 
     def _build_menu(self):
         menubar = tk.Menu(self.root)
+        self.theme.apply_menu(menubar)
 
         file_menu = tk.Menu(menubar, tearoff=0)
+        self.theme.apply_menu(file_menu)
         file_menu.add_command(label="URL Ekle...", accelerator="Ctrl+N",
                               command=self.add_url)
         file_menu.add_command(label="Toplu Ekle...", accelerator="Ctrl+B",
@@ -1635,7 +1622,9 @@ class App:
         menubar.add_cascade(label="Kuyruk", menu=queue_menu)
 
         tools_menu = tk.Menu(menubar, tearoff=0)
+        self.theme.apply_menu(tools_menu)
         limit_menu = tk.Menu(tools_menu, tearoff=0)
+        self.theme.apply_menu(limit_menu)
         for label, kbps in (("Sınırsız", 0), ("512 KB/s", 512), ("1 MB/s", 1024),
                             ("2 MB/s", 2048), ("5 MB/s", 5120), ("10 MB/s", 10240)):
             limit_menu.add_command(
@@ -1645,6 +1634,19 @@ class App:
         tools_menu.add_separator()
         tools_menu.add_command(label="Kuyruğu Hemen Güncelle", command=self.mgr._tick)
         menubar.add_cascade(label="Araçlar", menu=tools_menu)
+
+        view_menu = tk.Menu(menubar, tearoff=0)
+        self.theme.apply_menu(view_menu)
+        view_menu.add_command(label="Koyu Tema", accelerator="Ctrl+T",
+                              command=lambda: self.theme.apply("dark"))
+        view_menu.add_command(label="Açık Tema",
+                              command=lambda: self.theme.apply("light"))
+        view_menu.add_command(label="Sistem Teması",
+                              command=lambda: self.theme.apply(detect_system_theme()))
+        view_menu.add_separator()
+        view_menu.add_command(label="Tema Değiştir (Koyu ↔ Açık)",
+                              accelerator="Ctrl+T", command=self.toggle_theme)
+        menubar.add_cascade(label="Görünüm", menu=view_menu)
 
         site_menu = tk.Menu(menubar, tearoff=0)
         for category, sites in ALL_SITES_CATEGORIES.items():
@@ -1790,7 +1792,7 @@ class App:
             self.tree.column(column, width=TREE_WIDTHS[column],
                              minwidth=50,
                              anchor="w" if column == "filename" else "center")
-        for tag, color in STATE_COLORS.items():
+        for tag, color in _state_colors().items():
             self.tree.tag_configure(tag, foreground=color)
 
         vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
@@ -1926,6 +1928,8 @@ class App:
         self.root.bind("<Control-r>", lambda _e: self._apply("start"))
         self.root.bind("<Control-q>", lambda _e: self._on_close())
         self.root.bind("<Control-comma>", lambda _e: self.open_settings())
+        self.root.bind("<Control-t>", lambda _e: self.toggle_theme())
+        self.root.bind("<Control-T>", lambda _e: self.toggle_theme())
         self.root.bind("<Delete>", lambda _e: self.remove_selected())
         self.root.bind("<F5>", lambda _e: self.mgr._tick())
 

@@ -84,6 +84,7 @@ class Settings:
         "wa_watch_folder": "",
         "wa_output_folder": "",
         "wa_whitelist": [],
+        "theme": "",
     }
 
     def __init__(self, path):
