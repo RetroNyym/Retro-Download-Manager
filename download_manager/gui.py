@@ -541,6 +541,15 @@ class SettingsDialog(tk.Toplevel):
         self.var_exit_done = tk.BooleanVar(value=bool(st.exit_when_done))
         ttk.Checkbutton(general, text="Kuyruk bitince programı kapat",
                         variable=self.var_exit_done).grid(row=row, column=1, sticky="w", pady=4)
+        row += 1
+        _grid_label(general, row, "Tema:")
+        frame_theme = ttk.Frame(general)
+        frame_theme.grid(row=row, column=1, sticky="w", pady=4)
+        self.var_theme = tk.StringVar(value=getattr(st, "theme", "") or "system")
+        for value, label in (("dark", "Koyu"), ("light", "Açık"), ("system", "Sistem")):
+            ttk.Radiobutton(frame_theme, text=label, value=value,
+                            variable=self.var_theme).pack(side="left", padx=(0, 10))
+        row += 1
 
         connection = ttk.Frame(notebook, padding=10)
         notebook.add(connection, text="Bağlantı")
@@ -1156,6 +1165,7 @@ class SettingsDialog(tk.Toplevel):
             "torrent_enabled": bool(self.var_torrent_on.get()),
             "torrent_port": int(self.var_torrent_port.get()),
             "torrent_dir": self.var_torrent_dir.get().strip(),
+            "theme": self.var_theme.get().strip() or "system",
         }
         self.result = values
         self.destroy()
@@ -2049,12 +2059,17 @@ class App:
         self.root.wait_window(dialog)
         if dialog.result:
             was_queue = self.mgr.queue_running
+            new_theme = dialog.result.get("theme", "")
+            old_theme = getattr(self.mgr.settings, "theme", "") or ""
             self.mgr.apply_settings(dialog.result)
             want_queue = bool(dialog.result.get("queue_running"))
             if want_queue and not was_queue:
                 self.mgr.start_queue()
             elif not want_queue and was_queue:
                 self.mgr.stop_queue()
+            if new_theme and new_theme != old_theme:
+                resolved = new_theme if new_theme in ("dark", "light") else detect_system_theme()
+                self.theme.apply(resolved)
             self.mgr.log("Ayarlar kaydedildi.", "success")
 
     def clear_history(self):
