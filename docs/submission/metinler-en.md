@@ -15,22 +15,22 @@ Turkish texts: `metinler-tr.md`.
 | Field | Value |
 | --- | --- |
 | Software name | Retro+ Download Manager |
-| Version | 1.0.0 |
+| Version | 1.1.0 |
 | License | MIT (free, open source) |
 | Price | Free — ad-free, no trial period |
-| Operating systems | Windows 10/11, Linux, macOS |
-| Requirements | Python 3.11+ and `requests`; optional `yt-dlp` + `ffmpeg` for video/playlists |
+| Operating systems | Windows 10/11 (x64); portable exe — no Python needed |
+| Requirements | None for the .exe build; Python 3.11+ for source (Linux/macOS); optional `ffmpeg` for video |
 | Category | Internet > Download Managers (fallback: System Utilities) |
 | Homepage | https://retro-download-manager.netlify.app |
 | Source code | https://github.com/RetroNyym/Retro-Download-Manager |
-| Download (primary) | https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip |
-| Download (mirror) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip |
-| File size | 266 KB (ZIP) |
-| SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
+| Download (primary) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip |
+| Download (mirror) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip |
+| File size | 51.5 MB (ZIP; portable exe + bundled aria2 torrent engine) |
+| SHA-256 | `9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb` |
 | Contact | `216476870+RetroNyym@users.noreply.github.com` |
 | Screenshots | 4 PNG files in `docs/screenshots/` |
 | Twitter/social | optional |
-| Keywords | download manager, segmented download, resume, queue, open source |
+| Keywords | download manager, segmented download, torrent, magnet, resume, queue, open source |
 
 ---
 
@@ -39,7 +39,7 @@ Turkish texts: `metinler-tr.md`.
 **≤100 characters:**
 
 ```
-Fast multi-segment download manager with pause/resume, queue, scheduler and playlists
+Fast multi-segment download manager with torrent (aria2), magnet: links, pause/resume
 ```
 
 **≤160 characters:**
@@ -63,33 +63,36 @@ client-side speed limit. Runs on Windows, Linux and macOS. Turkish interface.
 ## 3. Long description (for portal listings)
 
 ```
-Retro+ Download Manager is a free, open-source (MIT) download manager written in Python
-with a native Tkinter interface. No installer, no ads, no trial period — the only runtime
-dependency is the "requests" package.
+Retro+ Download Manager is a free, open-source (MIT) download manager with a Turkish
+interface. A portable Windows .exe is provided (extract and run — no Python required);
+the source version also works on Linux/macOS with Python 3.11+. No ads, no trial period.
 
 Features:
-- Segmented downloading: up to 32 parallel connections using HTTP Range, with automatic
-  fallback to a single connection when the server does not support it
-- Pause / resume / cancel at any point; progress is written to disk, so downloads survive
-  application restarts
-- Download queue with a concurrency limit and hourly/daily scheduled downloads
+- Up to 32 parallel segments (HTTP Range); automatic fallback to single connection
+  when the server does not support Range
+- Torrent downloads: built-in aria2 engine; magnet links and .torrent files,
+  pause/resume, auto-restore of saved jobs
+- magnet: protocol: click a magnet link in your browser and the app opens
+  automatically and queues the download
+- Pause / resume / cancel from any point; progress written to disk, survives restarts
+- Download queue with concurrency limit; hourly/daily scheduled downloads
 - Automatic categories (Video, Music, Archives, Programs, Documents) with folder routing
 - Web page resolution: finds media addresses through og:video, <source> and JSON-LD tags
-- Playlist support: YouTube and similar lists expand from one job to all videos; separate
-  audio + video (DASH) streams are merged into a single file with yt-dlp and ffmpeg
+- Playlist support: YouTube and similar lists expand from one job to all videos;
+  DASH audio+video streams are merged into a single file with yt-dlp and ffmpeg
 - Quick site buttons: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
-- Browser bridge on 127.0.0.1:8877 plus clipboard monitoring: paste a link and it is
-  queued automatically
+- Browser bridge on 127.0.0.1:8877 plus clipboard monitoring: paste a link and
+  it is queued automatically
 - Site Grabber: crawl a page and queue every media link it finds
 - FTP/FTPS, mirror URLs, client-side speed limit, cookie/header support, voice
   notifications
 - Usable as a Python library (DownloadManager class) without the GUI
 
-Requirements: Python 3.11 or newer on Windows 10/11, Linux or macOS. yt-dlp and ffmpeg
-are optional and only needed for video/playlist downloads.
+Requirements: Windows 10/11 (64-bit) — no extra dependencies for the .exe build.
+Optional ffmpeg for video/playlist downloads. Source: Python 3.11+.
 
-Fully tested: 165 automated checks and a clean pyflakes run. Source code is published on
-GitHub for inspection.
+Fully tested: 165 automated checks and a clean pyflakes run. Source code is published
+on GitHub for inspection.
 ```
 
 ---
@@ -132,15 +135,24 @@ Display: 1024x640 or higher
 
 ---
 
-## 7. Release notes v1.0.0
+## 7. Release notes v1.1.0
 
 ```
+New in v1.1.0:
+- Torrent downloads: built-in aria2 engine, magnet links and .torrent files
+- magnet: protocol support — click a magnet link in your browser and the app
+  opens automatically
+- Portable Windows .exe (no Python required) — extract from ZIP and run
+- MSIX package (Microsoft Store ready, WACK certification PASS)
+- Improved settings dialog with aria2 configuration
+- Various bug fixes and performance improvements
+
+Previous (v1.0.0):
 - Up to 32 parallel segments, pause/resume/cancel, queue and scheduler
-- Web page resolution: og:video, source tags, JSON-LD; clear error when no media exists
+- Web page resolution: og:video, source tags, JSON-LD
 - Playlists: one job expands to every video; DASH audio+video merged with ffmpeg
 - Quick site buttons: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
-- Browser bridge + clipboard monitoring, Site Grabber, FTP, mirror URLs, speed limit,
-  voice notifications
+- Browser bridge + clipboard monitoring, Site Grabber, FTP, mirror URLs, speed limit
 - 165 automated checks, clean pyflakes
 ```
 
@@ -150,8 +162,9 @@ Display: 1024x640 or higher
 
 ```
 download manager, download accelerator, segmented download, resume download,
-download queue, video downloader, playlist downloader, open source, MIT,
-free software, FTP download, Turkish download manager
+download queue, torrent client, aria2, magnet link, .torrent, video downloader,
+playlist downloader, open source, MIT, free software, FTP download,
+Turkish download manager
 ```
 
 ---
@@ -160,10 +173,11 @@ free software, FTP download, Turkish download manager
 
 | Question | Answer |
 | --- | --- |
-| Does it need installation? | Unzip the archive and run `python -m download_manager`; `baslat_gui.bat` is the Windows shortcut (no CMD window), `baslat_gui.vbs` starts it fully hidden. |
-| Any malware/bundled toolbars? | No. Single dependency `requests`; MIT-licensed open source code. |
+| Does it need installation? | No. Extract the ZIP and double-click `RetroDownloadManager.exe` — Python is not required. |
+| Any malware/bundled toolbars? | No. MIT-licensed open source; single dependency `requests` (source version only). |
 | Ads? | None, nothing is installed or modified. |
 | Works offline? | The UI works offline; downloads need internet. |
-| Installer (exe/msi)? | Distributed as a portable ZIP; a signed installer is planned. |
+| Torrent support? | Yes; built-in aria2 engine supports magnet links and .torrent files. |
+| Do magnet: links open? | Yes; the `magnet:` Windows registry entry is created automatically on install. |
 | Price? | Free, no trial, no account. |
 | Support? | GitHub Issues: https://github.com/RetroNyym/Retro-Download-Manager/issues |

@@ -28,6 +28,9 @@ from .whatsapp import normalize_whitelist
 from .util import (
     CATEGORIES,
     CATEGORY_LABELS,
+    app_root_dir,
+    cleanup_stale_updates,
+    ensure_listener_files,
     format_bytes,
     format_datetime,
     format_eta,
@@ -353,7 +356,7 @@ class SettingsDialog(tk.Toplevel):
         notebook.pack(fill="both", expand=True, padx=8, pady=8)
         self.notebook = notebook
         tabs = {"general": 0, "connection": 1, "queue": 2, "categories": 3,
-                "security": 4, "update": 5, "whatsapp": 6}
+                "security": 4, "update": 5, "whatsapp": 6, "torrent": 7}
         if tab in tabs:
             index = tabs[tab]
             self.after(50, lambda: notebook.select(str(index)))
@@ -662,6 +665,43 @@ class SettingsDialog(tk.Toplevel):
             "PDF'leri indirir. Node.js kurulu olmalıdır (node komutu).")
         ).grid(row=row, column=1, sticky="w", pady=(6, 0))
 
+        # -- Torrent sekmesi -------------------------------------------------
+        torrent = ttk.Frame(notebook, padding=10)
+        notebook.add(torrent, text="Torrent")
+        torrent.columnconfigure(1, weight=1)
+        row = 0
+        self.var_torrent_on = tk.BooleanVar(
+            value=bool(getattr(st, "torrent_enabled", True)))
+        ttk.Checkbutton(torrent, text="BitTorrent (magnet) desteği açık",
+                        variable=self.var_torrent_on).grid(
+            row=row, column=1, sticky="w", pady=4)
+        row += 1
+        _grid_label(torrent, row, "Motor RPC portu:")
+        self.var_torrent_port = tk.IntVar(
+            value=int(getattr(st, "torrent_port", 6800)))
+        ttk.Spinbox(torrent, from_=1024, to=65535, width=8,
+                    textvariable=self.var_torrent_port).grid(
+            row=row, column=1, sticky="w", pady=4)
+        row += 1
+        _grid_label(torrent, row, "Torrent klasörü:")
+        tdir_frame = ttk.Frame(torrent)
+        tdir_frame.grid(row=row, column=1, sticky="we", pady=4)
+        tdir_frame.columnconfigure(0, weight=1)
+        self.var_torrent_dir = tk.StringVar(
+            value=str(getattr(st, "torrent_dir", "")))
+        ttk.Entry(tdir_frame, textvariable=self.var_torrent_dir).grid(
+            row=0, column=0, sticky="we")
+        ttk.Button(tdir_frame, text="Gözat",
+                   command=self._torrent_browse_dir).grid(
+            row=0, column=1, padx=(6, 0))
+        row += 1
+        ttk.Label(torrent, wraplength=460, foreground="#5f6368", text=(
+            "Boş bırakılırsa indirilen .torrent/magnet dosyaları "
+            "\"İndirme klasörü\\Torrentler\" altına iner. Motor aria2 "
+            "(tools\\aria2\\aria2c.exe) ile çalışır; magnet: bağlantıları "
+            "Windows bu programla açar.")
+        ).grid(row=row, column=1, sticky="w", pady=(4, 0))
+
         buttons = ttk.Frame(self, padding=(8, 0, 8, 8))
         buttons.pack(fill="x")
         ttk.Button(buttons, text="Kaydet", command=self._ok).pack(side="right", padx=4)
@@ -674,6 +714,13 @@ class SettingsDialog(tk.Toplevel):
         folder = filedialog.askdirectory(parent=self, initialdir=self.var_dir.get())
         if folder:
             self.var_dir.set(folder)
+
+    def _torrent_browse_dir(self):
+        folder = filedialog.askdirectory(
+            parent=self, initialdir=self.var_torrent_dir.get()
+            or self.var_dir.get())
+        if folder:
+            self.var_torrent_dir.set(folder)
 
     def _detect_defender(self):
         command = self.manager.detect_defender()
@@ -765,11 +812,10 @@ class SettingsDialog(tk.Toplevel):
                                    "Yeni sürüm hazır. Program şimdi yeniden "
                                    "başlatılsın mı?", parent=self):
                 from .updater import prepare_restart
-                app_root = Path(__file__).resolve().parent.parent
                 self.manager.settings.save()
                 self.manager.shutdown()
                 self.destroy()
-                prepare_restart(app_root)
+                prepare_restart(app_root_dir())
         elif result.get("status") == "update_available":
             self.var_update_status.set(
                 f"Yeni sürüm var: {result.get('version')} — tekrar deneyin.")
@@ -781,7 +827,7 @@ class SettingsDialog(tk.Toplevel):
     # -- WhatsApp yardimcilari ----------------------------------------------
     @property
     def _listener_dir(self):
-        return Path(__file__).resolve().parent.parent / "whatsapp_listener"
+        return ensure_listener_files()
 
     def _wa_browse_watch(self):
         folder = filedialog.askdirectory(parent=self,
@@ -979,6 +1025,9 @@ class SettingsDialog(tk.Toplevel):
             "wa_watch_folder": self.var_wa_watch.get().strip(),
             "wa_output_folder": self.var_wa_out.get().strip(),
             "wa_whitelist": [dict(entry) for entry in self._whitelist_entries],
+            "torrent_enabled": bool(self.var_torrent_on.get()),
+            "torrent_port": int(self.var_torrent_port.get()),
+            "torrent_dir": self.var_torrent_dir.get().strip(),
         }
         self.result = values
         self.destroy()
@@ -1534,6 +1583,56 @@ class App:
             self.log_text.tag_configure(tag, foreground=color)
         self.log_text.configure(state="disabled")
 
+        # --- Torrent (eski nesil bittorrent bolumu) ---
+        torrent = ttk.Frame(self.notebook)
+        self._torrent_frame = torrent
+        self.notebook.add(torrent, text=" Torrent ")
+
+        tbar = ttk.Frame(torrent, padding=(6, 6))
+        tbar.pack(fill="x")
+        ttk.Button(tbar, text="Magnet / Dosya Ekle",
+                   command=self._torrent_add_dialog).pack(side="left")
+        ttk.Button(tbar, text="Duraklat",
+                   command=lambda: self._torrent_action("duraklat")).pack(
+            side="left", padx=(6, 0))
+        ttk.Button(tbar, text="Devam",
+                   command=lambda: self._torrent_action("devam")).pack(
+            side="left", padx=(6, 0))
+        ttk.Button(tbar, text="Kaldır",
+                   command=lambda: self._torrent_action("kaldir")).pack(
+            side="left", padx=(6, 0))
+        ttk.Button(tbar, text="Klasörü Aç",
+                   command=lambda: self._torrent_action("klasoru_ac")).pack(
+            side="left", padx=(6, 0))
+        self.var_torrent_info = tk.StringVar(value="")
+        ttk.Label(tbar, textvariable=self.var_torrent_info,
+                  foreground="#5f6368").pack(side="right")
+
+        ttree_frame = ttk.Frame(torrent)
+        ttree_frame.pack(fill="both", expand=True, padx=6, pady=(6, 6))
+        T_COLUMNS = ("ad", "boyut", "yuzde", "indirme", "yukleme", "es", "durum")
+        self.torrent_tree = ttk.Treeview(ttree_frame, columns=T_COLUMNS,
+                                         show="headings", selectmode="browse")
+        for column, label, width in (
+                ("ad", "Ad", 340), ("boyut", "Boyut", 95),
+                ("yuzde", "İlerleme", 85), ("indirme", "İndirme", 105),
+                ("yukleme", "Yükleme", 105), ("es", "Tohum/Eş", 85),
+                ("durum", "Durum", 120)):
+            self.torrent_tree.heading(column, text=label)
+            self.torrent_tree.column(column, width=width, anchor="w"
+                                     if column == "ad" else "center")
+        for tag, color in (("active", "#0b57d0"), ("complete", "#137333"),
+                           ("paused", "#b06000"), ("error", "#c5221f"),
+                           ("waiting", "#5f6368")):
+            self.torrent_tree.tag_configure(tag, foreground=color)
+        tvsb = ttk.Scrollbar(ttree_frame, orient="vertical",
+                             command=self.torrent_tree.yview)
+        self.torrent_tree.configure(yscrollcommand=tvsb.set)
+        self.torrent_tree.pack(side="left", fill="both", expand=True)
+        tvsb.pack(side="right", fill="y")
+        self.torrent_tree.bind("<Double-1>", self._torrent_double_click)
+        self._torrent_rows = {}
+
         self.tree.bind("<Button-3>", self._show_context)
         self.tree.bind("<Double-1>", self._on_double_click)
 
@@ -2025,6 +2124,121 @@ class App:
         else:
             self.var_status_right.set(f"Panoda URL algılandı: {text[:80]}")
 
+    # ------------------------------------------------------------- torrent ---
+    def _torrent_add_dialog(self):
+        dlg = tk.Toplevel(self.root)
+        dlg.title("Torrent Ekle")
+        dlg.transient(self.root)
+        dlg.resizable(False, False)
+        top = ttk.Frame(dlg, padding=10)
+        top.pack(fill="both", expand=True)
+        ttk.Label(top, text="Magnet linki veya .torrent yolu/URL'si:").pack(
+            anchor="w")
+        var = tk.StringVar(value=getattr(self, "_son_magnet", ""))
+        entry = ttk.Entry(top, textvariable=var, width=72)
+        entry.pack(fill="x", pady=(4, 8))
+        entry.select_range(0, "end")
+        btns = ttk.Frame(top)
+        btns.pack(fill="x")
+
+        def dosya_sec():
+            yol = filedialog.askopenfilename(
+                parent=dlg, title="Torrent dosyası seç",
+                filetypes=[("Torrent", "*.torrent"), ("Tümü", "*.*")])
+            if yol:
+                var.set(yol)
+
+        def ekle():
+            kaynak = var.get().strip()
+            if not kaynak:
+                return
+            self._son_magnet = kaynak
+            try:
+                self.mgr.torrent_add(kaynak)
+                self.notebook.select(self._torrent_frame)
+                self._refresh_torrents()
+                dlg.destroy()
+            except Exception as exc:
+                messagebox.showerror("Torrent", str(exc), parent=dlg)
+
+        ttk.Button(btns, text="Dosya…", command=dosya_sec).pack(side="left")
+        ttk.Button(btns, text="Ekle", command=ekle).pack(side="right", padx=4)
+        ttk.Button(btns, text="Vazgeç", command=dlg.destroy).pack(side="right")
+        dlg.bind("<Return>", lambda _e: ekle())
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
+        center_window(dlg, self.root)
+        entry.focus_set()
+
+    def _torrent_secili(self):
+        secim = self.torrent_tree.selection()
+        if not secim:
+            messagebox.showinfo("Torrent", "Önce listeden bir torrent seçin.",
+                                parent=self.root)
+            return None
+        return secim[0]
+
+    def _torrent_action(self, islem):
+        try:
+            if islem == "klasoru_ac":
+                self.mgr.torrent_action("", "klasoru_ac")
+                return
+            gid = self._torrent_secili()
+            if not gid:
+                return
+            self.mgr.torrent_action(gid, islem)
+            self._refresh_torrents()
+        except Exception as exc:
+            messagebox.showerror("Torrent", str(exc), parent=self.root)
+
+    def _torrent_double_click(self, _event):
+        self._torrent_action("klasoru_ac")
+
+    def _refresh_torrents(self):
+        try:
+            liste = self.mgr.torrent_list()
+        except Exception:
+            liste = []
+        by_gid = {k.get("gid", ""): k for k in liste if k.get("gid")}
+        mevcut = set(self.torrent_tree.get_children())
+        secili = ""
+        secim = self.torrent_tree.selection()
+        if secim:
+            secili = secim[0]
+        # yok olanlari sil
+        for iid in mevcut - set(by_gid):
+            self.torrent_tree.delete(iid)
+        for kayit in by_gid.values():
+            gid = kayit["gid"]
+            satir = (
+                kayit.get("ad", ""),
+                kayit.get("boyut_str", ""),
+                "%s%%" % kayit.get("yuzde", 0),
+                kayit.get("indirme_hizi_str", ""),
+                kayit.get("yukleme_hizi_str", ""),
+                "%s/%s" % (kayit.get("tohum", 0), kayit.get("es", 0)),
+                kayit.get("durum_str", ""),
+            )
+            etiket = {
+                "active": "active", "complete": "complete",
+                "paused": "paused", "waiting": "waiting",
+                "error": "error", "removed": "error",
+            }.get(kayit.get("durum", ""), "waiting")
+            if gid in mevcut:
+                mevcut_s = self.torrent_tree.item(gid, "values")
+                if tuple(mevcut_s) != satir:
+                    self.torrent_tree.item(gid, values=satir, tags=(etiket,))
+            else:
+                self.torrent_tree.insert("", "end", iid=gid, values=satir,
+                                         tags=(etiket,))
+        if secili and self.torrent_tree.exists(secili):
+            self.torrent_tree.selection_set(secili)
+        aktif = sum(1 for k in liste if k.get("durum") == "active")
+        toplam = len(liste)
+        motor = self.mgr._torrent_engine(baslat=False)
+        ayakta = "çalışıyor" if (motor is not None and motor.ayakta()) else "kapalı"
+        self.var_torrent_info.set(
+            f"Motor: {ayakta} • {aktif} aktif / {toplam} torrent")
+
     def _ui_tick(self):
         try:
             if self._all_done:
@@ -2039,6 +2253,13 @@ class App:
             self._tick_count += 1
             if self._tick_count % 3 == 0:
                 self._poll_clipboard()
+            if self._tick_count % 3 == 0:
+                try:
+                    if self.notebook.index("current") == \
+                            self.notebook.index(self._torrent_frame):
+                        self._refresh_torrents()
+                except Exception:
+                    pass
         except Exception as exc:
             print("UI hatası:", exc)
         try:
@@ -2068,8 +2289,29 @@ class App:
 
 
 def run(argv=None):
+    cleanup_stale_updates()  # önceki exe güncellemesinden kalan .old dosyaları
+    baslangic_magnet = None
+    for arg in list(argv or []):
+        if arg.startswith("--magnet="):
+            baslangic_magnet = arg.split("=", 1)[1]
+        elif arg == "--magnet":
+            try:
+                baslangic_magnet = argv[argv.index(arg) + 1]
+            except Exception:
+                baslangic_magnet = None
+        elif arg.startswith("magnet:") and not baslangic_magnet:
+            # MSIX protokol aktivasyonu URI'yi arguman olarak gecirir
+            baslangic_magnet = arg
     manager = DownloadManager()
     app = App(manager)
+    if baslangic_magnet:
+        def _magnet_ekle():
+            try:
+                manager.torrent_add(baslangic_magnet)
+                app.notebook.select(app._torrent_frame)
+            except Exception as exc:
+                messagebox.showerror("Torrent", str(exc), parent=app.root)
+        app.root.after(600, _magnet_ekle)
     try:
         if os.environ.get("RETRO_SMOKE"):
             app.root.after(1500, app.root.destroy)

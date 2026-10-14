@@ -176,6 +176,41 @@ def main():
     check("kurulumdan sonra guncel", up_to_date["status"] == "up_to_date",
           str(up_to_date))
 
+    # -- frozen (exe) guncelleme modu -----------------------------------------------
+    import download_manager.updater as upd
+
+    xapp = os.path.join(TMP, "xapp")
+    os.makedirs(xapp, exist_ok=True)
+    exe_path = os.path.join(xapp, "RetroDownloadManager.exe")
+    with open(exe_path, "wb") as handle:
+        handle.write(b"ESKI-EXE")
+    write(os.path.join(xapp, "kullanici", "ayar.json"), '{"eski": 1}')
+    exe_zip = os.path.join(TMP, "exe_paket.zip")
+    make_zip(exe_zip, {
+        "RetroDownloadManager.exe": "YENI-EXE",
+        "whatsapp_listener/index.js": "// yeni dinleyici",
+    })
+    original_frozen = upd.is_frozen
+    upd.is_frozen = lambda: True
+    try:
+        frozen_version = upd.apply_update(xapp, exe_zip,
+                                          expected_version="2.5.0",
+                                          exe_target=exe_path)
+    finally:
+        upd.is_frozen = original_frozen
+    check("frozen surum dondu", frozen_version == "2.5.0", frozen_version)
+    with open(exe_path, "rb") as handle:
+        check("exe degistirildi", handle.read() == b"YENI-EXE")
+    old_exe = exe_path + ".old"
+    check("eski exe .old olarak saklandi", os.path.isfile(old_exe))
+    if os.path.isfile(old_exe):
+        with open(old_exe, "rb") as handle:
+            check(".old icerigi eski exe", handle.read() == b"ESKI-EXE")
+    check("frozen'da diger dosyalar da guncellendi",
+          os.path.isfile(os.path.join(xapp, "whatsapp_listener", "index.js")))
+    check("frozen'da kullanici verisi korundu",
+          os.path.isfile(os.path.join(xapp, "kullanici", "ayar.json")))
+
     failed = [r for r in RESULTS if not r[1]]
     print(f"\n{len(RESULTS) - len(failed)}/{len(RESULTS)} updater test gecti")
     shutil.rmtree(TMP, ignore_errors=True)

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import mimetypes
+import os
 import re
+import sys
 import time
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -47,6 +49,75 @@ PAGE_EXTENSIONS = {
     ".cgi", ".xhtml", ".shtml", ".css", ".js", ".mjs", ".svg", ".xml",
     ".json", ".md", ".txt",
 }
+
+
+def is_frozen():
+    """PyInstaller ile mi paketlenmiş?"""
+    return bool(getattr(sys, "frozen", False))
+
+
+def is_packaged():
+    """MSIX/AppX paketi içinde mi (Microsoft Store sürümü)?"""
+    try:
+        import ctypes
+        fn = ctypes.windll.kernel32.GetCurrentPackageFullName
+        fn.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.c_wchar_p]
+        fn.restype = ctypes.c_long
+        uzunluk = ctypes.c_uint32(0)
+        hr = fn(ctypes.byref(uzunluk), None)
+        return hr != 15700  # APPMODEL_ERROR_NO_PACKAGE -> paket degil
+    except Exception:
+        return False
+
+
+def app_root_dir():
+    """Program kök dizini: dondurulmuş exe'de exe'nin yanındaki klasör,
+    MSIX'te LocalAppData (WindowsApps yazilamaz), kaynakta repo kökü."""
+    if is_frozen():
+        if is_packaged():
+            temel = os.environ.get("LOCALAPPDATA") or str(
+                Path.home() / "AppData" / "Local")
+            klasor = Path(temel) / "RetroDownloadManager"
+            try:
+                klasor.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                pass
+            return klasor
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+def default_data_dir():
+    """Ayar/kuyruk/geçmiş verisinin kalıcı klasörü."""
+    if is_frozen():
+        return app_root_dir() / "data"
+    return Path(__file__).resolve().parent / "data"
+
+
+def ensure_listener_files():
+    """Dondurulmuş exe'de whatsapp_listener dosyalarını exe yanına açar."""
+    target = app_root_dir() / "whatsapp_listener"
+    if (target / "index.js").is_file():
+        return target
+    bundle = Path(getattr(sys, "_MEIPASS", "")) / "whatsapp_listener"
+    if bundle.is_dir():
+        import shutil
+        try:
+            shutil.copytree(bundle, target, dirs_exist_ok=True)
+        except OSError:
+            pass
+    return target
+
+
+def cleanup_stale_updates():
+    """Önceki güncellemeden kalan .old exe'leri ve boş klasörleri temizler."""
+    root = app_root_dir()
+    for pattern in ("*.exe.old", "*.old"):
+        for leftover in root.glob(pattern):
+            try:
+                leftover.unlink()
+            except OSError:
+                pass
 
 
 def detect_category(filename):

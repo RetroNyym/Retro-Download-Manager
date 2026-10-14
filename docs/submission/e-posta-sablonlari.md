@@ -8,7 +8,7 @@ Portalda açık form yoksa bu metinlerle doğrudan yazılır. Göndermeden önce
 
 ## 1. İndirme portalına program ekleme talebi (TR)
 
-**Konu:** `Yeni ücretsiz yazılım başvurusu: Retro+ Download Manager 1.0.0 (MIT)`
+**Konu:** `Yeni ücretsiz yazılım başvurusu: Retro+ Download Manager 1.1.0 (MIT)`
 
 ```
 Merhaba,
@@ -17,27 +17,28 @@ Merhaba,
 eklemek için başvuruyorum.
 
 Ad:            Retro+ Download Manager
-Sürüm:         1.0.0
+Sürüm:         1.1.0
 Lisans:        MIT (ücretsiz, açık kaynak, reklamsız, deneme süresi yok)
-Sistem:        Windows 10/11, Linux, macOS (Python 3.11+)
+Sistem:        Windows 10/11 (x64, taşınabilir exe — Python gerekmez)
 Kategori:      İnternet > İndirme Yöneticileri
 Ana sayfa:     https://retro-download-manager.netlify.app
 Kaynak kod:    https://github.com/RetroNyym/Retro-Download-Manager
-İndirme (ZIP): https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip
-Ayna (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip
-Boyut:         266 KB
-SHA-256:       73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b
+İndirme (ZIP): https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
+Ayna (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+Boyut:         51.5 MB
+SHA-256:       9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
 Ekran görüntüsü: 4 adet PNG (isteğe göre iletirim)
 
 Kısa tanım:
-Çok parçalı, hızlı indirme yöneticisi — duraklat/devam, kuyruk, zamanlama,
-web sayfası ve playlist linki çözümleme.
+Çok parçalı indirme + torrent (aria2) ve magnet: desteği — duraklat/devam,
+kuyruk, zamanlama.
 
 Uzun tanım ve sürüm notları için:
 https://github.com/RetroNyym/Retro-Download-Manager#readme
 
-Kurulum gerektirmez, tek bağımlılığı "requests" paketidir; kod satır satır
-incelenebilir. Yeni sürüm çıktığında haber vereceğim.
+Kurulum gerektirmez; ZIP'ten çıkarıp RetroDownloadManager.exe dosyasını
+çalıştırmanız yeterlidir. Kod satır satır incelenebilir. Yeni sürüm
+çıktığında haber vereceğim.
 
 İyi çalışmalar,
 Ad Soyad
@@ -48,7 +49,7 @@ Ad Soyad
 
 ## 2. İndirme portalına başvuru (EN)
 
-**Subject:** `New free software submission: Retro+ Download Manager 1.0.0 (MIT)`
+**Subject:** `New free software submission: Retro+ Download Manager 1.1.0 (MIT)`
 
 ```
 Hello,
@@ -57,27 +58,28 @@ I would like to submit a free, open-source download manager for inclusion in
 [PORTAL] listings.
 
 Name:            Retro+ Download Manager
-Version:         1.0.0
+Version:         1.1.0
 License:         MIT (free, open source, no ads, no trial)
-Platforms:       Windows 10/11, Linux, macOS (Python 3.11+)
+Platforms:       Windows 10/11 (x64, portable exe — no Python required)
 Category:        Internet > Download Managers
 Homepage:        https://retro-download-manager.netlify.app
 Source code:     https://github.com/RetroNyym/Retro-Download-Manager
-Download (ZIP):  https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip
-Mirror (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip
-Size:            266 KB
-SHA-256:         73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b
+Download (ZIP):  https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
+Mirror (GitHub): https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip
+Size:            51.5 MB
+SHA-256:         9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb
 Screenshots:     4 PNG files available on request
 
 Short description:
-Fast multi-segment download manager with pause/resume, queue, scheduler and
-playlist resolution.
+Fast multi-segment download manager with torrent (aria2), magnet: links,
+pause/resume, queue and scheduler.
 
 Full description and release notes:
 https://github.com/RetroNyym/Retro-Download-Manager#readme
 
-No installer is required; the only dependency is the "requests" package and the
-code is fully reviewable. I will let you know when a new version is released.
+No installer is required — extract from ZIP and run RetroDownloadManager.exe.
+The code is fully reviewable on GitHub. I will let you know when a new version
+is released.
 
 Best regards,
 Name Surname
@@ -102,14 +104,14 @@ dosya kategorileri, site grabber, web sayfası/playlist linki çözümleme ve FT
 desteği sunan ücretsiz (MIT) bir indirme yöneticisi.
 
 İlginç açı:
-- Kurulum yok: ZIP açılır, tek bağımlılık "requests"
+- Kurulum yok: ZIP açılır, RetroDownloadManager.exe çift tıkla
 - Reklam/toolbar yok, hesap istemiyor
-- Python kütüphanesi olarak da kullanılabilir (GUI olmadan)
+- Torrent (aria2) ve magnet: desteği yerleşik
 - Kaynak kod tamamen açık: https://github.com/RetroNyym/Retro-Download-Manager
 - Ana sayfa: https://retro-download-manager.netlify.app
 
-İndirme (266 KB):
-https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip
+İndirme (51.5 MB):
+https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
 Ekran görüntüsü ve uzun tanım için hazırım; isterseniz Türkçe basın metni ve
 logo dosyalarını da iletirim.
 
@@ -124,16 +126,16 @@ Ad Soyad
 
 ## 4. Takip e-postası (7–10 gün sonra, TR)
 
-**Konu:** `Takip: Retro+ Download Manager 1.0.0 başvurusu`
+**Konu:** `Takip: Retro+ Download Manager 1.1.0 başvurusu`
 
 ```
 Merhaba,
 
-[ TARİH ] tarihinde gönderdiğim "Retro+ Download Manager 1.0.0" başvurusu
+[ TARİH ] tarihinde gönderdiğim "Retro+ Download Manager 1.1.0" başvurusu
 hakkında kısa bir hatırlatma yazıyorum. Program ücretsiz, MIT lisanslı ve
 kaynak kodu açık; indirme linkleri hâlâ aktif:
 
-ZIP:   https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip
+ZIP:   https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip
 Kaynak: https://github.com/RetroNyym/Retro-Download-Manager
 
 Eklemek/exlemek istediğiniz bir bilgi varsa memnuniyetle iletirim.

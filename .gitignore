@@ -11,3 +11,8 @@ tests/_tmp/
 *.part.json
 *.log
 .wrangler/
+
+# PyInstaller
+build/
+dist/
+*.spec

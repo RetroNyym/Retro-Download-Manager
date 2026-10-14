@@ -47,6 +47,7 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 | FTP / FTPS | ✅ | Parçalı FTP indirme, duraklat/devam |
 | Yerel güncelleme (uzaktan, linke dokunmadan) | ✅ | `version.json` + zip + SHA-256; klasör/UNC/HTTP kaynağı, sessiz kurulum + yeniden başlatma |
 | WhatsApp PDF yakalama | ✅ | Bağlı cihaz (QR) dinleyici + beyaz liste; yalnızca seçili grup/kişilerin PDF'leri iner |
+| Torrent (magnet / `.torrent`) | ✅ | aria2 motoru, ayrı sekme, `magnet:` Windows kaydı (`tools/magnet_bagla.ps1`) |
 | MMS/RTSP, FTPS'te özel tunnel | ❌ | Desteklenmez |
 
 ---
@@ -119,12 +120,43 @@ Adres çubuğuna yazılan linkleri arayüze taşımak için yerel köprü sunucu
 | `GET /links` | pano/grabber'da toplanan linkleri JSON olarak verir |
 | `GET /add?url=...` | linki kuyruğa ekler |
 | `GET /status` | kuyruk özeti |
+| `GET /torrent?url=magnet:...` | magnet/.torrent ekler, `gid` döner |
+| `GET /torrents` | eklenen torrentlerin listesi |
 
 Tarayıcıya ekleyebileceğiniz imleç (bookmarklet):
 
 ```javascript
 javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent(location.href))})()
 ```
+
+## Torrent (BitTorrent) desteği
+
+`magnet:` linkleri ve `.torrent` dosyaları Retro+'un kendi motoruyla indirilir
+(UI'da ayrı **Torrent** sekmesi; arayüz ayrı bir uygulama değildir):
+
+- **Motor:** gömülü [aria2](https://aria2.github.io/) (`tools/aria2/aria2c.exe`,
+  indirme sırasında `tools/` altına gelir; `RETRO_ARIA2` ile dışarıdan da verilebilir).
+  Tembel başlar: ilk torrent eklendiğinde açılır, program kapanınca durur.
+- **Kalıcılık:** eklenen URI'ler `data/torrents.json`'a yazılır; motor yeniden
+  başlayınca tamamlanmamış torrentler otomatik tekrar eklenir.
+- **Windows `magnet:` bağlama** (yönetici gerekmez, yalnızca HKCU):
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File tools\magnet_bagla.ps1
+  powershell -ExecutionPolicy Bypass -File tools\magnet_bagla.ps1 -Kaldir   # geri al
+  ```
+
+  Kaynak kurulumda `pythonw -m download_manager --magnet "%1"` olarak bağlanır;
+  portable exe ile `magnet_bagla.ps1 -Exe "C:\Yol\RetroDownloadManager.exe"`.
+- **Sınırlar (v1):** web tohumu (DHT/PEX) üzerinden indirilir; trackersiz/sunsuz
+  mahalle torrentleri hızlanmayabilir. Torrent klasörü varsayılan olarak
+  `İndirme klasörü\Torrentler` (Ayarlar → Torrent'ten değiştirilebilir).
+- Yapım notu: exe paketlemeye `--add-data "tools;tools"` ile dahil edilir
+  (`baslat_exe.py` başlığında hazır komut).
+- **Doğrulama:** `tests/test_torrent.py` 23/23; canlı test gerçek Ubuntu
+  26.04.1 .torrent'iyle **14/14** (eş bağlantısı, veri aktı, duraklat/devam/
+  kaldır, kayıt+PID temizliği); `RETRO_SMOKE=1` ile portable exe smoke → exit 0
+  (`dist\data\torrents.json` yazılır, aria2 shutdown'da temizlenir).
 
 ## Otomatik güncelleme (yerel kaynak)
 
@@ -165,9 +197,10 @@ hiçbir sohbetten dosya indirilmez (dinleyici + Python tarafında çift kontrol)
 | `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
 | `download_manager/updater.py` | yerel güncelleme kanalı (manifest, SHA-256, staging, geri alma, yeniden başlatma) |
 | `download_manager/whatsapp.py` | WhatsApp PDF izleyici (üst veri + beyaz liste + hedefe taşıma) |
+| `download_manager/torrent.py` | aria2 motoru (JSON-RPC, port arama, `torrents.json` kalıcılığı) |
 | `whatsapp_listener/` | Node/Baileys bağlı cihaz dinleyicisi (QR, sohbet listesi, PDF indirme) |
 | `tools/pack_update.py` | yerel güncelleme paketi üretici (`dist/` → zip + `version.json`) |
-| `tests/` | 165 kontrol (motor, FTP, köprü, yeniden başlatma, GUI, sayfa/medya, güncelleme, WhatsApp) |
+| `tests/` | 199 kontrol (motor, FTP, köprü, torrent, yeniden başlatma, GUI, sayfa/medya, güncelleme, WhatsApp) |
 
 ## Testler
 
@@ -177,15 +210,17 @@ hiçbir sohbetten dosya indirilmez (dinleyici + Python tarafında çift kontrol)
 | `tests/test_restart_resume.py` | kapanınca duraklat → açılınca devam + gerçek internet indirmesi | 8 |
 | `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
 | `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
-| `tests/test_gui.py` | diyaloglar, hızlı site butonları ve arayüz (ekran/`tkinter` gerektirir) | 29 |
+| `tests/test_gui.py` | diyaloglar, hızlı site butonları, torrent sekmesi ve arayüz (ekran/`tkinter` gerekir) | 34 |
 | `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 22 |
-| `tests/test_updater.py` | sürüm karşılaştırma, manifest, SHA-256 reddi, zip-slip, geri alma, kurulum | 29 |
+| `tests/test_torrent.py` | aria2 başlatma, HTTP indirme, magnet ekle/duraklat/sil, köprü `/torrent`, kalıcılık | 23 |
+| `tests/test_updater.py` | sürüm karşılaştırma, manifest, SHA-256 reddi, zip-slip, geri alma, kurulum | 35 |
 | `tests/test_whatsapp.py` | beyaz liste eşleşme, üst veri, izleyici teslimi, kapalı/boş durumlar | 23 |
 
 ```bash
 python tests/test_download_manager.py
 python tests/test_restart_resume.py
 python tests/test_bridge.py
+python tests/test_torrent.py      # tools/aria2/aria2c.exe gerekir
 python tests/test_ftp.py        # pip install pyftpdlib
 python tests/test_gui.py        # grafik oturum gerekir
 python tests/test_page_media.py

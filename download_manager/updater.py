@@ -24,6 +24,8 @@ import zipfile
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+from .util import app_root_dir, is_frozen
+
 MANIFEST_NAME = "version.json"
 STAGING_DIRNAME = ".update_staging"
 BACKUP_DIRNAME = ".update_backup"
@@ -152,9 +154,33 @@ def _staged_version(staging):
     return match.group(1)
 
 
-def apply_update(app_root, zip_path, expected_version=None, backup=True):
+def _swap_exe(staging, exe_target, version):
+    """Çalışan exe'i `.old`'a taşır (Windows'ta çalışan exe taşınabilir),
+    paket içindeki yenisini yerine koyar; `.old` yeni açılışta silinir."""
+    staged = next((item for item in sorted(Path(staging).iterdir())
+                   if item.is_file() and item.suffix.lower() == ".exe"), None)
+    if staged is None:
+        raise RuntimeError("paket içinde exe yok")
+    exe_target = Path(exe_target)
+    stale = exe_target.with_name(exe_target.name + ".old")
+    if stale.exists():
+        try:
+            stale.unlink()
+        except OSError:
+            pass
+    if exe_target.exists():
+        exe_target.rename(stale)
+    staged.rename(exe_target)
+    return version
+
+
+def apply_update(app_root, zip_path, expected_version=None, backup=True,
+                 exe_target=None):
     """Zip'i uygular. Kullanıcı verisi korunur; hata olursa geri alır.
 
+    - Kaynak paketi: `download_manager/__init__.py` içinden sürüm okunur.
+    - Exe paketi (frozen): manifest sürümü kullanılır, önce dosyalar sonra
+      çalışan exe değişimi yapılır.
     Dönen değer: uygulanan sürüm (str).
     """
     app_root = Path(app_root).resolve()
@@ -165,16 +191,24 @@ def apply_update(app_root, zip_path, expected_version=None, backup=True):
         path.mkdir(parents=True, exist_ok=True)
     try:
         _safe_extract(zip_path, staging)
-        version = _staged_version(staging)
-        if expected_version and compare_versions(version, expected_version) != 0:
-            raise RuntimeError(
-                f"manifest sürümü {expected_version} ama paket {version}")
+        if (Path(staging) / PACKAGE_INIT).is_file():
+            version = _staged_version(staging)
+            if expected_version and compare_versions(version, expected_version) != 0:
+                raise RuntimeError(
+                    f"manifest sürümü {expected_version} ama paket {version}")
+        elif expected_version:
+            version = str(expected_version)
+        else:
+            raise RuntimeError("paket içinde sürüm bilgisi yok")
+        frozen = is_frozen()
         moved_to_backup = []
         replaced = []
         try:
             for item in sorted(staging.iterdir()):
                 if item.name in PRESERVE_ROOT:
                     continue
+                if frozen and item.is_file() and item.suffix.lower() == ".exe":
+                    continue  # exe en son, çalışan dosyanın kendisi
                 target = app_root / item.name
                 keeps = PRESERVE_SUBDIRS.get(item.name, set())
                 kept = []
@@ -211,6 +245,9 @@ def apply_update(app_root, zip_path, expected_version=None, backup=True):
                 if dest.exists():
                     shutil.rmtree(dest, ignore_errors=True)
                 shutil.move(str(stash), str(dest))
+        if frozen:
+            target_exe = Path(exe_target) if exe_target else Path(sys.executable)
+            _swap_exe(staging, target_exe, version)
         # staging temiz (içindekiler taşındı).
         shutil.rmtree(staging, ignore_errors=True)
         if not backup:
@@ -221,26 +258,31 @@ def apply_update(app_root, zip_path, expected_version=None, backup=True):
         raise
 
 
-def prepare_restart(app_root, runner=None):
+def prepare_restart(app_root=None, runner=None):
     """Yeni süreç başlatıp mevcut süreci sonlandırır (kaydetme sonrası çağrılır)."""
-    app_root = Path(app_root).resolve()
+    app_root = Path(app_root) if app_root else app_root_dir()
     runner = runner or _default_runner
     runner(app_root)
 
 
 def _default_runner(app_root):
     import subprocess
-    kwargs = {"cwd": str(app_root)}
+    kwargs = {}
     if os.name == "nt":
         kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    subprocess.Popen([sys.executable, "-m", "download_manager"], **kwargs)
+    if is_frozen():
+        # Dondurulmuş exe: kendini yeniden başlat (argümansız).
+        subprocess.Popen([sys.executable], **kwargs)
+    else:
+        kwargs["cwd"] = str(app_root)
+        subprocess.Popen([sys.executable, "-m", "download_manager"], **kwargs)
     os._exit(0)
 
 
 def install_update(source, app_root=None, current=None, expected_version=None,
                    progress=None):
     """Kontrol → indir → SHA-256 → uygula. Uygulanırsa dict{status:'installed'}."""
-    app_root = Path(app_root) if app_root else Path(__file__).resolve().parent.parent
+    app_root = Path(app_root) if app_root else app_root_dir()
     status = check_for_update(source, current=current)
     if status["status"] != "update_available":
         return status
@@ -269,7 +311,7 @@ def install_update(source, app_root=None, current=None, expected_version=None,
 def auto_update(manager, interval=6 * 3600, app_root=None):
     """Arka plan döngüsü: kaynak boşsa çalışmaz; güncelleme varsa indirip
     uygular, müsaitse yeniden başlatır. Kuyrukta iş varsa 60 sn sonra tekrar dener."""
-    app_root = Path(app_root) if app_root else Path(__file__).resolve().parent.parent
+    app_root = Path(app_root) if app_root else app_root_dir()
     while not manager._stop.is_set():
         source = (manager.settings.update_source or "").strip()
         enabled = bool(getattr(manager.settings, "update_enabled", True))

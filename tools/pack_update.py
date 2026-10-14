@@ -89,12 +89,47 @@ def build(out_dir: Path):
     print(f"manifest: {manifest_path}")
 
 
+def build_exe(exe_path: Path, out_dir: Path):
+    """Exe dağıtımı için paket: zip'in içinde tek dosya exe + manifest."""
+    version = app_version()
+    if not exe_path.is_file():
+        raise SystemExit(f"exe bulunamadı: {exe_path}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    zip_name = f"RetroDownloadManager-{version}-exe.zip"
+    zip_path = out_dir / zip_name
+    if zip_path.exists():
+        zip_path.unlink()
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.write(exe_path, exe_path.name)
+    digest = sha256_file(zip_path)
+    manifest = {
+        "version": version,
+        "file": zip_name,
+        "sha256": digest,
+        "notes": f"Retro+ Download Manager {version} (portable exe)",
+        "type": "exe",
+    }
+    manifest_path = out_dir / "version.json"
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2),
+                             encoding="utf-8")
+    print(f"exe paketi: {zip_path}")
+    print(f"boyut     : {zip_path.stat().st_size:,} bayt")
+    print(f"sha256    : {digest}")
+    print(f"manifest  : {manifest_path}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Yerel güncelleme paketi üretir")
     parser.add_argument("--out", default=str(REPO / "dist"),
                         help="Çıktı klasörü (varsayılan: dist)")
+    parser.add_argument("--exe", default=None,
+                        help="Hazır exe yolu: tek dosyalık exe paketi üretir")
     args = parser.parse_args(argv)
-    build(Path(args.out).expanduser())
+    out = Path(args.out).expanduser()
+    if args.exe:
+        build_exe(Path(args.exe).expanduser(), out)
+    else:
+        build(out)
     return 0
 
 

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PAD>
+  <Program_Info>
+    <Program_Name>Retro+ Download Manager</Program_Name>
+    <Program_Version>1.1.0</Program_Version>
+    <Program_Release_Date>2026-10-14</Program_Release_Date>
+    <Program_Category>Internet | Download Managers</Program_Category>
+    <Program_Sub_Category>HTTP/FTP/Torrent Download Manager</Program_Sub_Category>
+    <Program_Summary_Text>Turkish multi-segment download manager with torrent (aria2) and magnet link support</Program_Summary_Text>
+    <Program_Description>
+      Retro+ Download Manager is a free, open-source (MIT) download manager with:
+      - Up to 32 parallel segments (HTTP Range)
+      - Pause/resume/cancel from any point
+      - Built-in aria2 torrent engine (magnet + .torrent files)
+      - Download queue with concurrency limit
+      - Hourly/daily scheduled downloads
+      - Automatic file categories (Video, Music, Archives, Programs, Documents)
+      - Web page media resolution (og:video, source, JSON-LD)
+      - Playlist support (YouTube, DASH merge with yt-dlp + ffmpeg)
+      - Site Grabber for batch queueing
+      - FTP/FTPS support
+      - Client-side speed limit
+      - Browser bridge on 127.0.0.1:8877
+      - Clipboard monitoring
+      - Turkish interface
+      - Portable Windows executable (no Python required)
+    </Program_Description>
+    <Program_Icon_URL>https://retro-download-manager.netlify.app/assets/icon.png</Program_Icon_URL>
+  </Program_Info>
+
+  <Company_Info>
+    <Company_Name>RetroNyym</Company_Name>
+    <Contact_Email>216476870+RetroNyym@users.noreply.github.com</Contact_Email>
+    <Contact_Address></Contact_Address>
+    <Contact_Phone></Contact_Phone>
+    <Contact_Fax></Contact_Fax>
+    <Contact_Website>https://retro-download-manager.netlify.app</Contact_Website>
+  </Company_Info>
+
+  <Download_Info>
+    <Download_URL>https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip</Download_URL>
+    <Download_Mirror_URL>https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip</Download_Mirror_URL>
+    <File_Name>RetroDownloadManager-v1.1.0.zip</File_Name>
+    <File_Size>51.5 MB</File_Size>
+    <OS>Windows 10 (64-bit), Windows 11 (64-bit)</OS>
+    <Requires_32bit>False</Requires_32bit>
+    <Requires_64bit>True</Requires_64bit>
+    <Requires_Vista>False</Requires_Vista>
+    <Requires_Win7>False</Requires_Win7>
+    <Requires_Win8>False</Requires_Win8>
+    <Requires_Win8_1>False</Requires_Win8_1>
+    <Requires_Win10>True</Requires_Win10>
+    <Requires_Win11>True</Requires_Win11>
+    <Also_Available_From>https://github.com/RetroNyym/Retro-Download-Manager/releases</Also_Available_From>
+    <Also_Available_From_URL>https://github.com/RetroNyym/Retro-Download-Manager/releases</Also_Available_From_URL>
+  </Download_Info>
+
+  <Licensing_Info>
+    <License_Type>Open Source</License_Type>
+    <License_Name>MIT License</License_Name>
+    <License_URL>https://github.com/RetroNyym/Retro-Download-Manager/blob/main/LICENSE</License_URL>
+    <Price>Free</Price>
+    <Free_Version>Full version</Free_Version>
+    <Open_Source>True</Open_Source>
+    <Source_Code_URL>https://github.com/RetroNyym/Retro-Download-Manager</Source_Code_URL>
+    <Cost_To_Compete>0</Cost_To_Compete>
+  </Licensing_Info>
+
+  <Web_Links>
+    <WebLink1_Title>GitHub Repository</WebLink1_Title>
+    <WebLink1_URL>https://github.com/RetroNyym/Retro-Download-Manager</WebLink1_URL>
+    <WebLink2_Title>Official Website</WebLink2_Title>
+    <WebLink2_URL>https://retro-download-manager.netlify.app</WebLink2_URL>
+    <WebLink3_Title>Download Page</WebLink3_Title>
+    <WebLink3_URL>https://retro-download-manager.netlify.app/indir.html</WebLink3_URL>
+    <WebLink4_Title>Issue Tracker</WebLink4_Title>
+    <WebLink4_URL>https://github.com/RetroNyym/Retro-Download-Manager/issues</WebLink4_URL>
+  </Web_Links>
+
+  <Misc_Info>
+    <Installation_Type>Portable</Installation_Type>
+    <Program_Type>Application</Program_Type>
+    <Language_Information>
+      <Default_Language>English</Default_Language>
+      <Available_Languages_List>
+        <Language>English</Language>
+        <Language>Turkish</Language>
+      </Available_Languages_List>
+    </Language_Information>
+    <Other_System_Requirements>No additional requirements for portable .exe. Source requires Python 3.11+.</Other_System_Requirements>
+    <Screenshot_URL>https://retro-download-manager.netlify.app/assets/screenshot-main.png</Screenshot_URL>
+    <Screenshot1_URL>https://retro-download-manager.netlify.app/assets/screenshot-main.png</Screenshot1_URL>
+    <Screenshot2_URL>https://retro-download-manager.netlify.app/assets/screenshot-add.png</Screenshot2_URL>
+    <Screenshot3_URL>https://retro-download-manager.netlify.app/assets/screenshot-settings.png</Screenshot3_URL>
+  </Misc_Info>
+
+  <Checksum_Info>
+    <Checksum_Type>SHA-256</Checksum_Type>
+    <Checksum_Value>9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb</Checksum_Value>
+  </Checksum_Info>
+</PAD>

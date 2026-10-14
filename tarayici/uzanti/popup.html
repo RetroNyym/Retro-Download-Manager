@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" />
+    <div>
+      <h1>Retro+ Tarayıcı</h1>
+      <p id="kopruDurum" class="kontrol">aranıyor…</p>
+    </div>
+  </header>
+
+  <section class="anahtar">
+    <span>İndirmeleri Retro+'a aktar</span>
+    <label class="gecis">
+      <input type="checkbox" id="yakala" />
+      <span class="kollar"></span>
+    </label>
+  </section>
+
+  <section id="kuyruk" class="kuyruk">
+    <span>—</span>
+  </section>
+
+  <section id="liste" class="liste"></section>
+
+  <footer>
+    <button id="yenile">Köprüyü yenile</button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -16,18 +16,18 @@ Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazı
 | Alan | Değer |
 | --- | --- |
 | Program adı | Retro+ Download Manager |
-| Sürüm | 1.0.0 |
+| Sürüm | 1.1.0 |
 | Lisans | MIT (ücretsiz, açık kaynak) |
 | Fiyat | Ücretsiz — reklamsız, deneme süresi yok |
-| İşletim sistemi | Windows 10/11, Linux, macOS |
-| Gereksinim | Python 3.11+ ve `requests` (video için isteğe bağlı `yt-dlp` + `ffmpeg`) |
+| İşletim sistemi | Windows 10/11 (x64); taşınabilir exe — Python gerekmez |
+| Gereksinim | Exe sürümünde ek gereksinim yok (Python3.11+ yalnız kaynak için; video için isteğe bağlı `ffmpeg`) |
 | Kategori | İnternet › İndirme Yöneticileri (yoksa: Sistem Araçları) |
 | Ana sayfa | https://retro-download-manager.netlify.app |
 | Kaynak kod | https://github.com/RetroNyym/Retro-Download-Manager |
-| İndirme (ana) | https://retro-download-manager.netlify.app/download/Retro-Download-Manager-v1.0.0.zip |
-| İndirme (ayna) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.0.0/Retro-Download-Manager-v1.0.0.zip |
-| Dosya boyutu | 266 KB (ZIP) |
-| SHA-256 | `73b50af2d18455eb4ca0d394b36138d66e5a8c83c34315b3867f80a05982366b` |
+| İndirme (ana) | https://retro-download-manager.netlify.app/download/RetroDownloadManager-v1.1.0.zip |
+| İndirme (ayna) | https://github.com/RetroNyym/Retro-Download-Manager/releases/download/v1.1.0/RetroDownloadManager-v1.1.0.zip |
+| Dosya boyutu | 51.5 MB (ZIP; taşınabilir exe + aria2 torrent motoru) |
+| SHA-256 | `9e953eb3fca84a0d5667857ef322ba6ff0f97dfb0470df2d7528d111913f62cb` |
 | İletişim | `216476870+RetroNyym@users.noreply.github.com` |
 | Ekran görüntüsü | `docs/screenshots/` altındaki 4 PNG |
 
@@ -38,14 +38,14 @@ Donanım Haber vb.) yapılacak başvurularda **kopyala-yapıştır** için hazı
 **≤100 karakter (en kısa):**
 
 ```
-Çok parçalı, hızlı indirme yöneticisi — duraklat/devam, kuyruk, zamanlama, video linkleri
+Çok parçalı indirme + torrent (aria2) ve magnet: desteği — duraklat/devam, kuyruk, zamanlama
 ```
 
 **≤160 karakter (arama sonucu / meta):**
 
 ```
-Retro+ Download Manager: 32 parçaya kadar paralel indirme, duraklat/devam, kuyruk,
-zamanlama, otomatik kategoriler ve web sayfası/playlist çözümleme. Ücretsiz, MIT.
+Retro+ Download Manager: 32 parçaya kadar paralel indirme + torrent (aria2) ve magnet:
+desteği; duraklat/devam, kuyruk, zamanlama. Ücretsiz, MIT.
 ```
 
 **≤250 karakter (sosyal / portal özeti):**
@@ -62,13 +62,18 @@ indirme yöneticisidir. Windows, Linux ve macOS'ta çalışır.
 ## 3. Uzun açıklama (portallar için)
 
 ```
-Retro+ Download Manager, Python ile yazılmış, Türkçe arayüzlü, ücretsiz ve açık kaynak
-(MIT lisanslı) bir indirme yöneticisidir. Kurulum gerektirmez, reklam ve deneme süresi
-yoktur; tek çalışma zamanı bağımlılığı "requests" paketidir.
+Retro+ Download Manager, Türkçe arayüzlü, ücretsiz ve açık kaynak (MIT lisanslı) bir
+indirme yöneticisidir. Windows için taşınabilir .exe sunulur (ZIP'ten çıkarıp
+çalıştırın, Python gerekmez); kaynak sürüm Python 3.11+ ile Linux/macOS'ta da çalışır.
+Reklam ve deneme süresi yoktur.
 
 Özellikler:
 - 32 parçaya kadar paralel (segmentli) indirme; sunucu Range desteklemiyorsa tek parçaya
   otomatik düşer
+- Torrent indirme: yerleşik aria2 motoru; magnet ve .torrent dosyaları, duraklat/devam,
+  kayıtlı işlerin otomatik geri yüklenmesi
+- magnet: protokolü: tarayıcınızdan magnet bağlantısına tıklayın, uygulama otomatik
+  açılıp kuyruğa ekler
 - Her noktadan duraklat / devam / iptal; ilerleme diske yazılır, program kapansa bile
   kaldığı yerden devam eder
 - İndirme kuyruğu ve eşzamanlılık sınırı; saatlik/günlük zamanlanmış indirmeler
@@ -85,8 +90,8 @@ yoktur; tek çalışma zamanı bağımlılığı "requests" paketidir.
 - Kütüphane olarak da kullanılabilir: GUI olmadan DownloadManager sınıfını kendi
   programınıza bağlayabilirsiniz
 
-Sistem gereksinimleri: Python 3.11 veya üzeri (Windows 10/11, Linux, macOS). Video ve
-playlist için isteğe bağlı yt-dlp ve ffmpeg.
+Sistem gereksinimleri: Windows 10/11 (64 bit) — .exe sürümünde ek gereksinim yok.
+Video ve playlist için isteğe bağlı ffmpeg. Kaynak sürüm: Python 3.11+.
 
 Tamamen test edilmiş: 165 otomatik kontrol ve pyflakes temiz. Kaynak kod GitHub'da
 açıkça incelenebilir.
@@ -137,16 +142,24 @@ görüntüleri 1280×800'e ölçekleyin.
 
 ---
 
-## 7. Sürüm 1.0.0 notları (TR)
+## 7. Sürüm 1.1.0 notları (TR)
 
 ```
+Yeni v1.1.0'da:
+- Torrent indirme: yerleşik aria2 motoru; magnet ve .torrent dosyaları
+- magnet: protokolü desteği — tarayıcınızdan magnet bağlantısına tıklayın,
+  uygulama otomatik açılıp kuyruğa ekler
+- Taşınabilir Windows .exe (Python gerekmez) — ZIP'ten çıkarıp çalıştırın
+- MSIX paketi (Microsoft Store'a hazır, WACK sertifikasyonu PASS)
+- aria2 yapılandırmasını içeren geliştirilmiş ayarlar penceresi
+- Hata düzeltmeleri ve performans iyileştirmeleri
+
+Önceki (v1.0.0):
 - 32 parçaya kadar paralel indirme, duraklat/devam/iptal, kuyruk ve zamanlayıcı
-- Web sayfası çözümleme: og:video, kaynak etiketleri, JSON-LD; medya yoksa net hata
-- Playlist: YouTube vb. listeler tek görevden tüm videolara genişler; DASH'ta ffmpeg
-  ile ses+video birleştirme
+- Web sayfası çözümleme: og:video, kaynak etiketleri, JSON-LD
+- Playlist: YouTube vb. listeler tek görevden tüm videolara genişler
 - Hızlı site butonları: YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo
-- Tarayıcı köprüsü + pano izleme, Site Grabber, FTP, ayna URL, hız sınırı,
-  sesli bildirim
+- Tarayıcı köprüsü + pano izleme, Site Grabber, FTP, ayna URL, hız sınırı
 - 165 test kontrolü ve pyflakes temiz
 ```
 
@@ -156,8 +169,9 @@ görüntüleri 1280×800'e ölçekleyin.
 
 ```
 indirme yöneticisi, indirme hızlandırıcı, download manager, ücretsiz program,
-parça indirme, duraklat devam, kuyruklu indirme, video indirme, playlist indirme,
-açık kaynak, MIT, Türkçe program, dosya indirme programı, FTP indirme
+parça indirme, duraklat devam, kuyruklu indirme, torrent, aria2, magnet,
+.video indirme, playlist indirme, açık kaynak, MIT, Türkçe program,
+dosya indirme programı, FTP indirme
 ```
 
 ---
@@ -166,10 +180,11 @@ açık kaynak, MIT, Türkçe program, dosya indirme programı, FTP indirme
 
 | Soru | Cevap |
 | --- | --- |
-| Kurulum gerektiriyor mu? | ZIP'i açıp `python -m download_manager` çalıştırılır; `baslat_gui.bat` Windows kısayoludur (CMD penceresi açılmaz), `baslat_gui.vbs` ile tamamen gizli açılır. |
-| Kötü yazılım içerir mi? | Hayır; tek bağımlılık `requests`, kod MIT lisanslı ve açık kaynak. |
+| Kurulum gerektiriyor mu? | Hayır. ZIP'i açın, `RetroDownloadManager.exe` dosyasını çift tıklayın — Python gerekmez. |
+| Kötü yazılım içerir mi? | Hayır; MIT lisanslı açık kaynak, tek bağımlılık `requests` (kaynak sürümde). |
 | Reklam/toolbar ekler mi? | Hayır, hiçbir şey kurmaz. |
 | İnternetsiz çalışır mı? | İndirme için internet gerekir; arayüz ve yerel dosya işlemleri internetsiz çalışır. |
-| Çıkarım/kurulum (installer) var mı? | Portable ZIP olarak dağıtılır; imzalı .exe kurucusu planlanmaktadır. |
+| Torrent desteği var mı? | Evet; yerleşik aria2 motoru ile magnet ve .torrent dosyaları desteklenir. |
+| magnet: linkleri açılır mı? | Evet; uygulama kurulduğunda `magnet:` Windows kaydı otomatik yapılır. |
 | Fiyat? | Ücretsiz, deneme süresi yok, hesap gerekmez. |
 | Destek? | GitHub Issues: https://github.com/RetroNyym/Retro-Download-Manager/issues |

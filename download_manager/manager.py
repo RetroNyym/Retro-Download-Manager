@@ -34,6 +34,7 @@ from .engine import (
 from .util import (
     DEFAULT_CATEGORY_FOLDERS,
     PAGE_EXTENSIONS,
+    default_data_dir,
     format_bytes,
 )
 from .whatsapp import WhatsAppWatcher
@@ -71,6 +72,9 @@ class Settings:
         "clipboard_auto_add": False,
         "bridge_enabled": True,
         "bridge_port": 8877,
+        "torrent_enabled": True,
+        "torrent_port": 6800,
+        "torrent_dir": "",
         "scan_enabled": False,
         "scan_command": "",
         "exit_when_done": False,
@@ -202,7 +206,7 @@ def is_file_link(url, extensions=None):
 
 class DownloadManager:
     def __init__(self, data_dir=None):
-        base = Path(data_dir) if data_dir else Path(__file__).resolve().parent / "data"
+        base = Path(data_dir) if data_dir else default_data_dir()
         base.mkdir(parents=True, exist_ok=True)
         self.data_dir = base
         self.settings = Settings(base / "settings.json")
@@ -221,6 +225,9 @@ class DownloadManager:
         self._bridge_thread = None
         self._bridge_port = int(self.settings.bridge_port or 8877)
         self._start_bridge()
+        self._torrent_engine_ = None
+        self._torrent_kayit = None
+        self._torrent_lock = threading.Lock()
         self._scheduler = threading.Thread(target=self._scheduler_loop, daemon=True)
         self._scheduler.start()
         self.wa_watcher = WhatsAppWatcher(self)
@@ -354,6 +361,29 @@ class DownloadManager:
                         return
                     self._reply({"ok": True, "count": len(links), "links": links})
                     return
+                if path in ("/torrent", "/magnet"):
+                    hedef = (params.get("url") or params.get("magnet")
+                             or params.get("torrent") or [""])[0].strip()
+                    if not hedef:
+                        self._reply({"ok": False, "error": "url parametresi gerekli"})
+                        return
+                    try:
+                        gid = manager.torrent_add(hedef)
+                    except Exception as exc:
+                        self._reply({"ok": False, "error": str(exc)})
+                        return
+                    manager.log(f"Köprü üzerinden torrent eklendi: {hedef[:120]}",
+                                "info")
+                    self._reply({"ok": True, "gid": gid})
+                    return
+                if path in ("/torrents", "/torrent/list"):
+                    try:
+                        liste = manager.torrent_list()
+                    except Exception as exc:
+                        self._reply({"ok": False, "error": str(exc)})
+                        return
+                    self._reply({"ok": True, "torrents": liste})
+                    return
                 if path in ("/status", "/ping"):
                     stats = manager.stats()
                     self._reply({"ok": True, "queue": manager.queue_running, **stats})
@@ -395,6 +425,147 @@ class DownloadManager:
             return
         if "bridge_enabled" in values or "bridge_port" in values:
             self._start_bridge()
+
+    # ------------------------------------------------------------- torrent ---
+    def _torrent_klasor(self):
+        ozel = (self.settings.torrent_dir or "").strip()
+        if ozel:
+            klasor = Path(ozel).expanduser()
+        else:
+            klasor = Path(self.settings.download_dir).expanduser() / "Torrentler"
+        try:
+            klasor.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return str(klasor)
+
+    def _torrent_engine(self, baslat=True):
+        """Tembel motor: ilk istekte baslatir; kapaliysa None dondurur."""
+        from .torrent import TorrentEngine, TorrentKayit
+        with self._torrent_lock:
+            if self._torrent_kayit is None:
+                self._torrent_kayit = TorrentKayit(self.data_dir)
+            if not bool(getattr(self.settings, "torrent_enabled", True)):
+                return None
+            if self._torrent_engine_ is None:
+                self._torrent_engine_ = TorrentEngine(
+                    self.data_dir, self._torrent_klasor,
+                    port=int(self.settings.torrent_port or 6800))
+            motor = self._torrent_engine_
+        if baslat and not motor.ayakta():
+            if not motor.exe_var():
+                if not getattr(self, "_torrent_exe_uyarildi", False):
+                    self._torrent_exe_uyarildi = True
+                    self.log("aria2 bulunamadı (tools/aria2/aria2c.exe).",
+                             "error")
+                return motor
+            # baslat() surebilir; hata sonrasi 15 sn tekrar deneme
+            son_hata = getattr(self, "_torrent_baslat_son", 0.0)
+            if time.time() - son_hata > 15.0:
+                if motor.baslat(bekle=5.0):
+                    self._torrent_baslat_son = 0.0
+                    # yalnizca GERCEKTEN yeni surec basladiysa geri yukle
+                    # (tek ping timeout gibi yanlis-negatiflerde tekrar eklemesin)
+                    if getattr(motor, "_son_baslat_yeni", True):
+                        self._torrent_geri_yukle()
+                else:
+                    self._torrent_baslat_son = time.time()
+                    self.log("Torrent motoru başlatılamadı "
+                             "(tools/aria2/aria2c.exe).", "error")
+        return motor
+
+    def _torrent_geri_yukle(self):
+        """Motor yeniden basladiginca tamamlanmamis URI'leri tekrar ekler."""
+        kayit = self._torrent_kayit
+        motor = self._torrent_engine_
+        if not kayit or not motor:
+            return
+        try:
+            mevcut = set(k.get("gid", "") for k in motor.liste())
+        except Exception:
+            mevcut = set()
+        for uri in kayit.eksikler():
+            # gid aria2 hala gosteriyorsa indirme yuruyor: tekrar ekleme
+            if kayit.gid_bul(uri) in mevcut:
+                continue
+            try:
+                gid = motor.ekle(uri)
+                kayit.gid_guncelle(uri, gid)
+            except Exception as exc:
+                self.log(f"Torrent geri yüklenemedi: {exc}", "warning")
+
+    def torrent_add(self, kaynak):
+        """magnet / .torrent URL / yerel .torrent -> gid."""
+        motor = self._torrent_engine()
+        if motor is None:
+            raise RuntimeError("Torrent desteği kapalı "
+                               "(Ayarlar - Torrent sekmesi)")
+        if not motor.ayakta():
+            raise RuntimeError("aria2 motoru başlatılamadı "
+                               "(tools/aria2/aria2c.exe)")
+        uri = str(kaynak or "").strip()
+        gid = motor.ekle(uri)
+        if self._torrent_kayit:
+            self._torrent_kayit.ekle(uri, gid)
+        self.log(f"Torrent eklendi: {uri[:140]}", "success")
+        return gid
+
+    def torrent_list(self):
+        motor = self._torrent_engine()
+        if motor is None:
+            return []
+        try:
+            liste = motor.liste()
+        except Exception as exc:
+            self.log(f"Torrent listesi alınamadı: {exc}", "warning")
+            return []
+        if self._torrent_kayit:
+            for item in liste:
+                uri = item.get("kaynak") or ""
+                if not uri:
+                    # magnet/BT kayitlarinda aria2 uris bos doner; gid -> uri eslesmesi
+                    uri = self._torrent_kayit.uri_bul(item.get("gid", ""))
+                    if uri:
+                        item["kaynak"] = uri
+                if uri:
+                    if item.get("durum") == "complete":
+                        self._torrent_kayit.tamam_isaretle(uri)
+                    elif item.get("durum") != "error":
+                        # hatali kaydin gid'i kaydi bozmasin (eski kayit korunur)
+                        self._torrent_kayit.gid_guncelle(uri, item.get("gid", ""))
+        return liste
+
+    def torrent_action(self, gid, islem):
+        """duraklat / devam / kaldir / klasoru_ac."""
+        motor = self._torrent_engine(baslat=False)
+        if motor is None:
+            raise RuntimeError("Torrent desteği kapalı")
+        if islem == "duraklat":
+            return motor.duraklat(gid)
+        if islem == "devam":
+            return motor.devam(gid)
+        if islem in ("kaldir", "kaldir_dosya"):
+            uri = ""
+            if self._torrent_kayit:
+                uri = self._torrent_kayit.uri_bul(gid)
+            sonuc = motor.kaldir(gid, dosyalar=(islem == "kaldir_dosya"))
+            if uri and self._torrent_kayit:
+                self._torrent_kayit.sil(uri)  # yeniden baslarken tekrar eklenmesin
+            self.log(f"Torrent kaldırıldı: {gid[:8]}", "info")
+            return sonuc
+        if islem == "klasoru_ac":
+            return motor.klasoru_ac(self._torrent_klasor())
+        raise ValueError("bilinmeyen işlem: %s" % islem)
+
+    def _restart_torrent(self, values=None):
+        if values is None or any(k in values for k in
+                                 ("torrent_enabled", "torrent_port", "torrent_dir")):
+            motor = self._torrent_engine_
+            if motor is not None:
+                motor.durdur()
+                self._torrent_engine_ = None
+            if bool(getattr(self.settings, "torrent_enabled", True)) and values is None:
+                self._torrent_engine(baslat=False)
 
     def log(self, message, level="info"):
         stamp = time.strftime("%H:%M:%S")
@@ -595,6 +766,7 @@ class DownloadManager:
         except OSError:
             pass
         self._restart_bridge(values)
+        self._restart_torrent(values)
         if values and any(key.startswith("wa_") for key in values):
             try:
                 self.wa_watcher.restart()
@@ -867,6 +1039,13 @@ class DownloadManager:
         if self._scheduler.is_alive():
             self._scheduler.join(timeout=3.0)
         self._stop_bridge()
+        motor = self._torrent_engine_
+        if motor is not None:
+            try:
+                motor.durdur()
+            except Exception:
+                pass
+            self._torrent_engine_ = None
         for task in list(self.tasks):
             if task.is_busy:
                 task.pause()

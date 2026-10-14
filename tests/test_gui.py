@@ -131,8 +131,11 @@ def main():
     settings.var_wa_out.set(r"C:\WA\cikti")
     settings._whitelist_entries.append({"jid": "1-2@g.us", "label": "TestGrup"})
     settings.wa_list.insert("end", "TestGrup  (1-2@g.us)")
+    settings.var_torrent_on.set(True)
+    settings.var_torrent_port.set(6810)
+    settings.var_torrent_dir.set(r"C:\Torrentler")
     pump()
-    check("ayarlar sekmeleri", len(settings.notebook.tabs()) == 7,
+    check("ayarlar sekmeleri", len(settings.notebook.tabs()) == 8,
           str(len(settings.notebook.tabs())))
     settings._ok()
     values = settings.result
@@ -158,6 +161,12 @@ def main():
         check("ayarlar beyaz liste",
               values["wa_whitelist"] == [{"jid": "1-2@g.us", "label": "TestGrup"}],
               str(values.get("wa_whitelist")))
+        check("ayarlar torrent alani",
+              values["torrent_enabled"] is True and
+              values["torrent_port"] == 6810 and
+              values["torrent_dir"] == r"C:\Torrentler",
+              str((values.get("torrent_enabled"), values.get("torrent_port"),
+                   values.get("torrent_dir"))))
         mgr.apply_settings(values)
         check("ayarlar uygulandi",
               mgr.settings.segments == 12 and mgr.settings.speed_limit == 4096,
@@ -196,6 +205,23 @@ def main():
     app._refresh_history()
     pump()
     check("arayuz yenilendi", len(app._rows) == 3, str(len(app._rows)))
+
+    sekme_adlari = [app.notebook.tab(t, "text").strip() for t in app.notebook.tabs()]
+    check("torrent sekmesi var", "Torrent" in sekme_adlari, str(sekme_adlari))
+    mgr.apply_settings({"torrent_enabled": False})
+    app._refresh_torrents()
+    check("torrent bilgi etiketi", "kapalı" in app.var_torrent_info.get(),
+          app.var_torrent_info.get())
+    check("torrent liste bos", len(app.torrent_tree.get_children()) == 0,
+          str(len(app.torrent_tree.get_children())))
+    oncesi = len(app.root.winfo_children())
+    app._torrent_add_dialog()
+    pump()
+    check("torrent ekleme penceresi", len(app.root.winfo_children()) > oncesi,
+          str((oncesi, len(app.root.winfo_children()))))
+    for cocuk in app.root.winfo_children()[oncesi:]:
+        cocuk.destroy()
+    pump()
     check("durum cubugu", "Kuyruk" in app.var_status_left.get(),
           app.var_status_left.get()[:60])
     check("gunluk dolu", len(app.log_text.get("1.0", "end")) > 10)

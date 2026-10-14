@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>RetroDownloadManager</id>
+    <version>1.1.0</version>
+    <title>Retro+ Download Manager</title>
+    <authors>RetroNyym</authors>
+    <owners>RetroNyym</owners>
+    <projectUrl>https://retro-download-manager.netlify.app</projectUrl>
+    <iconUrl>https://retro-download-manager.netlify.app/assets/icon.png</iconUrl>
+    <licenseUrl>https://github.com/RetroNyym/Retro-Download-Manager/blob/main/LICENSE</licenseUrl>
+    <projectSourceUrl>https://github.com/RetroNyym/Retro-Download-Manager</projectSourceUrl>
+    <bugTrackerUrl>https://github.com/RetroNyym/Retro-Download-Manager/issues</bugTrackerUrl>
+    <docsUrl>https://retro-download-manager.netlify.app</docsUrl>
+    <mailingListUrl>https://github.com/RetroNyym/Retro-Download-Manager/discussions</mailingListUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Turkish multi-segment download manager with torrent (aria2) and magnet link support</summary>
+    <description>Retro+ Download Manager is a free, open-source (MIT) download manager with:
+- Up to 32 parallel segments (HTTP Range)
+- Pause/resume/cancel from any point
+- Built-in aria2 torrent engine (magnet + .torrent files)
+- Download queue with concurrency limit
+- Hourly/daily scheduled downloads
+- Automatic file categories (Video, Music, Archives, Programs, Documents)
+- Web page media resolution (og:video, source, JSON-LD)
+- Playlist support (YouTube, DASH merge with yt-dlp + ffmpeg)
+- Site Grabber for batch queueing
+- FTP/FTPS support
+- Client-side speed limit
+- Browser bridge on 127.0.0.1:8877
+- Clipboard monitoring
+- Turkish interface
+- Portable Windows executable (no Python required)</description>
+    <tags>download manager segmented parallel multi-part aria2 torrent magnet pause resume queue scheduler ftp https open-source</tags>
+    <copyright>MIT License © 2026 RetroNyym</copyright>
+    <releaseNotes>https://github.com/RetroNyym/Retro-Download-Manager/releases/tag/v1.1.0</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
