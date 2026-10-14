@@ -57,7 +57,26 @@ TREE_WIDTHS = {
     "state": 120,
 }
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
-HEADER_BG = "#0e2a3f"
+HEADER_BG = "#12141c"
+
+# ─── Modern koyu tema paleti ────────────────────────────────────────────────
+COLORS = {
+    "bg":            "#12141c",
+    "surface":       "#1a1d29",
+    "surface2":      "#21242f",
+    "surface3":      "#282c3a",
+    "border":        "#2e3242",
+    "primary":       "#6366f1",
+    "primary_hover": "#818cf8",
+    "accent":        "#22d3ee",
+    "success":       "#10b981",
+    "warning":       "#f59e0b",
+    "danger":        "#ef4444",
+    "text":          "#e5e7eb",
+    "text2":         "#9ca3af",
+    "text3":         "#6b7280",
+    "white":         "#ffffff",
+}
 SITE_ICONS = {
     "YouTube": "youtube",
     "Instagram": "instagram",
@@ -162,14 +181,14 @@ STATE_TAGS = {
     CANCELED: "canceled",
 }
 STATE_COLORS = {
-    "queued": "#5f6368",
-    "scheduled": "#8e24aa",
-    "probing": "#0b57d0",
-    "downloading": "#0b57d0",
-    "paused": "#b06000",
-    "completed": "#137333",
-    "error": "#c5221f",
-    "canceled": "#9aa0a6",
+    "queued":     COLORS["text3"],
+    "scheduled":  "#a78bfa",
+    "probing":    COLORS["accent"],
+    "downloading":COLORS["primary"],
+    "paused":     COLORS["warning"],
+    "completed":  COLORS["success"],
+    "error":      COLORS["danger"],
+    "canceled":   COLORS["text3"],
 }
 
 
@@ -184,6 +203,130 @@ def load_photo(relative, store=None):
     if store is not None:
         store[str(path)] = photo
     return photo
+
+
+def setup_theme(root):
+    """Modern koyu ttk teması uygular."""
+    style = ttk.Style(root)
+    try:
+        style.theme_use("clam")
+    except Exception:
+        pass
+
+    style.configure(".", background=COLORS["bg"], foreground=COLORS["text"],
+                    fieldbackground=COLORS["surface"], bordercolor=COLORS["border"],
+                    lightcolor=COLORS["surface2"], darkcolor=COLORS["surface2"],
+                    troughcolor=COLORS["surface2"], selectbackground=COLORS["primary"],
+                    selectforeground=COLORS["white"], font=("Segoe UI", 10))
+    style.configure("TFrame", background=COLORS["bg"])
+    style.configure("Surface.TFrame", background=COLORS["surface"])
+    style.configure("TLabel", background=COLORS["bg"], foreground=COLORS["text"])
+    style.configure("Surface.TLabel", background=COLORS["surface"],
+                    foreground=COLORS["text"])
+    style.configure("Muted.TLabel", background=COLORS["bg"],
+                    foreground=COLORS["text2"])
+    style.configure("TButton", background=COLORS["surface2"],
+                    foreground=COLORS["text"], bordercolor=COLORS["border"],
+                    focuscolor=COLORS["primary"], padding=(12, 6))
+    style.map("TButton",
+              background=[("active", COLORS["surface3"]),
+                          ("pressed", COLORS["primary"])],
+              foreground=[("disabled", COLORS["text3"])])
+    style.configure("Primary.TButton", background=COLORS["primary"],
+                    foreground=COLORS["white"], font=("Segoe UI", 10, "bold"))
+    style.map("Primary.TButton", background=[("active", COLORS["primary_hover"])])
+    style.configure("TEntry", fieldbackground=COLORS["surface"],
+                    foreground=COLORS["text"], insertcolor=COLORS["text"],
+                    bordercolor=COLORS["border"], lightcolor=COLORS["border"],
+                    darkcolor=COLORS["border"])
+    style.map("TEntry", bordercolor=[("focus", COLORS["primary"])],
+              lightcolor=[("focus", COLORS["primary"])],
+              darkcolor=[("focus", COLORS["primary"])])
+    style.configure("TCombobox", fieldbackground=COLORS["surface"],
+                    foreground=COLORS["text"], background=COLORS["surface2"],
+                    arrowcolor=COLORS["text2"], bordercolor=COLORS["border"],
+                    selectbackground=COLORS["surface"],
+                    selectforeground=COLORS["text"])
+    style.map("TCombobox",
+              fieldbackground=[("readonly", COLORS["surface"])],
+              foreground=[("readonly", COLORS["text"])],
+              selectbackground=[("readonly", COLORS["surface3"])],
+              selectforeground=[("readonly", COLORS["text"])],
+              arrowcolor=[("active", COLORS["text"])])
+    style.configure("TSpinbox", fieldbackground=COLORS["surface"],
+                    foreground=COLORS["text"], arrowcolor=COLORS["text2"],
+                    bordercolor=COLORS["border"], background=COLORS["surface2"])
+    style.map("TSpinbox", bordercolor=[("focus", COLORS["primary"])])
+    style.configure("TCheckbutton", background=COLORS["bg"],
+                    foreground=COLORS["text"], focuscolor=COLORS["bg"])
+    style.map("TCheckbutton", background=[("active", COLORS["bg"])],
+              foreground=[("active", COLORS["primary"])])
+    style.configure("TCheckbutton", indicatorbackground=COLORS["surface2"],
+                    indicatorcolor=COLORS["text2"],
+                    indicatorrelief="flat")
+    style.map("TCheckbutton",
+              indicatorbackground=[("selected", COLORS["primary"]),
+                                   ("active", COLORS["surface3"])],
+              indicatorcolor=[("selected", COLORS["white"]),
+                              ("active", COLORS["text"])])
+    style.configure("TNotebook", background=COLORS["bg"], borderwidth=0)
+    style.configure("TNotebook.Tab", background=COLORS["surface2"],
+                    foreground=COLORS["text2"], padding=(14, 7),
+                    borderwidth=0, font=("Segoe UI", 10))
+    style.map("TNotebook.Tab",
+              background=[("selected", COLORS["surface3"])],
+              foreground=[("selected", COLORS["primary"])],
+              expand=[("selected", (0, 0, 0, 2))])
+    style.configure("Treeview", background=COLORS["surface"],
+                    foreground=COLORS["text"], fieldbackground=COLORS["surface"],
+                    bordercolor=COLORS["border"], rowheight=30,
+                    font=("Segoe UI", 10))
+    style.configure("Treeview.Heading", background=COLORS["surface2"],
+                    foreground=COLORS["text2"], relief="flat",
+                    padding=(8, 7), font=("Segoe UI", 9, "bold"))
+    style.map("Treeview.Heading", background=[("active", COLORS["surface3"])])
+    style.map("Treeview",
+              background=[("selected", COLORS["primary"])],
+              foreground=[("selected", COLORS["white"])])
+    style.configure("Vertical.TScrollbar", background=COLORS["surface2"],
+                    troughcolor=COLORS["bg"], bordercolor=COLORS["bg"],
+                    arrowcolor=COLORS["text2"],
+                    relief="flat", borderwidth=0)
+    style.map("Vertical.TScrollbar",
+              background=[("active", COLORS["surface3"]),
+                          ("pressed", COLORS["primary"])],
+              arrowcolor=[("active", COLORS["text"])])
+    style.configure("Horizontal.TScrollbar", background=COLORS["surface2"],
+                    troughcolor=COLORS["bg"], bordercolor=COLORS["bg"],
+                    arrowcolor=COLORS["text2"],
+                    relief="flat", borderwidth=0)
+    style.map("Horizontal.TScrollbar",
+              background=[("active", COLORS["surface3"]),
+                          ("pressed", COLORS["primary"])],
+              arrowcolor=[("active", COLORS["text"])])
+    style.configure("TPanedwindow", background=COLORS["border"],
+                    sashwidth=4, sashrelief="flat")
+    style.configure("TPanedwindow.Pane", background=COLORS["bg"])
+    style.configure("TLabelframe", background=COLORS["bg"],
+                    foreground=COLORS["text2"], bordercolor=COLORS["border"])
+    style.configure("TLabelframe.Label", background=COLORS["bg"],
+                    foreground=COLORS["text2"], font=("Segoe UI", 9, "bold"))
+    style.configure("Horizontal.TProgressbar", background=COLORS["primary"],
+                    troughcolor=COLORS["surface2"], bordercolor=COLORS["bg"],
+                    lightcolor=COLORS["primary"], darkcolor=COLORS["primary"])
+    style.configure("TScale", background=COLORS["bg"],
+                    troughcolor=COLORS["surface2"], bordercolor=COLORS["bg"],
+                    slidercolor=COLORS["primary"])
+    style.configure("TSeparator", background=COLORS["border"])
+    style.configure("TMenubar", background=COLORS["surface"],
+                    foreground=COLORS["text"], bordercolor=COLORS["surface"])
+    style.map("TMenubar", background=[("active", COLORS["surface2"])],
+              foreground=[("active", COLORS["primary"])])
+    root.configure(background=COLORS["bg"])
+    try:
+        root.tk.call("tk", "scaling", 1.0)
+    except Exception:
+        pass
 
 
 def center_window(window, parent=None):
@@ -253,7 +396,7 @@ class AddDialog(tk.Toplevel):
             self.ent_url.grid(row=row, column=1, sticky="we", padx=8, pady=4)
             row += 1
             if site:
-                ttk.Label(body, foreground="#5f6368",
+                ttk.Label(body, foreground=COLORS["text2"],
                           text=f"{site} video/post bağlantısını yapıştırın; "
                                "indirme site çözümleyicisiyle otomatik yapılır.").grid(
                     row=row, column=0, columnspan=3, sticky="w", padx=8, pady=(0, 4))
@@ -511,7 +654,7 @@ class SettingsDialog(tk.Toplevel):
         ttk.Spinbox(general, from_=1024, to=65535, textvariable=self.var_bridge_port,
                     width=8).grid(row=row, column=1, sticky="w", pady=4)
         row += 1
-        ttk.Label(general, wraplength=460, foreground="#5f6368", text=(
+        ttk.Label(general, wraplength=460, foreground=COLORS["text2"], text=(
             "Köprü açıkken tarayıcı eklentisi veya yer imi şu adresten bağlantı "
             "gönderir: http://127.0.0.1:PORT/add?url=... — ayrıca "
             "/links?url=... uç noktası sayfadaki tüm indirilebilir bağlantıları "
@@ -617,7 +760,7 @@ class SettingsDialog(tk.Toplevel):
         ttk.Entry(queue_frame, textvariable=self.var_sched_end, width=8).grid(
             row=row, column=1, sticky="w", pady=4)
         row += 1
-        ttk.Label(queue_frame, wraplength=420, foreground="#5f6368", text=(
+        ttk.Label(queue_frame, wraplength=420, foreground=COLORS["text2"], text=(
             "Zaman aralığı etkinse indirmeler yalnızca bu saatler arasında başlar. "
             "Zamanlı tekil indirmeler için Ekle penceresindeki \"Saatte başlat\" "
             "seçeneğini kullanın (kuyruk açık olmalıdır).")
@@ -651,7 +794,7 @@ class SettingsDialog(tk.Toplevel):
                    command=self._detect_defender).grid(row=row, column=1, sticky="w",
                                                        pady=4)
         row += 1
-        ttk.Label(security, wraplength=420, foreground="#5f6368", text=(
+        ttk.Label(security, wraplength=420, foreground=COLORS["text2"], text=(
             "Komut içinde {file} yer tutucusu kullanılır. Örnek: "
             "\"C:\\Program Files\\Windows Defender\\MpCmdRun.exe\" -Scan "
             "-ScanType 3 -File {file}")
@@ -674,7 +817,7 @@ class SettingsDialog(tk.Toplevel):
         ttk.Entry(update, textvariable=self.var_update_src).grid(
             row=row, column=1, sticky="we", pady=4)
         row += 1
-        ttk.Label(update, wraplength=460, foreground="#5f6368", text=(
+        ttk.Label(update, wraplength=460, foreground=COLORS["text2"], text=(
             "Kaynak yerel klasör, UNC paylaşımı (\\\\sunucu\\paylasim) veya "
             "http(s) adresi olabilir; içinde version.json + zip paketi bulunur. "
             "Yeni sürüm geldiğinde indirmeler bitince otomatik uygulanır ve "
@@ -767,7 +910,7 @@ class SettingsDialog(tk.Toplevel):
         ttk.Button(frame_wa_ctrl, text="Durdur",
                    command=self._wa_stop_listener).pack(side="left")
         row += 1
-        ttk.Label(whatsapp, wraplength=460, foreground="#5f6368", text=(
+        ttk.Label(whatsapp, wraplength=460, foreground=COLORS["text2"], text=(
             "Dinleyici telefondaki WhatsApp'ın \"bağlı cihaz\" olarak QR ile "
             "eşleşir; yalnızca beyaz listedeki gruplardan/kişilerden gelen "
             "PDF'leri indirir. Node.js kurulu olmalıdır (node komutu).")
@@ -803,7 +946,7 @@ class SettingsDialog(tk.Toplevel):
                    command=self._torrent_browse_dir).grid(
             row=0, column=1, padx=(6, 0))
         row += 1
-        ttk.Label(torrent, wraplength=460, foreground="#5f6368", text=(
+        ttk.Label(torrent, wraplength=460, foreground=COLORS["text2"], text=(
             "Boş bırakılırsa indirilen .torrent/magnet dosyaları "
             "\"İndirme klasörü\\Torrentler\" altına iner. Motor aria2 "
             "(tools\\aria2\\aria2c.exe) ile çalışır; magnet: bağlantıları "
@@ -1379,13 +1522,7 @@ class App:
         self._filter = "all"
         self._cat_texts = {}
 
-        style = ttk.Style(self.root)
-        try:
-            style.theme_use("clam")
-        except Exception:
-            pass
-        style.configure("Treeview", rowheight=25)
-        style.configure("Header.TFrame", background=HEADER_BG)
+        setup_theme(self.root)
 
         self._set_window_icon()
 
@@ -1430,20 +1567,20 @@ class App:
                 side="left", padx=(14, 10), pady=7)
         titles = tk.Frame(header, background=HEADER_BG)
         titles.pack(side="left", fill="y")
-        tk.Label(titles, text="Retro+ Download Manager", foreground="#ffffff",
+        tk.Label(titles, text="Retro+ Download Manager", foreground=COLORS["white"],
                  background=HEADER_BG, font=("Segoe UI Semibold", 14)).pack(
             anchor="w", pady=(8, 0))
         tk.Label(titles, text="Çok parçalı indirme · duraklat/devam · "
                               "kuyruk ve zamanlama · tarayıcı köprüsü",
-                 foreground="#8fd4cb", background=HEADER_BG,
+                 foreground=COLORS["accent"], background=HEADER_BG,
                  font=("Segoe UI", 8)).pack(anchor="w")
 
         self.var_header_speed = tk.StringVar(value="")
-        tk.Label(header, textvariable=self.var_header_speed, foreground="#e8eaed",
+        tk.Label(header, textvariable=self.var_header_speed, foreground=COLORS["text"],
                  background=HEADER_BG, font=("Segoe UI", 11, "bold")).pack(
             side="right", padx=18)
         self.var_header_active = tk.StringVar(value="")
-        tk.Label(header, textvariable=self.var_header_active, foreground="#8fd4cb",
+        tk.Label(header, textvariable=self.var_header_active, foreground=COLORS["accent"],
                  background=HEADER_BG, font=("Segoe UI", 9)).pack(
             side="right", padx=(0, 6))
 
@@ -1560,7 +1697,7 @@ class App:
     def _build_site_bar(self):
         bar = ttk.Frame(self.root, padding=(6, 0))
         bar.pack(fill="x")
-        ttk.Label(bar, text="Hızlı site indirme:", foreground="#5f6368",
+        ttk.Label(bar, text="Hızlı site indirme:", foreground=COLORS["text2"],
                   font=("Segoe UI", 9, "bold")).pack(side="left", padx=(2, 6))
         self.site_buttons = []
         # Popüler siteler buton olarak
@@ -1576,7 +1713,7 @@ class App:
                                         command=self._show_all_sites_menu)
         self.btn_all_sites.pack(side="left", padx=(6, 2))
         ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
-        ttk.Label(bar, foreground="#9aa0a6", font=("Segoe UI", 8),
+        ttk.Label(bar, foreground=COLORS["text3"], font=("Segoe UI", 8),
                   text="Bağlantıyı yapıştırıp indirin · gizli içerik için "
                        "Ayarlar > Çerez").pack(side="left", padx=4)
 
@@ -1623,7 +1760,7 @@ class App:
 
         left = ttk.Frame(body, width=200)
         body.add(left, weight=0)
-        ttk.Label(left, text="  KATEGORİLER", foreground="#5f6368",
+        ttk.Label(left, text="  KATEGORİLER", foreground=COLORS["text2"],
                   font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=6, pady=(6, 2))
         self.cat_tree = ttk.Treeview(left, show="tree", selectmode="browse",
                                      height=len(CATEGORY_ITEMS))
@@ -1673,12 +1810,12 @@ class App:
         ttk.Label(details, textvariable=self.var_detail).grid(row=0, column=0,
                                                               sticky="w")
         self.var_state_detail = tk.StringVar(value="")
-        ttk.Label(details, textvariable=self.var_state_detail, foreground="#5f6368").grid(
+        ttk.Label(details, textvariable=self.var_state_detail, foreground=COLORS["text2"]).grid(
             row=0, column=1, sticky="e")
 
-        self.segments_canvas = tk.Canvas(details, height=26, background="#202124",
+        self.segments_canvas = tk.Canvas(details, height=26, background=COLORS["surface"],
                                          highlightthickness=1,
-                                         highlightbackground="#5f6368")
+                                         highlightbackground=COLORS["border"])
         self.segments_canvas.grid(row=1, column=0, columnspan=2, sticky="we", pady=(6, 4))
 
         self.progress = ttk.Progressbar(details, maximum=100)
@@ -1704,15 +1841,15 @@ class App:
         logs = ttk.Frame(self.notebook)
         self.notebook.add(logs, text=" Günlük ")
         self.log_text = tk.Text(logs, wrap="word", state="normal",
-                                background="#202124", foreground="#e8eaed",
-                                insertbackground="#e8eaed", font=("Consolas", 9))
+                                background=COLORS["surface"], foreground=COLORS["text"],
+                                insertbackground=COLORS["text"], font=("Consolas", 9))
         log_scroll = ttk.Scrollbar(logs, orient="vertical",
                                    command=self.log_text.yview)
         self.log_text.configure(yscrollcommand=log_scroll.set)
         self.log_text.pack(side="left", fill="both", expand=True)
         log_scroll.pack(side="right", fill="y")
-        for tag, color in (("error", "#f28b82"), ("warning", "#fdd663"),
-                           ("success", "#81c995"), ("info", "#e8eaed")):
+        for tag, color in (("error", "#fca5a5"), ("warning", "#fcd34d"),
+                           ("success", "#6ee7b7"), ("info", COLORS["text"])):
             self.log_text.tag_configure(tag, foreground=color)
         self.log_text.configure(state="disabled")
 
@@ -1739,7 +1876,7 @@ class App:
             side="left", padx=(6, 0))
         self.var_torrent_info = tk.StringVar(value="")
         ttk.Label(tbar, textvariable=self.var_torrent_info,
-                  foreground="#5f6368").pack(side="right")
+                  foreground=COLORS["text2"]).pack(side="right")
 
         ttree_frame = ttk.Frame(torrent)
         ttree_frame.pack(fill="both", expand=True, padx=6, pady=(6, 6))
@@ -1754,9 +1891,9 @@ class App:
             self.torrent_tree.heading(column, text=label)
             self.torrent_tree.column(column, width=width, anchor="w"
                                      if column == "ad" else "center")
-        for tag, color in (("active", "#0b57d0"), ("complete", "#137333"),
-                           ("paused", "#b06000"), ("error", "#c5221f"),
-                           ("waiting", "#5f6368")):
+        for tag, color in (("active", COLORS["primary"]), ("complete", COLORS["success"]),
+                           ("paused", COLORS["warning"]), ("error", COLORS["danger"]),
+                           ("waiting", COLORS["text3"])):
             self.torrent_tree.tag_configure(tag, foreground=color)
         tvsb = ttk.Scrollbar(ttree_frame, orient="vertical",
                              command=self.torrent_tree.yview)
@@ -1775,7 +1912,7 @@ class App:
         self.var_status_left = tk.StringVar()
         self.var_status_right = tk.StringVar()
         ttk.Label(status, textvariable=self.var_status_left).pack(side="left")
-        ttk.Label(status, textvariable=self.var_status_right, foreground="#0b57d0"
+        ttk.Label(status, textvariable=self.var_status_right, foreground=COLORS["primary"]
                   ).pack(side="right")
 
     def _bind_keys(self):
@@ -2168,7 +2305,7 @@ class App:
         height = 26
         segments = task.segments
         if not segments:
-            canvas.create_rectangle(0, 0, width, height, fill="#202124", outline="")
+            canvas.create_rectangle(0, 0, width, height, fill=COLORS["surface"], outline="")
             return
         count = len(segments)
         gap = 2 if count > 1 else 0
@@ -2176,13 +2313,13 @@ class App:
         for index, segment in enumerate(segments):
             x0 = index * (bar_width + gap)
             x1 = x0 + bar_width
-            canvas.create_rectangle(x0, 0, x1, height, fill="#3c4043", outline="")
+            canvas.create_rectangle(x0, 0, x1, height, fill=COLORS["surface3"], outline="")
             fraction = segment.fraction
             if fraction > 0:
                 fill_height = max(1, int((height - 2) * fraction))
                 canvas.create_rectangle(x0 + 1, height - 1 - fill_height,
                                         x1 - 1, height - 1,
-                                        fill="#2ecc71" if fraction >= 1.0 else "#3aa8f0",
+                                        fill=COLORS["success"] if fraction >= 1.0 else "#3aa8f0",
                                         outline="")
 
     def _update_status(self):
