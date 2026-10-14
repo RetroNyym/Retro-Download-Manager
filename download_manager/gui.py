@@ -22,7 +22,6 @@ from .engine import (
     SCHEDULED,
     STATE_LABELS,
 )
-from .extractor import SUPPORTED_SITES
 from .manager import DownloadManager
 from .whatsapp import normalize_whitelist
 from .util import (
@@ -66,7 +65,80 @@ SITE_ICONS = {
     "Facebook": "facebook",
     "TikTok": "tiktok",
     "Vimeo": "vimeo",
+    "Dailymotion": "dailymotion",
+    "Twitch": "twitch",
+    "SoundCloud": "soundcloud",
+    "VK": "vk",
+    "Bilibili": "bilibili",
+    "Reddit": "reddit",
+    "Tumblr": "tumblr",
+    "Pinterest": "pinterest",
+    "LinkedIn": "linkedin",
+    "Rumble": "rumble",
+    "Bandcamp": "bandcamp",
+    "Spotify": "spotify",
+    "Flickr": "flickr",
+    "Rutube": "rutube",
 }
+# Format seçenekleri: (etiket, yt-dlp format string, uzantı)
+QUALITY_OPTIONS = (
+    ("En İyi (otomatik)", "bestvideo+bestaudio/best", ""),
+    ("8K (4320p)", "bestvideo[height<=4320]+bestaudio/best[height<=4320]", ""),
+    ("4K (2160p)", "bestvideo[height<=2160]+bestaudio/best[height<=2160]", ""),
+    ("1440p", "bestvideo[height<=1440]+bestaudio/best[height<=1440]", ""),
+    ("1080p (Full HD)", "bestvideo[height<=1080]+bestaudio/best[height<=1080]", ""),
+    ("720p (HD)", "bestvideo[height<=720]+bestaudio/best[height<=720]", ""),
+    ("480p", "bestvideo[height<=480]+bestaudio/best[height<=480]", ""),
+    ("360p", "bestvideo[height<=360]+bestaudio/best[height<=360]", ""),
+    ("240p", "bestvideo[height<=240]+bestaudio/best[height<=240]", ""),
+    ("Sadece ses (en iyi)", "bestaudio/best", ""),
+)
+# Dönüştürme formatları: (etiket, yt-dlp post-processor, uzantı)
+FORMAT_OPTIONS = (
+    ("MP4 (video)", "FFmpegVideoConvertor:preferedformat=mp4", "mp4"),
+    ("MKV (video)", "FFmpegVideoConvertor:preferedformat=mkv", "mkv"),
+    ("WEBM (video)", "FFmpegVideoConvertor:preferedformat=webm", "webm"),
+    ("AVI (video)", "FFmpegVideoConvertor:preferedformat=avi", "avi"),
+    ("FLV (video)", "FFmpegVideoConvertor:preferedformat=flv", "flv"),
+    ("WMV (video)", "FFmpegVideoConvertor:preferedformat=wmv", "wmv"),
+    ("3GP (video)", "FFmpegVideoConvertor:preferedformat=3gp", "3gp"),
+    ("MOV (video)", "FFmpegVideoConvertor:preferedformat=mov", "mov"),
+    ("MP3 (ses)", "FFmpegExtractAudio", "mp3"),
+    ("WAV (ses)", "FFmpegExtractAudio:preferredcodec=wav", "wav"),
+    ("AAC (ses)", "FFmpegExtractAudio:preferredcodec=aac", "aac"),
+    ("M4A (ses)", "FFmpegExtractAudio:preferredcodec=m4a", "m4a"),
+    ("OGG (ses)", "FFmpegExtractAudio:preferredcodec=ogg", "ogg"),
+    ("OPUS (ses)", "FFmpegExtractAudio:preferredcodec=opus", "opus"),
+    ("FLAC (ses)", "FFmpegExtractAudio:preferredcodec=flac", "flac"),
+)
+# Popüler siteler (hızlı butonlar)
+QUICK_SITES = (
+    "YouTube", "Instagram", "X (Twitter)", "Facebook", "TikTok",
+    "Vimeo", "Dailymotion", "SoundCloud", "Twitch", "Reddit",
+)
+
+# Tüm siteler (dropdown menü için) - kategori bazlı
+ALL_SITES_CATEGORIES = {
+    "Video Paylaşım": (
+        "YouTube", "Instagram", "X (Twitter)", "Facebook", "TikTok",
+        "Vimeo", "Dailymotion", "Twitch", "Rutube", "VK", "Bilibili",
+        "NicoNico", "YouKu", "Tencent/QQ", "Veoh", "Metacafe", "Break",
+        "Viki", "FC2", "ItemFix", "MyVideo", "Izlesene", "Flickr",
+        "Streamable", "Loom", "Wistia",
+    ),
+    "Ses / Müzik": (
+        "SoundCloud", "Bandcamp", "Spotify", "Deezer", "Mixcloud",
+    ),
+    "Sosyal Medya": (
+        "Tumblr", "Reddit", "Pinterest", "LinkedIn", "Snapchat",
+        "Likee", "Triller", "Rumble", "Odnoklassniki", "Weibo",
+    ),
+    "Haber / TV": (
+        "CNN", "BBC", "NTV", "TRT", "Habertürk", "Show TV",
+        "ATV", "Kanal D", "Star TV", "Fox",
+    ),
+}
+
 CATEGORY_ITEMS = (
     ("all", "Tüm indirmeler"),
     ("active", "Devam eden"),
@@ -195,6 +267,24 @@ class AddDialog(tk.Toplevel):
             row=row, column=1, sticky="w", padx=8, pady=4)
         row += 1
 
+        # Video kalite seçimi (video siteleri için)
+        _grid_label(body, row, "Kalite:")
+        self.var_quality = tk.StringVar(value=QUALITY_OPTIONS[0][0])
+        quality_values = [q[0] for q in QUALITY_OPTIONS]
+        ttk.Combobox(body, textvariable=self.var_quality, values=quality_values,
+                     state="readonly", width=24).grid(
+            row=row, column=1, sticky="w", padx=8, pady=4)
+        row += 1
+
+        # Format seçimi
+        _grid_label(body, row, "Format:")
+        self.var_format = tk.StringVar(value=FORMAT_OPTIONS[0][0])
+        format_values = [f[0] for f in FORMAT_OPTIONS]
+        ttk.Combobox(body, textvariable=self.var_format, values=format_values,
+                     state="readonly", width=24).grid(
+            row=row, column=1, sticky="w", padx=8, pady=4)
+        row += 1
+
         _grid_label(body, row, "Alt klasör:")
         self.var_subdir = tk.StringVar()
         ttk.Entry(body, textvariable=self.var_subdir, width=40).grid(
@@ -317,6 +407,21 @@ class AddDialog(tk.Toplevel):
                     category = key
                     break
         headers_text = self.txt_headers.get("1.0", "end").strip()
+        # Kalite ve format seç
+        quality_label = self.var_quality.get()
+        format_label = self.var_format.get()
+        quality_fmt = QUALITY_OPTIONS[0][1]  # varsayılan: en iyi
+        for q_label, q_fmt, _ in QUALITY_OPTIONS:
+            if q_label == quality_label:
+                quality_fmt = q_fmt
+                break
+        format_postprocessor = None
+        format_ext = None
+        for f_label, f_pp, f_ext in FORMAT_OPTIONS:
+            if f_label == format_label:
+                format_postprocessor = f_pp
+                format_ext = f_ext
+                break
         self.result = {
             "urls": urls,
             "category": category,
@@ -329,6 +434,9 @@ class AddDialog(tk.Toplevel):
             "user_agent": self.var_ua.get().strip(),
             "cookies": self.var_cookies.get().strip(),
             "extra_headers": _parse_headers(headers_text),
+            "quality": quality_fmt,
+            "format": format_postprocessor,
+            "format_ext": format_ext,
         }
         self.destroy()
 
@@ -1402,9 +1510,13 @@ class App:
         menubar.add_cascade(label="Araçlar", menu=tools_menu)
 
         site_menu = tk.Menu(menubar, tearoff=0)
-        for site_name, *_domains in SUPPORTED_SITES:
-            site_menu.add_command(label=site_name,
-                                  command=lambda n=site_name: self.add_site(n))
+        for category, sites in ALL_SITES_CATEGORIES.items():
+            submenu = tk.Menu(site_menu, tearoff=0)
+            for site in sites:
+                submenu.add_command(label=site,
+                                    command=lambda n=site: self.add_site(n))
+            site_menu.add_cascade(label=category, menu=submenu)
+            site_menu.add_separator()
         menubar.add_cascade(label="Siteler", menu=site_menu)
 
         help_menu = tk.Menu(menubar, tearoff=0)
@@ -1451,17 +1563,38 @@ class App:
         ttk.Label(bar, text="Hızlı site indirme:", foreground="#5f6368",
                   font=("Segoe UI", 9, "bold")).pack(side="left", padx=(2, 6))
         self.site_buttons = []
-        for name, *_domains in SUPPORTED_SITES:
+        # Popüler siteler buton olarak
+        for name in QUICK_SITES:
             icon = SITE_ICONS.get(name, "add")
             image = load_photo(f"icons/site_{icon}.png", self._photos)
             widget = ttk.Button(bar, text=name, image=image, compound="left",
                                 command=lambda n=name: self.add_site(n))
             widget.pack(side="left", padx=2)
             self.site_buttons.append(widget)
+        # Tüm siteler dropdown
+        self.btn_all_sites = ttk.Button(bar, text="⚡ Tüm Siteler ▼",
+                                        command=self._show_all_sites_menu)
+        self.btn_all_sites.pack(side="left", padx=(6, 2))
         ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=6)
         ttk.Label(bar, foreground="#9aa0a6", font=("Segoe UI", 8),
                   text="Bağlantıyı yapıştırıp indirin · gizli içerik için "
                        "Ayarlar > Çerez").pack(side="left", padx=4)
+
+    def _show_all_sites_menu(self):
+        """Tüm desteklenen siteleri kategorili menüde gösterir."""
+        menu = tk.Menu(self.root, tearoff=0)
+        for category, sites in ALL_SITES_CATEGORIES.items():
+            submenu = tk.Menu(menu, tearoff=0)
+            for site in sites:
+                submenu.add_command(label=site,
+                                    command=lambda n=site: self.add_site(n))
+            menu.add_cascade(label=category, menu=submenu)
+            menu.add_separator()
+        try:
+            menu.tk_popup(self.btn_all_sites.winfo_rootx(),
+                          self.btn_all_sites.winfo_rooty() + self.btn_all_sites.winfo_height())
+        finally:
+            menu.grab_release()
 
     def _show_limits(self):
         menu = tk.Menu(self.root, tearoff=0)
@@ -1753,7 +1886,8 @@ class App:
     def _create_tasks(self, data):
         kwargs = {key: data[key] for key in (
             "category", "subdir", "filename", "segments", "speed_limit",
-            "scheduled_at", "referer", "user_agent", "cookies", "extra_headers")
+            "scheduled_at", "referer", "user_agent", "cookies", "extra_headers",
+            "quality", "format", "format_ext")
             if key in data}
         tasks = self.mgr.add(data["urls"], **kwargs)
         if tasks:

@@ -182,7 +182,7 @@ class DownloadTask:
     def __init__(self, url, manager, category=None, subdir="", filename=None,
                  referer=None, user_agent=None, cookies=None, extra_headers=None,
                  segments=None, speed_limit=0, scheduled_at=None, urls=None,
-                 task_id=None):
+                 task_id=None, quality=None, format=None, format_ext=None):
         self.id = task_id or uuid.uuid4().hex[:12]
         self.url = url
         self._is_ftp = str(url).lower().startswith(("ftp://", "ftps://"))
@@ -203,6 +203,9 @@ class DownloadTask:
         self.segments_count = int(segments or 0)
         self.speed_limit = int(speed_limit or 0)
         self.scheduled_at = scheduled_at
+        self.quality = quality  # yt-dlp format string (örn: "bestvideo[height<=1080]+bestaudio/best")
+        self.format = format    # yt-dlp post-processor (örn: "FFmpegVideoConvertor:preferedformat=mp4")
+        self.format_ext = format_ext  # hedef uzantı (örn: "mp4", "mp3")
         self.created_at = time.time()
         self.started_at = None
         self.finished_at = None
@@ -1190,7 +1193,10 @@ class DownloadTask:
 
         try:
             path = external_download(self._external["url"], outtmpl, self.settings,
-                                     hook, headers)
+                                     hook, headers,
+                                     quality=self.quality,
+                                     format=self.format,
+                                     format_ext=self.format_ext)
             if path and not self._external_final:
                 self._external_final = path
         except _ExternalAbort:

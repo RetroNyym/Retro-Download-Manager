@@ -30,12 +30,63 @@ MEDIA_EXTENSIONS = (
 STREAM_EXTENSIONS = (".m3u8", ".mpd")
 
 SUPPORTED_SITES = (
-    ("YouTube", "youtube.com", "youtu.be"),
-    ("Instagram", "instagram.com", "cdninstagram.com"),
-    ("X (Twitter)", "twitter.com", "x.com", "t.co"),
-    ("Facebook", "facebook.com", "fb.watch", "fb.com"),
-    ("TikTok", "tiktok.com"),
-    ("Vimeo", "vimeo.com"),
+    # Video paylaşım siteleri
+    ("YouTube", "youtube.com", "youtu.be", "youtube-nocookie.com"),
+    ("Instagram", "instagram.com", "cdninstagram.com", "instagr.am"),
+    ("X (Twitter)", "twitter.com", "x.com", "t.co", "twimg.com"),
+    ("Facebook", "facebook.com", "fb.watch", "fb.com", "fbcdn.net"),
+    ("TikTok", "tiktok.com", "tiktokv.com"),
+    ("Vimeo", "vimeo.com", "vimeocdn.com"),
+    ("Dailymotion", "dailymotion.com", "dai.ly"),
+    ("Twitch", "twitch.tv", "clips.twitch.tv"),
+    ("Rutube", "rutube.ru"),
+    ("VK", "vk.com", "vkvideo.ru", "vk.ru"),
+    ("Bilibili", "bilibili.com", "b23.tv"),
+    ("NicoNico", "nicovideo.jp", "nico.ms"),
+    ("YouKu", "youku.com"),
+    ("Tencent/QQ", "v.qq.com", "qq.com"),
+    ("Veoh", "veoh.com"),
+    ("Metacafe", "metacafe.com"),
+    ("Break", "break.com"),
+    ("Viki", "viki.com"),
+    ("FC2", "fc2.com", "fc2video.com"),
+    ("ItemFix", "itemfix.com"),
+    ("MyVideo", "myvideo.de"),
+    ("Izlesene", "izlesene.com"),
+    ("Flickr", "flickr.com", "flic.kr"),
+    # Ses / müzik siteleri
+    ("SoundCloud", "soundcloud.com", "snd.sc"),
+    ("Bandcamp", "bandcamp.com"),
+    ("Spotify", "spotify.com", "open.spotify.com"),
+    ("Deezer", "deezer.com"),
+    ("Mixcloud", "mixcloud.com"),
+    # Sosyal medya / diğer
+    ("Tumblr", "tumblr.com"),
+    ("Reddit", "reddit.com", "redd.it"),
+    ("Pinterest", "pinterest.com", "pin.it"),
+    ("LinkedIn", "linkedin.com"),
+    ("Snapchat", "snapchat.com"),
+    ("Likee", "likee.video", "likee.com"),
+    ("Triller", "triller.co"),
+    ("Rumble", "rumble.com"),
+    ("Odnoklassniki", "ok.ru"),
+    ("Weibo", "weibo.com"),
+    ("Sohu", "sohu.com"),
+    ("Streamable", "streamable.com"),
+    ("Loom", "loom.com"),
+    ("Wistia", "wistia.com"),
+    ("JW Player", "jwplayer.com", "jwpcdn.com"),
+    # Haber / TV
+    ("CNN", "cnn.com"),
+    ("BBC", "bbc.com", "bbc.co.uk"),
+    ("NTV", "ntv.com.tr"),
+    ("TRT", "trt.com.tr", "trt.net.tr"),
+    ("Habertürk", "haberturk.com"),
+    ("Show TV", "showtv.com.tr"),
+    ("ATV", "atv.com.tr"),
+    ("Kanal D", "kanald.com.tr"),
+    ("Star TV", "startv.com.tr"),
+    ("Fox", "fox.com.tr"),
 )
 
 
@@ -300,8 +351,15 @@ def _final_from_outtmpl(outtmpl, fallback=None):
     return None
 
 
-def external_download(url, outtmpl, settings=None, hook=None, headers=None):
-    """yt-dlp ile indirme yapar, biten dosyanin yolunu dondurur (bulunamazsa None)."""
+def external_download(url, outtmpl, settings=None, hook=None, headers=None,
+                      quality=None, format=None, format_ext=None):
+    """yt-dlp ile indirme yapar, biten dosyanin yolunu dondurur (bulunamazsa None).
+
+    Args:
+        quality: yt-dlp format string (örn: "bestvideo[height<=1080]+bestaudio/best")
+        format: yt-dlp post-processor (örn: "FFmpegVideoConvertor:preferedformat=mp4")
+        format_ext: hedef uzantı (örn: "mp4", "mp3")
+    """
     if not ytdlp_available():
         raise RuntimeError("yt-dlp kurulu değil: pip install yt-dlp")
     import yt_dlp
@@ -316,6 +374,39 @@ def external_download(url, outtmpl, settings=None, hook=None, headers=None):
         "extractor_retries": 3,
         "fragment_retries": 5,
     })
+
+    # Kalite formatı ayarla
+    if quality:
+        opts["format"] = quality
+    elif not has_ffmpeg():
+        opts["format"] = "best[acodec!=none]/best"
+    else:
+        opts["format"] = "bestvideo+bestaudio/best"
+
+    # Dönüştürme post-processor ekle
+    postprocessors = []
+    if format:
+        if format.startswith("FFmpegExtractAudio"):
+            # Ses çıkarma post-processor
+            pp = {"key": "FFmpegExtractAudio"}
+            # preferredcodec'yi parse et
+            if "preferredcodec=" in format:
+                codec = format.split("preferredcodec=")[1].split(":")[0]
+                pp["preferredcodec"] = codec
+            else:
+                pp["preferredcodec"] = "mp3"  # varsayılan MP3
+            pp["preferredquality"] = "192"
+            postprocessors.append(pp)
+        elif format.startswith("FFmpegVideoConvertor"):
+            # Video dönüştürme post-processor
+            pp = {"key": "FFmpegVideoConvertor"}
+            if "preferedformat=" in format:
+                ext = format.split("preferedformat=")[1].split(":")[0]
+                pp["preferedformat"] = ext
+            postprocessors.append(pp)
+    if postprocessors:
+        opts["postprocessors"] = postprocessors
+
     final = {"path": None}
 
     def _wrapper(data):
@@ -325,8 +416,6 @@ def external_download(url, outtmpl, settings=None, hook=None, headers=None):
             hook(data)
 
     opts["progress_hooks"] = [_wrapper]
-    if not has_ffmpeg():
-        opts["format"] = "best[acodec!=none]/best"
     with yt_dlp.YoutubeDL(opts) as ydl:
         ydl.download([url])
     return _final_from_outtmpl(outtmpl, final["path"])
