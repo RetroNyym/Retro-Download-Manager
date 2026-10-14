@@ -31,7 +31,7 @@ Durum işaretleri: `⬜` başlanmadı · `🟨` başvuru yapıldı · `✅` yay�
 | # | Kanal | Ne yapılacak | Durum | Not |
 | --- | --- | --- | --- | --- |
 | 13 | **WinGet** | `microsoft/winget-pkgs` PR | 🟨 | 2026-10-14: **PR https://github.com/microsoft/winget-pkgs/pull/452456** (v1.1.0, portable x64, multi-file v1.6; local `winget validate` ✓). ⚠️ **CLA bekleniyor**: PR'a `@microsoft-github-policy-service agree` yorumu (bireysel). Pipeline (Manifest/URL/Install scan) yeniden koşuyor |
-| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14: Paket hazırlandı: `chocolatey/RetroDownloadManager.nuspec` + `tools/chocolateyInstall.ps1` + `chocolateyUninstall.ps1`. ⚠️ **API key gerekli**: https://community.chocolatey.org/account → API Keys → choco push. Her sürümde insan incelemesi var |
+| 14 | **Chocolatey** | `choco push` + https://community.chocolatey.org/ API key | 🟨 | 2026-10-14 | ✅ **Paket push edildi**: `RetroDownloadManager.1.1.0.nupkg` → https://community.chocolatey.org/packages/retrodownloadmanager. ⚠️ **İnsan incelemesi bekleniyor** (her sürümde zorunlu). İnceleme genelde 1-3 iş günü sürer |
 | 15 | **Flathub / Snap** | flatpak manifest / snapcraft.yaml | ⬜ | Tkinter+Python için yapılabilir; Linux kullanıcıları için |
 
 ---
