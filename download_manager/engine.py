@@ -500,12 +500,18 @@ class DownloadTask:
                 return False
             extra = entries[1:]
             if extra:
-                try:
-                    self.mgr.add(extra)
-                    self.mgr.log(f"Liste: {len(extra)} video indirme listesine eklendi",
-                                 "info")
-                except Exception as exc:
-                    self.mgr.log(f"Liste genişletilemedi: {exc}", "warning")
+                from .license import has_feature
+                if has_feature("playlist"):
+                    try:
+                        self.mgr.add(extra)
+                        self.mgr.log(f"Liste: {len(extra)} video indirme listesine eklendi",
+                                     "info")
+                    except Exception as exc:
+                        self.mgr.log(f"Liste genişletilemedi: {exc}", "warning")
+                else:
+                    self.mgr.log(
+                        f"Listede {len(extra)} video var — toplu indirme Pro özelliğidir. "
+                        "Sadece ilk video indirilecek.", "warning")
             info = entries[0]
             if info.get("external"):
                 return self._set_external(info.get("url") or self.url,

@@ -24,6 +24,7 @@ from .engine import (
 )
 from .manager import DownloadManager
 from .theme import ThemeManager, detect_system_theme
+from .license import get_license_manager, PRO_FEATURES, parse_key
 from .whatsapp import normalize_whitelist
 from .util import (
     CATEGORIES,
@@ -1312,6 +1313,112 @@ class GrabberDialog(tk.Toplevel):
                             parent=self)
 
 
+class LicenseDialog(tk.Toplevel):
+    """Lisans aktivasyon / Pro durumu diyaloğu."""
+
+    def __init__(self, parent, manager):
+        super().__init__(parent)
+        self.manager = manager
+        self.result = None
+        self.title("Lisans — Retro+ Pro")
+        self.configure(bg=COLORS["bg"])
+        self.transient(parent)
+        self.resizable(False, False)
+
+        lic = get_license_manager()
+        body = tk.Frame(self, bg=COLORS["bg"], padx=20, pady=16)
+        body.pack(fill="both", expand=True)
+
+        # Başlık
+        title = "Retro+ PRO" if lic.is_pro else "Retro+ Ücretsiz"
+        tk.Label(body, text=title, bg=COLORS["bg"],
+                 fg=COLORS["success"] if lic.is_pro else COLORS["text2"],
+                 font=("Segoe UI Semibold", 16)).pack(anchor="w")
+        if lic.is_pro:
+            info = lic.info or {}
+            kind_tr = {"lifetime": "Ömür boyu", "year": "1 yıllık", "trial": "Deneme"}.get(
+                info.get("kind", ""), info.get("kind", ""))
+            tk.Label(body, text=f"Tür: {kind_tr} · Cihaz: {lic.seats} · "
+                                f"Aktivasyon: {info.get('activated_at', '')[:10]}",
+                     bg=COLORS["bg"], fg=COLORS["text2"],
+                     font=("Segoe UI", 9)).pack(anchor="w", pady=(2, 8))
+        else:
+            tk.Label(body, text="Lisans anahtarınızı girerek Pro özelliklerin kilidini açın.",
+                     bg=COLORS["bg"], fg=COLORS["text2"],
+                     font=("Segoe UI", 9)).pack(anchor="w", pady=(2, 8))
+
+        # Pro özellik listesi
+        feat_frame = tk.Frame(body, bg=COLORS["surface"], padx=12, pady=10)
+        feat_frame.pack(fill="x", pady=(0, 12))
+        for key, desc in PRO_FEATURES:
+            mark = "✓" if lic.has(key) else "🔒"
+            color = COLORS["success"] if lic.has(key) else COLORS["text3"]
+            tk.Label(feat_frame, text=f"{mark}  {desc}", bg=COLORS["surface"],
+                     fg=color, font=("Segoe UI", 9)).pack(anchor="w", pady=1)
+
+        # Anahtar girişi
+        if not lic.is_pro:
+            tk.Label(body, text="Lisans anahtarı:", bg=COLORS["bg"],
+                     fg=COLORS["text2"], font=("Segoe UI", 9)).pack(anchor="w")
+            self.var_key = tk.StringVar()
+            entry = tk.Entry(body, textvariable=self.var_key, width=32,
+                             bg=COLORS["entry_bg"] if "entry_bg" in COLORS else COLORS["surface"],
+                             fg=COLORS["text"], insertbackground=COLORS["text"],
+                             relief="flat", font=("Consolas", 11))
+            entry.pack(fill="x", pady=(4, 8), ipady=6)
+            entry.focus_set()
+            self._entry = entry
+
+            # Satın alma linki
+            tk.Label(body, text="Lisans satın al → retronym.itch.io/retro-download-manager",
+                     bg=COLORS["bg"], fg=COLORS["primary"],
+                     font=("Segoe UI", 9, "underline"), cursor="hand2").pack(
+                anchor="w", pady=(0, 10))
+
+        # Butonlar
+        btns = tk.Frame(body, bg=COLORS["bg"])
+        btns.pack(fill="x")
+        if lic.is_pro:
+            ttk.Button(btns, text="Lisansı Kaldır", command=self._deactivate).pack(
+                side="left", padx=4)
+        else:
+            ttk.Button(btns, text="Aktive Et", style="Primary.TButton",
+                       command=self._activate).pack(side="left", padx=4)
+        ttk.Button(btns, text="Kapat", command=self.destroy).pack(side="right", padx=4)
+
+        self.bind("<Escape>", lambda _e: self.destroy())
+        self.bind("<Return>", lambda _e: self._activate() if not lic.is_pro else None)
+        center_window(self, parent)
+
+    def _activate(self):
+        key = self.var_key.get().strip()
+        if not key:
+            messagebox.showwarning("Eksik", "Lisans anahtarı girin.", parent=self)
+            return
+        parsed = parse_key(key)
+        if not parsed:
+            messagebox.showerror("Geçersiz",
+                                 "Lisans anahtarı geçersiz.\n"
+                                 "Kontrol edip tekrar deneyin.", parent=self)
+            return
+        lic = get_license_manager()
+        if lic.activate(key):
+            self.result = "activated"
+            messagebox.showinfo("Aktive Edildi",
+                                "Retro+ Pro özellikleri kullanıma açıldı!",
+                                parent=self)
+            self.destroy()
+        else:
+            messagebox.showerror("Hata", "Lisans kaydedilemedi.", parent=self)
+
+    def _deactivate(self):
+        if messagebox.askyesno("Lisans", "Lisans kaldırılsın mı?",
+                               parent=self):
+            get_license_manager().deactivate()
+            self.result = "deactivated"
+            self.destroy()
+
+
 class PropertiesDialog(tk.Toplevel):
     def __init__(self, parent, manager, task):
         super().__init__(parent)
@@ -1523,6 +1630,54 @@ class App:
         """Koyu ↔ Açık tema geçişi."""
         self.theme.toggle()
 
+    def open_license(self):
+        """Lisans aktivasyon / Pro durumu diyaloğunu açar."""
+        dlg = LicenseDialog(self.root, self.manager)
+        self.root.wait_window(dlg)
+        self._refresh_badge()
+        if dlg.result:
+            # Menü ve rozet Pro durumuna göre güncellenir
+            self._build_menu()
+            for feature_call in getattr(self, "_pro_refresh_hooks", []):
+                try:
+                    feature_call()
+                except Exception:
+                    pass
+
+    def _refresh_badge(self):
+        """Header'daki PRO/FREE rozetini günceller."""
+        badge = getattr(self, "badge_pro", None)
+        if badge is None:
+            return
+        c = self.theme.c
+        lic = get_license_manager()
+        badge.configure(
+            text="PRO" if lic.is_pro else "FREE",
+            foreground=c["success"] if lic.is_pro else c["text3"])
+        # Rozet gizleme (Pro)
+        if lic.is_pro and lic.has("no_badge"):
+            badge.pack_forget()
+        elif not badge.winfo_ismapped():
+            badge.pack(side="right", padx=(0, 6), pady=13)
+
+    def _require_pro(self, feature: str, feature_label: str) -> bool:
+        """Pro özelliğini kontrol eder. Değilse yükseltme diyaloğu açar.
+
+        True → özellik kullanılabilir.
+        """
+        lic = get_license_manager()
+        if lic.is_pro and lic.has(feature):
+            return True
+        result = messagebox.askyesno(
+            "Pro Özellik",
+            f"“{feature_label}” bir Retro+ Pro özelliğidir.\n\n"
+            "Lisans anahtarınız varsa etkinleştirebilirsiniz.\n"
+            "Satın alma sayfasını açayım mı?",
+            parent=self.root)
+        if result:
+            self.open_license()
+        return False
+
     def _set_window_icon(self):
         logo = load_photo("logo.png", self._photos)
         if logo is None:
@@ -1578,6 +1733,18 @@ class App:
                 foreground=self.theme.c["text"],
                 activebackground=self.theme.c["surface4"],
                 activeforeground=self.theme.c["primary"]))
+
+        # Pro / Free rozeti (header, tema butonunun solunda)
+        lic = get_license_manager()
+        badge_text = "PRO" if lic.is_pro else "FREE"
+        badge_fg = c["success"] if lic.is_pro else c["text3"]
+        self.badge_pro = tk.Button(
+            header, text=badge_text, command=self.open_license,
+            background=c["surface3"], foreground=badge_fg,
+            activebackground=c["surface4"], activeforeground=badge_fg,
+            relief="flat", font=("Segoe UI", 8, "bold"), padx=8, pady=3,
+            cursor="hand2")
+        self.badge_pro.pack(side="right", padx=(0, 6), pady=13)
 
     def _build_menu(self):
         menubar = tk.Menu(self.root)
@@ -1669,6 +1836,8 @@ class App:
         menubar.add_cascade(label="Siteler", menu=site_menu)
 
         help_menu = tk.Menu(menubar, tearoff=0)
+        help_menu.add_command(label="Lisans / Pro Özellikler...", command=self.open_license)
+        help_menu.add_separator()
         help_menu.add_command(label="Hakkında", command=self.show_about)
         menubar.add_cascade(label="Yardım", menu=help_menu)
 
@@ -1759,6 +1928,8 @@ class App:
             menu.grab_release()
 
     def open_scheduler(self):
+        if not self._require_pro("schedule", "Gelişmiş Zamanlama"):
+            return
         self.open_settings(tab="queue")
 
     def _build_body(self):
