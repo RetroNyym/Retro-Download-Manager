@@ -1066,6 +1066,28 @@ class DownloadTask:
             pass
         self.finished_at = time.time()
 
+    def _trial_gate(self) -> bool:
+        """Trial modda indirme hakkı düşer; hak bittiyse görevi durdurur."""
+        try:
+            from .license import get_license_manager
+            lic = get_license_manager()
+            if not lic.is_pro:
+                return True  # Free (lisans yok) sınırsız temel indirme
+            if lic.kind != "trial":
+                return True  # halfyear/year/lifetime sınırsız
+            if lic.consume_download():
+                left = lic.downloads_left
+                if left is not None and left <= 3:
+                    self.mgr.log(
+                        f"Trial: {left} indirme hakkı kaldı", "warning")
+                return True
+            self.error = "Trial indirme hakkınız doldu — Retro+ Pro'ya yükseltin"
+            self.state = ERROR
+            self.mgr.log(self.error, "warning")
+            return False
+        except Exception:
+            return True  # lisans hatası indirmeyi engellemez
+
     def _run(self):
         self._idle_evt.clear()
         self._fatal = None
@@ -1086,6 +1108,9 @@ class DownloadTask:
                 return
             if self._pause_evt.is_set():
                 self.state = PAUSED
+                return
+            # Trial indirme hakkı kontrolü
+            if not self._trial_gate():
                 return
             if self.auto_category and self.filename:
                 self.category = detect_category(self.filename)

@@ -16,3 +16,7 @@ tests/_tmp/
 build/
 dist/
 *.spec
+
+# Sales panel (license keys — secret)
+sales/keys.json
+sales/__pycache__/
