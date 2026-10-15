@@ -24,7 +24,7 @@ from .engine import (
 )
 from .manager import DownloadManager
 from .theme import ThemeManager, detect_system_theme
-from .license import get_license_manager, PRO_FEATURES, parse_key
+from .license import get_license_manager
 from .whatsapp import normalize_whitelist
 from .util import (
     CATEGORIES,
@@ -1313,112 +1313,6 @@ class GrabberDialog(tk.Toplevel):
                             parent=self)
 
 
-class LicenseDialog(tk.Toplevel):
-    """Lisans aktivasyon / Pro durumu diyaloğu."""
-
-    def __init__(self, parent, manager):
-        super().__init__(parent)
-        self.manager = manager
-        self.result = None
-        self.title("Lisans — Retro+ Pro")
-        self.configure(bg=COLORS["bg"])
-        self.transient(parent)
-        self.resizable(False, False)
-
-        lic = get_license_manager()
-        body = tk.Frame(self, bg=COLORS["bg"], padx=20, pady=16)
-        body.pack(fill="both", expand=True)
-
-        # Başlık
-        title = "Retro+ PRO" if lic.is_pro else "Retro+ Ücretsiz"
-        tk.Label(body, text=title, bg=COLORS["bg"],
-                 fg=COLORS["success"] if lic.is_pro else COLORS["text2"],
-                 font=("Segoe UI Semibold", 16)).pack(anchor="w")
-        if lic.is_pro:
-            info = lic.info or {}
-            kind_tr = {"lifetime": "Ömür boyu", "year": "1 yıllık", "trial": "Deneme"}.get(
-                info.get("kind", ""), info.get("kind", ""))
-            tk.Label(body, text=f"Tür: {kind_tr} · Cihaz: {lic.seats} · "
-                                f"Aktivasyon: {info.get('activated_at', '')[:10]}",
-                     bg=COLORS["bg"], fg=COLORS["text2"],
-                     font=("Segoe UI", 9)).pack(anchor="w", pady=(2, 8))
-        else:
-            tk.Label(body, text="Lisans anahtarınızı girerek Pro özelliklerin kilidini açın.",
-                     bg=COLORS["bg"], fg=COLORS["text2"],
-                     font=("Segoe UI", 9)).pack(anchor="w", pady=(2, 8))
-
-        # Pro özellik listesi
-        feat_frame = tk.Frame(body, bg=COLORS["surface"], padx=12, pady=10)
-        feat_frame.pack(fill="x", pady=(0, 12))
-        for key, desc in PRO_FEATURES:
-            mark = "✓" if lic.has(key) else "🔒"
-            color = COLORS["success"] if lic.has(key) else COLORS["text3"]
-            tk.Label(feat_frame, text=f"{mark}  {desc}", bg=COLORS["surface"],
-                     fg=color, font=("Segoe UI", 9)).pack(anchor="w", pady=1)
-
-        # Anahtar girişi
-        if not lic.is_pro:
-            tk.Label(body, text="Lisans anahtarı:", bg=COLORS["bg"],
-                     fg=COLORS["text2"], font=("Segoe UI", 9)).pack(anchor="w")
-            self.var_key = tk.StringVar()
-            entry = tk.Entry(body, textvariable=self.var_key, width=32,
-                             bg=COLORS["entry_bg"] if "entry_bg" in COLORS else COLORS["surface"],
-                             fg=COLORS["text"], insertbackground=COLORS["text"],
-                             relief="flat", font=("Consolas", 11))
-            entry.pack(fill="x", pady=(4, 8), ipady=6)
-            entry.focus_set()
-            self._entry = entry
-
-            # Satın alma linki
-            tk.Label(body, text="Lisans satın al → retronym.itch.io/retro-download-manager",
-                     bg=COLORS["bg"], fg=COLORS["primary"],
-                     font=("Segoe UI", 9, "underline"), cursor="hand2").pack(
-                anchor="w", pady=(0, 10))
-
-        # Butonlar
-        btns = tk.Frame(body, bg=COLORS["bg"])
-        btns.pack(fill="x")
-        if lic.is_pro:
-            ttk.Button(btns, text="Lisansı Kaldır", command=self._deactivate).pack(
-                side="left", padx=4)
-        else:
-            ttk.Button(btns, text="Aktive Et", style="Primary.TButton",
-                       command=self._activate).pack(side="left", padx=4)
-        ttk.Button(btns, text="Kapat", command=self.destroy).pack(side="right", padx=4)
-
-        self.bind("<Escape>", lambda _e: self.destroy())
-        self.bind("<Return>", lambda _e: self._activate() if not lic.is_pro else None)
-        center_window(self, parent)
-
-    def _activate(self):
-        key = self.var_key.get().strip()
-        if not key:
-            messagebox.showwarning("Eksik", "Lisans anahtarı girin.", parent=self)
-            return
-        parsed = parse_key(key)
-        if not parsed:
-            messagebox.showerror("Geçersiz",
-                                 "Lisans anahtarı geçersiz.\n"
-                                 "Kontrol edip tekrar deneyin.", parent=self)
-            return
-        lic = get_license_manager()
-        if lic.activate(key):
-            self.result = "activated"
-            messagebox.showinfo("Aktive Edildi",
-                                "Retro+ Pro özellikleri kullanıma açıldı!",
-                                parent=self)
-            self.destroy()
-        else:
-            messagebox.showerror("Hata", "Lisans kaydedilemedi.", parent=self)
-
-    def _deactivate(self):
-        if messagebox.askyesno("Lisans", "Lisans kaldırılsın mı?",
-                               parent=self):
-            get_license_manager().deactivate()
-            self.result = "deactivated"
-            self.destroy()
-
-
 class PropertiesDialog(tk.Toplevel):
     def __init__(self, parent, manager, task):
         super().__init__(parent)
@@ -1632,17 +1526,15 @@ class App:
 
     def open_license(self):
         """Lisans aktivasyon / Pro durumu diyaloğunu açar."""
-        dlg = LicenseDialog(self.root, self.manager)
-        self.root.wait_window(dlg)
+        from .license_ui import show_license_dialog
+        show_license_dialog(self.root, product_code=1, colors=self.theme.c)
+        self._build_menu()
         self._refresh_badge()
-        if dlg.result:
-            # Menü ve rozet Pro durumuna göre güncellenir
-            self._build_menu()
-            for feature_call in getattr(self, "_pro_refresh_hooks", []):
-                try:
-                    feature_call()
-                except Exception:
-                    pass
+        for feature_call in getattr(self, "_pro_refresh_hooks", []):
+            try:
+                feature_call()
+            except Exception:
+                pass
 
     def _refresh_badge(self):
         """Header'daki PRO/FREE rozetini günceller."""
