@@ -1,19 +1,21 @@
-"""Retro+ Satış Paneli — Masaüstü GUI (Tkinter).
+"""Retro+ Satış Paneli — Merkezi Lisans Yönetimi (Tüm Ürünler).
 
-Çoklu ürün: Retro+ Download Manager, Video Editor, Music Audio, File Converter.
-Her ürünün kendi ön eki, fiyatları ve anahtarları vardır.
+Tüm Retro+ programları için ortak lisans üretim ve yönetim paneli:
+  Retro+ Download Manager, Video Editor, Music Audio, File Converter,
+  RetroOps, Screen Capture, Backup, Password Safe ...
 
 Çalıştırma:
     python sales_gui.py
 
 İşlevler:
-  • Ürün seçimi (dropdown)
+  • Çoklu ürün seçimi (kategoriye göre gruplu)
   • Yeni anahtar üretme (tür, cihaz, müşteri, not)
   • Panoya kopyalama
   • Anahtar listesi (ürüne göre filtre)
   • İptal etme
   • CSV dışa aktarma
   • İstatistikler
+  • Satış iletişim bilgileri (contact.json)
 """
 
 from __future__ import annotations
@@ -67,10 +69,10 @@ PRODUCT_COLORS = {
 class SalesGUI:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("🔑 Retro+ Satış Paneli")
+        self.root.title("🔑 Retro+ Merkezi Satış Paneli")
         self.root.configure(bg=C["bg"])
-        self.root.geometry("1050x720")
-        self.root.minsize(900, 600)
+        self.root.geometry("1100x750")
+        self.root.minsize(950, 650)
 
         self.products = load_products()
         self._photos = []
@@ -86,10 +88,10 @@ class SalesGUI:
         header = tk.Frame(self.root, bg=C["surface"], height=52)
         header.pack(fill="x")
         header.pack_propagate(False)
-        tk.Label(header, text="🔑 Retro+ Satış Paneli",
+        tk.Label(header, text="🔑 Retro+ Merkezi Satış Paneli",
                  bg=C["surface"], fg=C["text"],
                  font=("Segoe UI Semibold", 15)).pack(side="left", padx=16)
-        tk.Label(header, text=f"{len(self.products)} ürün yüklü",
+        tk.Label(header, text=f"{len(self.products)} ürün · tüm Retro+ programları için ortak",
                  bg=C["surface"], fg=C["text3"],
                  font=("Segoe UI", 9)).pack(side="right", padx=16)
 
@@ -117,16 +119,32 @@ class SalesGUI:
         tk.Label(card, text="Yeni Anahtar Üret", bg=C["surface"],
                  fg=C["accent"], font=("Segoe UI Semibold", 12)).pack(anchor="w")
 
-        # Ürün
+        # Ürün (kategoriye göre gruplu)
         tk.Label(card, text="Ürün", bg=C["surface"], fg=C["text2"],
                  font=("Segoe UI", 9)).pack(anchor="w", pady=(10, 2))
         self.var_product = tk.StringVar()
+        # Kategoriye göre grupla
+        by_cat = {}
+        for info in self.products.values():
+            cat = info.get("category", "Diğer")
+            by_cat.setdefault(cat, []).append(info["name"])
+        product_display = []
+        for cat in sorted(by_cat):
+            product_display.append(f"── {cat} ──")
+            for name in sorted(by_cat[cat]):
+                product_display.append(f"  {name}")
+        # Sadece gerçek ürün isimleri (başlık satırları hariç)
         product_names = [info["name"] for info in self.products.values()]
         self.cmb_product = ttk.Combobox(card, textvariable=self.var_product,
                                         values=product_names, state="readonly")
         self.cmb_product.pack(fill="x", ipady=4)
         self.cmb_product.set(product_names[0])
         self.cmb_product.bind("<<ComboboxSelected>>", self._on_product)
+
+        # Kategori etiketi (seçimde göster)
+        self.lbl_category = tk.Label(card, text="", bg=C["surface"],
+                                     fg=C["text3"], font=("Segoe UI", 8))
+        self.lbl_category.pack(anchor="w")
 
         # Tür
         tk.Label(card, text="Lisans Türü", bg=C["surface"], fg=C["text2"],
@@ -356,6 +374,12 @@ class SalesGUI:
         return info.get("prices", {}).get(kind, "")
 
     def _on_product(self, _event=None):
+        # Kategori etiketini güncelle
+        code = self._current_product_code()
+        info = self.products.get(code, {})
+        cat = info.get("category", "")
+        prefix = info.get("prefix", "")
+        self.lbl_category.configure(text=f"Kategori: {cat}  ·  Ön ek: {prefix}")
         # Tür fiyatlarını güncelle
         kind_labels = []
         for kind_code, label in KIND_LABELS_TR.items():
@@ -455,9 +479,12 @@ class SalesGUI:
             f"Toplam: {stats['total']}  ·  Aktif: {stats['issued']}  ·  İptal: {stats['revoked']}",
             "",
         ]
-        for product, count in stats.get("by_product", {}).items():
-            lines.append(f"  • {product}: {count}")
-        lines.append("")
+        by_product = stats.get("by_product", {})
+        if by_product:
+            lines.append("Ürünlere göre:")
+            for product, count in sorted(by_product.items()):
+                lines.append(f"  • {product}: {count}")
+            lines.append("")
         for kind, count in stats.get("by_kind", {}).items():
             label = KIND_LABELS_TR.get(kind, kind)
             lines.append(f"  • {label}: {count}")

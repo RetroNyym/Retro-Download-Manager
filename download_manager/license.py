@@ -90,13 +90,18 @@ def load_products() -> dict[int, dict]:
             products[code] = {
                 "prefix": item["prefix"].upper(),
                 "name": item["name"],
+                "category": item.get("category", "Diğer"),
                 "prices": item.get("prices", {}),
             }
         if products:
             return products
     except Exception:
         pass
-    return dict(DEFAULT_PRODUCTS)
+    # Fallback: DEFAULT_PRODUCTS'a category ekle
+    result = {}
+    for code, info in DEFAULT_PRODUCTS.items():
+        result[code] = {**info, "category": "Diğer", "prices": {}}
+    return result
 
 
 def product_by_code(code: int) -> dict | None:
