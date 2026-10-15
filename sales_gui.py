@@ -108,6 +108,7 @@ class SalesGUI:
 
         self._build_issue_panel(left)
         self._build_stats_panel(left)
+        self._build_contact_panel(left)
         self._build_list_panel(right)
 
     def _build_issue_panel(self, parent):
@@ -198,6 +199,77 @@ class SalesGUI:
                                   bg=C["surface"], fg=C["text2"],
                                   font=("Segoe UI", 9), justify="left")
         self.lbl_stats.pack(anchor="w", pady=(8, 0))
+
+    def _build_contact_panel(self, parent):
+        """Satış iletişim bilgileri (contact.json'dan okunur)."""
+        card = tk.Frame(parent, bg=C["surface"], padx=16, pady=14)
+        card.pack(fill="x", pady=(10, 0))
+        tk.Label(card, text="📨 Satış İletişimi", bg=C["surface"],
+                 fg=C["accent"], font=("Segoe UI Semibold", 12)).pack(anchor="w")
+
+        contact = self._load_contact()
+        rows = [
+            ("E-posta", contact.get("email", "")),
+            ("WhatsApp", contact.get("whatsapp", "")),
+            ("Alıcı", contact.get("holder", "")),
+            ("IBAN", contact.get("iban", "")),
+            ("Banka", contact.get("bank", "")),
+            ("Papara", contact.get("papara", "")),
+        ]
+        for label, value in rows:
+            if not value:
+                continue
+            row = tk.Frame(card, bg=C["surface"])
+            row.pack(fill="x", pady=1)
+            tk.Label(row, text=f"{label}:", bg=C["surface"], fg=C["text3"],
+                     font=("Segoe UI", 9), width=10, anchor="w").pack(side="left")
+            lbl = tk.Label(row, text=value, bg=C["surface"], fg=C["text"],
+                           font=("Consolas", 9), anchor="w")
+            lbl.pack(side="left", fill="x")
+            # Kopyala butonu
+            tk.Button(row, text="📋", command=lambda v=value: self._copy_text(v),
+                      bg=C["surface3"], fg=C["text2"], relief="flat",
+                      font=("Segoe UI", 8), padx=4, pady=0, cursor="hand2").pack(side="right")
+
+        tk.Button(card, text="📧 Sipariş E-postası Gönder",
+                  command=lambda: self._open_email_composer(contact),
+                  bg=C["success"], fg="#fff", relief="flat",
+                  font=("Segoe UI", 9, "bold"), padx=12, pady=5,
+                  cursor="hand2").pack(fill="x", pady=(10, 0))
+
+        if not any(contact.values()):
+            tk.Label(card, text="İletişim bilgileri için sales/contact.json dosyasını düzenleyin.",
+                     bg=C["surface"], fg=C["text3"], font=("Segoe UI", 8),
+                     wraplength=260).pack(anchor="w", pady=(6, 0))
+
+    def _load_contact(self) -> dict:
+        path = Path(__file__).resolve().parent / "sales" / "contact.json"
+        try:
+            import json
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _copy_text(self, text: str):
+        self.root.clipboard_clear()
+        self.root.clipboard_append(text)
+        messagebox.showinfo("Kopyalandı", f"{text} panoya kopyalandı.")
+
+    def _open_email_composer(self, contact: dict):
+        """Varsayılan e-posta istemcisinde sipariş taslağı açar."""
+        email = contact.get("email", "")
+        subject = "Retro+ Lisans Siparişi"
+        body = ("Merhaba,\n\n"
+                "Retro+ lisans satın almak istiyorum.\n\n"
+                "Ad Soyad: \n"
+                "Ürün: \n"
+                "Tür (6 Aylık / Yıllık / Ömür Boyu): \n"
+                "Ödeme yöntemi: \n"
+                "Dekont: eklendi\n")
+        import urllib.parse
+        mailto = f"mailto:{email}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+        import webbrowser
+        webbrowser.open(mailto)
 
     def _build_list_panel(self, parent):
         card = tk.Frame(parent, bg=C["surface"], padx=12, pady=12)
