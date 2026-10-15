@@ -27,11 +27,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from download_manager.license import (  # noqa: E402
     issue_key, list_keys, revoke_key, registry_stats, KIND_CODES,
-    TRIAL_DOWNLOADS,
+    TRIAL_DOWNLOADS, load_products,
 )
 
 HOST = "127.0.0.1"
 PORT = 8377
+
+PRODUCTS = load_products()
 
 KIND_LABELS = {
     "trial": f"Deneme ({TRIAL_DOWNLOADS} indirme)",
@@ -40,12 +42,9 @@ KIND_LABELS = {
     "lifetime": "Ömür Boyu",
 }
 
-PRICING = {
-    "trial": "Ücretsiz",
-    "halfyear": "₺79",
-    "year": "₺119",
-    "lifetime": "₺149",
-}
+# Ürün bazlı varsayılan fiyatlar (products.json'dan okunur)
+def _prices_for(code: int) -> dict:
+    return PRODUCTS.get(code, {}).get("prices", {})
 
 
 def _page(title: str, body: str) -> bytes:
@@ -115,11 +114,28 @@ tr:hover td {{ background:var(--surface2); }}
 def _dashboard() -> bytes:
     stats = registry_stats()
     bk = stats.get("by_kind", {})
+
+    # Ürün seçenekleri
+    product_options = ""
+    for code, info in PRODUCTS.items():
+        product_options += f'<option value="{code}">{info["name"]}</option>'
+
+    # Fiyat tablosu (ürüne göre)
+    pricing_rows = ""
+    for code, info in PRODUCTS.items():
+        prices = info.get("prices", {})
+        pricing_rows += f'<tr><td colspan="4" style="color:var(--accent);font-weight:600">{info["name"]} ({info["prefix"]})</td></tr>'
+        for kind, label in KIND_LABELS.items():
+            price = prices.get(kind, "—")
+            pricing_rows += (f'<tr><td><span class="pill {kind}">{label}</span></td>'
+                             f'<td>{"Sınırsız" if kind != "trial" else str(TRIAL_DOWNLOADS) + " indirme"}</td>'
+                             f'<td>{price}</td></tr>')
+
     body = f"""
 <div class="cards">
   <div class="card"><div class="num">{stats['total']}</div><div class="lbl">Toplam anahtar</div></div>
-  <div class="card"><div class="num">{stats['issued']}</div><div class="lbl">Aktif (issued)</div></div>
-  <div class="card"><div class="num">{stats['revoked']}</div><div class="lbl">İptal edilen</div></div>
+  <div class="card"><div class="num">{stats['issued']}</div><div class="lbl">Aktif</div></div>
+  <div class="card"><div class="num">{stats['revoked']}</div><div class="lbl">İptal</div></div>
   <div class="card"><div class="num">{bk.get('trial', 0)}</div><div class="lbl">Deneme</div></div>
   <div class="card"><div class="num">{bk.get('halfyear', 0)}</div><div class="lbl">6 Aylık</div></div>
   <div class="card"><div class="num">{bk.get('year', 0)}</div><div class="lbl">1 Yıllık</div></div>
@@ -129,12 +145,15 @@ def _dashboard() -> bytes:
 <section>
   <h2>🔑 Yeni Lisans Anahtarı Üret</h2>
   <form method="post" action="/issue">
+    <label>Ürün
+      <select name="product_code">{product_options}</select>
+    </label>
     <label>Tür
       <select name="kind">
-        <option value="trial">Deneme — {TRIAL_DOWNLOADS} indirme (Ücretsiz)</option>
-        <option value="halfyear" selected>6 Aylık — {PRICING['halfyear']}</option>
-        <option value="year">1 Yıllık — {PRICING['year']}</option>
-        <option value="lifetime">Ömür Boyu — {PRICING['lifetime']}</option>
+        <option value="trial">Deneme — {TRIAL_DOWNLOADS} indirme</option>
+        <option value="halfyear" selected>6 Aylık</option>
+        <option value="year">1 Yıllık</option>
+        <option value="lifetime">Ömür Boyu</option>
       </select>
     </label>
     <label>Cihaz
@@ -156,14 +175,13 @@ def _dashboard() -> bytes:
   <div class="newkey" id="newkey">
     <div class="muted">Üretilen anahtar (müşteriye verin):</div>
     <div class="key" id="newkeyval"></div>
-    <div class="muted">Kopyalamak için tıklayın → <code>document.getElementById('newkeyval').textContent</code></div>
   </div>
 </section>
 
 <section>
   <h2>📋 Anahtar Listesi</h2>
   <table>
-    <tr><th>Anahtar</th><th>Tür</th><th>Cihaz</th><th>Müşteri</th><th>Tarih</th><th>Durum</th><th></th></tr>
+    <tr><th>Anahtar</th><th>Ürün</th><th>Tür</th><th>Cihaz</th><th>Müşteri</th><th>Tarih</th><th>Durum</th><th></th></tr>
 """
 
     records = list_keys()
@@ -174,6 +192,7 @@ def _dashboard() -> bytes:
         date = rec.get("issued_at", "")[:10]
         customer = rec.get("customer", "") or "—"
         note = rec.get("note", "")
+        product = rec.get("product", "—")
         revoke_btn = ""
         if rec.get("status") != "revoked":
             revoke_btn = (
@@ -182,6 +201,7 @@ def _dashboard() -> bytes:
                 f'<button class="danger" style="padding:4px 10px;font-size:12px">İptal</button>'
                 f'</form>')
         body += (f'<tr><td class="k">{rec.get("key", "")}</td>'
+                 f'<td>{product}</td>'
                  f'<td><span class="pill {cls}">{label}</span></td>'
                  f'<td>{rec.get("seats", 1)}</td>'
                  f'<td>{customer}{(" · " + note) if note else ""}</td>'
@@ -190,9 +210,9 @@ def _dashboard() -> bytes:
                  f'<td>{revoke_btn}</td></tr>\n')
 
     if not records:
-        body += '<tr><td colspan="7" class="muted">Henüz anahtar üretilmedi.</td></tr>'
+        body += '<tr><td colspan="8" class="muted">Henüz anahtar üretilmedi.</td></tr>'
 
-    body += """
+    body += f"""
   </table>
   <div class="toolbar">
     <a href="/export.csv"><button class="ghost">⬇ CSV dışa aktar</button></a>
@@ -201,13 +221,10 @@ def _dashboard() -> bytes:
 </section>
 
 <section>
-  <h2>ℹ️ Fiyatlandırma Özeti</h2>
+  <h2>ℹ️ Fiyatlandırma (Ürüne Göre)</h2>
   <table>
     <tr><th>Tür</th><th>Süre / Hak</th><th>Fiyat</th></tr>
-    <tr><td><span class="pill trial">Deneme</span></td><td>{TRIAL_DOWNLOADS} indirme</td><td>Ücretsiz</td></tr>
-    <tr><td><span class="pill halfyear">6 Aylık</span></td><td>183 gün, sınırsız indirme</td><td>₺79</td></tr>
-    <tr><td><span class="pill year">1 Yıllık</span></td><td>365 gün, sınırsız indirme</td><td>₺119</td></tr>
-    <tr><td><span class="pill lifetime">Ömür Boyu</span></td><td>Süresiz, sınırsız indirme</td><td>₺149</td></tr>
+    {pricing_rows}
   </table>
   <p class="muted" style="margin-top:10px">
     Anahtarlar HMAC-SHA256 ile imzalanır, çevrimdışı doğrulanır.
@@ -223,21 +240,27 @@ def _handle_issue(form: dict) -> bytes:
     seats_raw = form.get("seats", ["3"])[0]
     customer = (form.get("customer", [""])[0] or "").strip()
     note = (form.get("note", [""])[0] or "").strip()
+    product_raw = form.get("product_code", ["1"])[0]
     if kind not in KIND_CODES:
         return _page("Hata", '<section><h2>Hata</h2><p>Geçersiz tür.</p></section>')
     try:
         seats = max(1, min(9, int(seats_raw)))
     except ValueError:
         seats = 3
-    rec = issue_key(kind, seats, customer, note)
+    try:
+        product_code = int(product_raw)
+    except ValueError:
+        product_code = 1
+    rec = issue_key(kind, seats, customer, note, product_code)
     if not rec:
         return _page("Hata", '<section><h2>Hata</h2><p>Üretim başarısız.</p></section>')
     # Dashboard'a dön + yeni anahtar vurgusu
+    product_name = rec.get("product", "")
     body = f"""
 <section style="border-color:var(--success)">
   <h2>✅ Anahtar Üretildi</h2>
   <div class="key" style="font-family:Consolas,monospace;font-size:22px;color:var(--success);letter-spacing:1px;margin:10px 0">{rec['key']}</div>
-  <p class="muted">Tür: {KIND_LABELS.get(kind, kind)} · Cihaz: {seats} ·
+  <p class="muted">Ürün: {product_name} · Tür: {KIND_LABELS.get(kind, kind)} · Cihaz: {seats} ·
      Müşteri: {customer or '—'} · Not: {note or '—'}</p>
   <p class="muted" style="margin-top:8px">Bu anahtarı müşteriye verin (e-posta, mesaj vb.).</p>
   <div class="toolbar">
@@ -260,10 +283,10 @@ def _export_csv() -> tuple[str, bytes]:
     records = list_keys()
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["key", "kind", "seats", "customer", "note", "issued_at", "status"])
+    w.writerow(["key", "product", "kind", "seats", "customer", "note", "issued_at", "status"])
     for rec in reversed(records):
-        w.writerow([rec.get("key", ""), rec.get("kind", ""), rec.get("seats", ""),
-                    rec.get("customer", ""), rec.get("note", ""),
+        w.writerow([rec.get("key", ""), rec.get("product", ""), rec.get("kind", ""),
+                    rec.get("seats", ""), rec.get("customer", ""), rec.get("note", ""),
                     rec.get("issued_at", ""), rec.get("status", "")])
     return "text/csv; charset=utf-8", buf.getvalue().encode("utf-8-sig")
 

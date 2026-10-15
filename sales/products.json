@@ -1,0 +1,46 @@
+[
+  {
+    "code": 1,
+    "prefix": "RDM1",
+    "name": "Retro+ Download Manager",
+    "prices": {
+      "trial": "Ücretsiz (5 indirme)",
+      "halfyear": "₺79",
+      "year": "₺119",
+      "lifetime": "₺149"
+    }
+  },
+  {
+    "code": 2,
+    "prefix": "RVE1",
+    "name": "Retro+ Video Editor",
+    "prices": {
+      "trial": "Ücretsiz (5 indirme)",
+      "halfyear": "₺99",
+      "year": "₺159",
+      "lifetime": "₺199"
+    }
+  },
+  {
+    "code": 3,
+    "prefix": "RMA1",
+    "name": "Retro+ Music Audio",
+    "prices": {
+      "trial": "Ücretsiz (5 indirme)",
+      "halfyear": "₺69",
+      "year": "₺99",
+      "lifetime": "₺129"
+    }
+  },
+  {
+    "code": 4,
+    "prefix": "RFC1",
+    "name": "Retro+ File Converter",
+    "prices": {
+      "trial": "Ücretsiz (5 indirme)",
+      "halfyear": "₺49",
+      "year": "₺79",
+      "lifetime": "₺99"
+    }
+  }
+]

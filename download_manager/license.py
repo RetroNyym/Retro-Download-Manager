@@ -1,7 +1,10 @@
-"""Retro+ Download Manager — lisans sistemi (Free / Pro).
+"""Retro+ — Lisans sistemi (çoklu ürün, Free / Pro).
 
-Lisans anahtarı formatı:  RDM1-XXXX-XXXX-XXXX-XXXX
+Lisans anahtarı formatı:  {PREFIX}-XXXX-XXXX-XXXX-XXXX
+  PREFIX = ürün ön eki (RDM1, RVE1, ...)
 Doğrulama: HMAC-SHA256 tabanlı imza (sunucusuz, offline).
+
+Payload (6 bayt): product(1) + kind(1) + seats(1) + rand(3)
 
 Türler (kind):
   trial      → 5 indirme hakkı (deneme)
@@ -25,12 +28,19 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # ─── Gizli anahtar (derlemede gömülü) ───────────────────────────────────────
-# Bu, lisans anahtarlarını imzalamak için kullanılır.
-# Üretimde 32+ rastgele bayt olmalı; burada açık kaynak için sabit.
 _SECRET = b"retro-plus-download-manager-pro-2026-secret-key-v1"
 
 # Lisans dosyası adı (kullanıcı profili klasöründe saklanır)
 LICENSE_FILENAME = ".retro_plus_license.json"
+
+# ─── Ürün tanımları (satış paneli products.json ile genişletilebilir) ───────
+# code → (ön ek, ad)
+DEFAULT_PRODUCTS: dict[int, dict] = {
+    1: {"prefix": "RDM1", "name": "Retro+ Download Manager"},
+    2: {"prefix": "RVE1", "name": "Retro+ Video Editor"},
+    3: {"prefix": "RMA1", "name": "Retro+ Music Audio"},
+    4: {"prefix": "RFC1", "name": "Retro+ File Converter"},
+}
 
 # Tür → kod eşlemesi
 KIND_CODES = {
@@ -43,10 +53,17 @@ CODE_KINDS = {v: k for k, v in KIND_CODES.items()}
 
 # Tür → süre (gün); None = süresiz
 KIND_DURATIONS = {
-    "trial": None,       # indirme sayacı ile sınırlı
-    "halfyear": 183,     # 6 ay
+    "trial": None,
+    "halfyear": 183,
     "year": 365,
     "lifetime": None,
+}
+
+KIND_LABELS_TR = {
+    "trial": "Deneme",
+    "halfyear": "6 Aylık",
+    "year": "1 Yıllık",
+    "lifetime": "Ömür Boyu",
 }
 
 # Trial indirme hakkı
@@ -56,10 +73,42 @@ TRIAL_DOWNLOADS = 5
 PRO_FEATURES = (
     ("playlist", "Çalma listesi toplu indirme (YouTube, Spotify, SoundCloud)"),
     ("schedule", "Gelişmiş zamanlama (haftalık, tekrarlayan görevler)"),
-    ("multi_device", "3 cihaza kadar lisans"),
+    ("multi_device", "Çoklu cihaz lisansı"),
     ("priority_update", "Öncelikli güncelleme bildirimi"),
     ("no_badge", "Arayüzde rozet/versiyon etiketi gizleme"),
 )
+
+
+def load_products() -> dict[int, dict]:
+    """Ürün listesini yükler (products.json varsa onu, yoksa DEFAULT_PRODUCTS)."""
+    path = Path(__file__).resolve().parent.parent / "sales" / "products.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        products = {}
+        for item in data:
+            code = int(item["code"])
+            products[code] = {
+                "prefix": item["prefix"].upper(),
+                "name": item["name"],
+                "prices": item.get("prices", {}),
+            }
+        if products:
+            return products
+    except Exception:
+        pass
+    return dict(DEFAULT_PRODUCTS)
+
+
+def product_by_code(code: int) -> dict | None:
+    return load_products().get(code)
+
+
+def product_by_prefix(prefix: str) -> tuple[int, dict] | None:
+    prefix = prefix.upper()
+    for code, info in load_products().items():
+        if info["prefix"] == prefix:
+            return code, info
+    return None
 
 
 def _b32(data: bytes) -> str:
@@ -90,22 +139,25 @@ def _sign(payload: bytes) -> bytes:
     return hmac.new(_SECRET, payload, hashlib.sha256).digest()[:6]
 
 
-def generate_key(seats: int = 3, kind: str = "lifetime") -> str:
-    """Lisans anahtarı üretir (satış sonrası müşteriye verilir).
+def generate_key(seats: int = 3, kind: str = "lifetime",
+                 product_code: int = 1) -> str:
+    """Lisans anahtarı üretir.
 
-    seats: cihaz sayısı (varsayılan 3)
-    kind:  'lifetime' | 'halfyear' | 'year' | 'trial'
+    seats:       cihaz sayısı (1-9)
+    kind:        'lifetime' | 'halfyear' | 'year' | 'trial'
+    product_code: ürün kodu (1=RDM, 2=RVE, ...)
     """
     kind_byte = KIND_CODES.get(kind, b"L")
     seats_byte = bytes([min(max(seats, 1), 9)])
-    rand = os.urandom(4)
-    payload = kind_byte + seats_byte + rand  # 6 byte
+    product_byte = bytes([min(max(product_code, 1), 255)])
+    rand = os.urandom(3)
+    payload = product_byte + kind_byte + seats_byte + rand  # 6 byte
     signature = _sign(payload)  # 6 byte
-    blob = payload + signature  # 12 byte = 96 bit
-    body = _b32(blob)  # ~20 karakter (29^20 ≈ 97 bit)
-    body = body.rjust(20, "2")
+    blob = payload + signature  # 12 byte
+    body = _b32(blob).rjust(20, "A")  # "A" = alfabe[0] = 0
     groups = [body[i:i + 4] for i in range(0, 20, 4)]
-    return "RDM1-" + "-".join(groups)
+    prefix = (product_by_code(product_code) or DEFAULT_PRODUCTS[1])["prefix"]
+    return f"{prefix}-" + "-".join(groups)
 
 
 def parse_key(key: str) -> dict | None:
@@ -113,10 +165,13 @@ def parse_key(key: str) -> dict | None:
     if not key or not isinstance(key, str):
         return None
     key = key.strip().upper()
-    m = re.fullmatch(r"RDM1-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})", key)
+    m = re.fullmatch(
+        r"([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})",
+        key)
     if not m:
         return None
-    body = "".join(m.groups())
+    prefix = m.group(1)
+    body = "".join(m.groups()[1:])  # ilk grup prefix, kalan 5 grup veri (20 char)
     try:
         blob = _unb32(body)
     except ValueError:
@@ -126,9 +181,18 @@ def parse_key(key: str) -> dict | None:
     payload, signature = blob[:6], blob[6:12]
     if not hmac.compare_digest(_sign(payload), signature):
         return None
-    kind = CODE_KINDS.get(payload[0:1], "lifetime")
-    seats = payload[1]
-    return {"kind": kind, "seats": seats, "raw": key}
+    product_code = payload[0]
+    kind = CODE_KINDS.get(payload[1:2], "lifetime")
+    seats = payload[2]
+    product = product_by_code(product_code)
+    return {
+        "kind": kind,
+        "seats": seats,
+        "raw": key,
+        "product_code": product_code,
+        "product_prefix": prefix,
+        "product_name": (product or {}).get("name", f"Ürün {product_code}"),
+    }
 
 
 def is_valid(key: str) -> bool:
@@ -353,13 +417,17 @@ def _save_registry(records: list[dict]) -> None:
 
 
 def issue_key(kind: str = "lifetime", seats: int = 3,
-              customer: str = "", note: str = "") -> dict | None:
+              customer: str = "", note: str = "",
+              product_code: int = 1) -> dict | None:
     """Yeni anahtar üretir ve satış defterine kaydeder."""
     if kind not in KIND_CODES:
         return None
-    key = generate_key(seats, kind)
+    key = generate_key(seats, kind, product_code)
+    product = product_by_code(product_code) or {}
     record = {
         "key": key,
+        "product_code": product_code,
+        "product": product.get("name", f"Ürün {product_code}"),
         "kind": kind,
         "seats": seats,
         "customer": customer,
@@ -391,16 +459,17 @@ def revoke_key(key: str) -> bool:
 
 
 def registry_stats() -> dict:
-    """Satış istatistikleri."""
+    """Satış istatistikleri (ürüne göre)."""
     records = _load_registry()
-    stats = {"total": len(records), "issued": 0, "revoked": 0}
-    by_kind: dict[str, int] = {}
+    stats = {"total": len(records), "issued": 0, "revoked": 0,
+             "by_kind": {}, "by_product": {}}
     for rec in records:
         if rec.get("status") == "revoked":
             stats["revoked"] += 1
         else:
             stats["issued"] += 1
             k = rec.get("kind", "?")
-            by_kind[k] = by_kind.get(k, 0) + 1
-    stats["by_kind"] = by_kind
+            stats["by_kind"][k] = stats["by_kind"].get(k, 0) + 1
+            p = rec.get("product", "?")
+            stats["by_product"][p] = stats["by_product"].get(p, 0) + 1
     return stats
