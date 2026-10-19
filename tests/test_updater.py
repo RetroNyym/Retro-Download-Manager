@@ -142,9 +142,9 @@ def main():
     # -- install_update: sha uyumsuz -----------------------------------------------
     bad_manifest_src = os.path.join(TMP, "kotu_kaynak")
     make_zip(os.path.join(bad_manifest_src, "paket.zip"),
-             {"download_manager/__init__.py": '__version__ = "1.2.0"\n'})
+             {"download_manager/__init__.py": '__version__ = "1.9.0"\n'})
     write(os.path.join(bad_manifest_src, "version.json"), json.dumps(
-        {"version": "1.2.0", "file": "paket.zip",
+        {"version": "1.9.0", "file": "paket.zip",
          "sha256": "0" * 64}))
     try:
         install_update(bad_manifest_src, app_root=app_root)
