@@ -1468,6 +1468,25 @@ class App:
             pass
         self._apply_titlebar()
         self._refresh_widget_colors()
+        self._ensure_window_sane()
+
+    def _ensure_window_sane(self):
+        """Tema/WM etkileşimlerinden sonra pencereyi görünür + normal duruma zorlar.
+
+        Bazi DWM/Tk etkilesimleri (baslik cubugu yeniden boyama, stil degisimi)
+        pencereyi ikonlastirebilir veya alfa degerini sifirlayabilir; kullanici
+        bunu "kuculup acilmama" olarak gorur. Guvenlik agi olarak normale doner.
+        """
+        try:
+            if self.root.state() == "iconic":
+                self.root.deiconify()
+        except tk.TclError:
+            pass
+        try:
+            if self.root.wm_attributes("-alpha") < 1.0:
+                self.root.wm_attributes("-alpha", 1.0)
+        except tk.TclError:
+            pass
 
     def _apply_titlebar(self):
         """DWM ile başlık çubuğunu aktif temaya göre koyu/açık yapar."""
