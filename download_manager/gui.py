@@ -23,7 +23,18 @@ from .engine import (
     STATE_LABELS,
 )
 from .manager import DownloadManager
-from .theme import ThemeManager, detect_system_theme
+from .theme import (
+    FONTS,
+    SPACING,
+    THEMES,
+    THEME_LABELS,
+    ThemeManager,
+    bind_hover,
+    detect_system_theme,
+    fade_in,
+    titlebar_dark,
+)
+from .icons import Icon
 from .license import get_license_manager
 from .whatsapp import normalize_whitelist
 from .util import (
@@ -63,14 +74,14 @@ ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 # ─── Aktif tema paleti (ThemeManager tarafından güncellenir) ─────────────────
 # Modül seviyesinde tutulur; tüm bileşenler bu sözlüğü okur.
 COLORS = {}
-_HEADER_BG = ["#12151c"]
+_HEADER_BG = ["#101318"]
 
 
 def _sync_palette(palette: dict):
     """ThemeManager paletini modül sözlüğüne ve HEADER_BG'ye eşitler."""
     COLORS.clear()
     COLORS.update(palette)
-    _HEADER_BG[0] = palette.get("header_bg", "#12151c")
+    _HEADER_BG[0] = palette.get("header_bg", "#101318")
 
 
 def _header_bg() -> str:
@@ -181,12 +192,12 @@ STATE_TAGS = {
 
 
 def _state_colors() -> dict:
-    """Aktif temaya göre durum renklerini döndürür."""
+    """Aktif temaya göre durum renklerini döndürür (tek vurgu: şampanya-altını)."""
     return {
         "queued":      COLORS.get("text3", "#6e7689"),
-        "scheduled":   "#a78bfa",
-        "probing":     COLORS.get("accent", "#3ec6e0"),
-        "downloading": COLORS.get("primary", "#6c7bff"),
+        "scheduled":   COLORS.get("accent", "#e6cf9a"),
+        "probing":     COLORS.get("text2", "#a8aebf"),
+        "downloading": COLORS.get("primary", "#c9a962"),
         "paused":      COLORS.get("warning", "#f0b429"),
         "completed":   COLORS.get("success", "#2ecc96"),
         "error":       COLORS.get("danger", "#e5484d"),
@@ -377,6 +388,8 @@ class AddDialog(tk.Toplevel):
         self.bind("<Escape>", lambda _e: self.destroy())
         self.bind("<Control-Return>", lambda _e: self._ok())
         center_window(self, parent)
+        fade_in(self)
+        titlebar_dark(self, COLORS.get("name") in ("dark", "midnight"))
         self.after(60, self._focus)
 
     def _focus(self):
@@ -547,7 +560,8 @@ class SettingsDialog(tk.Toplevel):
         frame_theme = ttk.Frame(general)
         frame_theme.grid(row=row, column=1, sticky="w", pady=4)
         self.var_theme = tk.StringVar(value=getattr(st, "theme", "") or "system")
-        for value, label in (("dark", "Koyu"), ("light", "Açık"), ("system", "Sistem")):
+        for value, label in (("dark", "Koyu"), ("light", "Açık"),
+                             ("midnight", "Gece"), ("system", "Sistem")):
             ttk.Radiobutton(frame_theme, text=label, value=value,
                             variable=self.var_theme).pack(side="left", padx=(0, 10))
         row += 1
@@ -847,6 +861,8 @@ class SettingsDialog(tk.Toplevel):
 
         self.bind("<Escape>", lambda _e: self.destroy())
         center_window(self, parent)
+        fade_in(self)
+        titlebar_dark(self, COLORS.get("name") in ("dark", "midnight"))
 
     def _browse(self):
         folder = filedialog.askdirectory(parent=self, initialdir=self.var_dir.get())
@@ -1235,6 +1251,8 @@ class GrabberDialog(tk.Toplevel):
 
         self.bind("<Escape>", lambda _e: self.destroy())
         center_window(self, parent)
+        fade_in(self)
+        titlebar_dark(self, COLORS.get("name") in ("dark", "midnight"))
         self.after(80, lambda: self.ent_url.focus_set())
 
     def _start(self):
@@ -1382,6 +1400,8 @@ class PropertiesDialog(tk.Toplevel):
 
         self.bind("<Escape>", lambda _e: self.destroy())
         center_window(self, parent)
+        fade_in(self)
+        titlebar_dark(self, COLORS.get("name") in ("dark", "midnight"))
 
     def _save(self):
         task = self.task
@@ -1416,6 +1436,7 @@ class App:
         self.theme.on_change(self._on_theme_change)
 
         self._set_window_icon()
+        self._apply_titlebar()
 
         self._rows = {}
         self._log_seq = 0
@@ -1425,8 +1446,8 @@ class App:
         self._all_done = False
         self._context_menu = None
 
-        self._build_header()
         self._build_menu()
+        self._build_header()
         self._build_toolbar()
         self._build_site_bar()
         self._build_body()
@@ -1445,7 +1466,12 @@ class App:
             self.mgr.settings.theme = name
         except Exception:
             pass
+        self._apply_titlebar()
         self._refresh_widget_colors()
+
+    def _apply_titlebar(self):
+        """DWM ile başlık çubuğunu aktif temaya göre koyu/açık yapar."""
+        titlebar_dark(self.root, self.theme.name in ("dark", "midnight"))
 
     def _refresh_widget_colors(self):
         """Tema değişiminde tk widget renklerini ve tree tag'lerini yeniler."""
@@ -1464,8 +1490,8 @@ class App:
             pass
         # Log tag renkleri
         try:
-            for tag, color in (("error", "#fca5a5"), ("warning", "#fcd34d"),
-                               ("success", "#6ee7b7"), ("info", c["text"])):
+            for tag, color in (("error", c["danger"]), ("warning", c["warning"]),
+                               ("success", c["success"]), ("info", c["text"])):
                 self.log_text.tag_configure(tag, foreground=color)
         except Exception:
             pass
@@ -1479,9 +1505,8 @@ class App:
             pass
         # Menüleri yeniden tema'la
         try:
-            if self.root.config("menu"):
-                menubar = self.root.nametowidget(self.root.config("menu"))
-                self.theme.apply_menu(menubar)
+            if getattr(self, "_menubar", None) is not None:
+                self.theme.apply_menu(self._menubar)
         except Exception:
             pass
         # Başlık arka planları — header frame'leri yeniden çiz
@@ -1494,7 +1519,23 @@ class App:
         """Header içindeki tk.Frame/Tk.Label arka planlarını günceller."""
         c = self.theme.c
         bg = c["header_bg"]
+        accent_line = getattr(self, "_header_accent", None)
+        if accent_line is not None:
+            try:
+                accent_line.configure(background=c["header_accent"])
+            except tk.TclError:
+                pass
+        menubar_frame = getattr(self, "_menubar_frame", None)
+        if menubar_frame is not None:
+            try:
+                menubar_frame.configure(background=bg)
+                for chip in menubar_frame.winfo_children():
+                    chip.configure(background=bg, foreground=c["text2"])
+            except tk.TclError:
+                pass
         for widget in self.root.winfo_children():
+            if widget is accent_line:
+                continue
             if isinstance(widget, tk.Frame):
                 try:
                     # header yüksekliği ~54 → üstteki frame
@@ -1521,8 +1562,8 @@ class App:
             pass
 
     def toggle_theme(self):
-        """Koyu ↔ Açık tema geçişi."""
-        self.theme.toggle()
+        """Tema döngüsü: Koyu → Açık → Gece → Koyu."""
+        self.theme.cycle()
 
     def open_license(self):
         """Lisans aktivasyon / Pro durumu diyaloğunu açar."""
@@ -1544,7 +1585,7 @@ class App:
         c = self.theme.c
         lic = get_license_manager()
         badge.configure(
-            text="PRO" if lic.is_pro else "FREE",
+            text=(Icon.PRO + " PRO") if lic.is_pro else (Icon.FREE + " FREE"),
             foreground=c["success"] if lic.is_pro else c["text3"])
         # Rozet gizleme (Pro)
         if lic.is_pro and lic.has("no_badge"):
@@ -1586,57 +1627,84 @@ class App:
         header.pack_propagate(False)
         self._header_frame = header
 
+        # Cam katman + 1px şampanya aksan çizgisi (alt kenar)
+        accent_line = tk.Frame(self.root, background=c["header_accent"], height=2)
+        accent_line.pack(fill="x", side="top")
+        self._header_accent = accent_line
+
         logo = load_photo("logo_small.png", self._photos)
         if logo is not None:
             tk.Label(header, image=logo, background=c["header_bg"]).pack(
-                side="left", padx=(14, 10), pady=7)
+                side="left", padx=(SPACING["lg"], 10), pady=7)
         titles = tk.Frame(header, background=c["header_bg"])
         titles.pack(side="left", fill="y")
         tk.Label(titles, text="Retro+ Download Manager", foreground=c["text"],
-                 background=c["header_bg"], font=("Segoe UI Semibold", 14)).pack(
+                 background=c["header_bg"], font=FONTS["title"]).pack(
             anchor="w", pady=(8, 0))
         tk.Label(titles, text="Çok parçalı indirme · duraklat/devam · "
                               "kuyruk ve zamanlama · tarayıcı köprüsü",
                  foreground=c["text2"], background=c["header_bg"],
-                 font=("Segoe UI", 8)).pack(anchor="w")
+                 font=FONTS["caption"]).pack(anchor="w")
 
         self.var_header_speed = tk.StringVar(value="")
         tk.Label(header, textvariable=self.var_header_speed, foreground=c["text"],
-                 background=c["header_bg"], font=("Segoe UI", 11, "bold")).pack(
-            side="right", padx=18)
+                 background=c["header_bg"], font=FONTS["heading"]).pack(
+            side="right", padx=SPACING["xl"])
         self.var_header_active = tk.StringVar(value="")
         tk.Label(header, textvariable=self.var_header_active, foreground=c["accent"],
-                 background=c["header_bg"], font=("Segoe UI", 9)).pack(
+                 background=c["header_bg"], font=FONTS["caption"]).pack(
             side="right", padx=(0, 6))
 
-        # Tema değiştir butonu (header sağında, hızdan önce)
-        theme_label = "Açık" if self.theme.name == "dark" else "Koyu"
+        # Tema döngüsü (Koyu → Açık → Gece) — header sağında
         self.btn_theme = tk.Button(
-            header, text=f"◐ {theme_label}", command=self.toggle_theme,
+            header, text=self._theme_btn_text(), command=self.toggle_theme,
             background=c["surface3"], foreground=c["text"],
             activebackground=c["surface4"], activeforeground=c["primary"],
-            relief="flat", font=("Segoe UI", 9), padx=10, pady=3, cursor="hand2")
+            relief="flat", font=FONTS["caption"], padx=10, pady=3, cursor="hand2",
+            highlightthickness=1, highlightbackground=c["border"],
+            highlightcolor=c["border_focus"])
         self.btn_theme.pack(side="right", padx=(0, 10), pady=13)
+        bind_hover(self.btn_theme,
+                   lambda: self.btn_theme.configure(
+                       background=self.theme.c["surface4"],
+                       foreground=self.theme.c["primary"]),
+                   lambda: self.btn_theme.configure(
+                       background=self.theme.c["surface3"],
+                       foreground=self.theme.c["text"]))
         # Buton metnini tema değişiminde güncelle
         self.theme.on_change(
             lambda name: self.btn_theme.configure(
-                text=f"◐ {'Açık' if name == 'dark' else 'Koyu'}",
+                text=self._theme_btn_text(),
                 background=self.theme.c["surface3"],
                 foreground=self.theme.c["text"],
+                highlightbackground=self.theme.c["border"],
                 activebackground=self.theme.c["surface4"],
                 activeforeground=self.theme.c["primary"]))
 
-        # Pro / Free rozeti (header, tema butonunun solunda)
+        # Pro / Free rozeti (header, tema butonunun solunda — pill)
         lic = get_license_manager()
-        badge_text = "PRO" if lic.is_pro else "FREE"
+        badge_text = (Icon.PRO + " PRO") if lic.is_pro else (Icon.FREE + " FREE")
         badge_fg = c["success"] if lic.is_pro else c["text3"]
         self.badge_pro = tk.Button(
             header, text=badge_text, command=self.open_license,
             background=c["surface3"], foreground=badge_fg,
             activebackground=c["surface4"], activeforeground=badge_fg,
-            relief="flat", font=("Segoe UI", 8, "bold"), padx=8, pady=3,
-            cursor="hand2")
+            relief="flat", font=(FONTS["caption"][0], FONTS["caption"][1], "bold"),
+            padx=9, pady=3, cursor="hand2",
+            highlightthickness=1, highlightbackground=c["border"],
+            highlightcolor=c["border_focus"])
         self.badge_pro.pack(side="right", padx=(0, 6), pady=13)
+        bind_hover(self.badge_pro,
+                   lambda: self.badge_pro.configure(
+                       background=self.theme.c["surface4"]),
+                   lambda: self.badge_pro.configure(
+                       background=self.theme.c["surface3"]))
+
+    def _theme_btn_text(self) -> str:
+        """Tema döngü butonu metni: ◐ Koyu / ◑ Açık / ◒ Gece."""
+        name = self.theme.name
+        return f"{Icon.theme_glyph(name)} {THEME_LABELS.get(name, name)}"
+
 
     def _build_menu(self):
         menubar = tk.Menu(self.root)
@@ -1706,15 +1774,16 @@ class App:
 
         view_menu = tk.Menu(menubar, tearoff=0)
         self.theme.apply_menu(view_menu)
-        view_menu.add_command(label="Koyu Tema", accelerator="Ctrl+T",
-                              command=lambda: self.theme.apply("dark"))
-        view_menu.add_command(label="Açık Tema",
-                              command=lambda: self.theme.apply("light"))
+        for theme_key in ("dark", "light", "midnight"):
+            view_menu.add_command(
+                label=f"{Icon.theme_glyph(theme_key)}  {THEME_LABELS[theme_key]} Tema",
+                accelerator="Ctrl+T" if theme_key == "dark" else "",
+                command=lambda key=theme_key: self.theme.apply(key))
         view_menu.add_command(label="Sistem Teması",
                               command=lambda: self.theme.apply(detect_system_theme()))
         view_menu.add_separator()
-        view_menu.add_command(label="Tema Değiştir (Koyu ↔ Açık)",
-                              accelerator="Ctrl+T", command=self.toggle_theme)
+        view_menu.add_command(label="Tema Değiştir (döngü)", accelerator="Ctrl+T",
+                              command=self.toggle_theme)
         menubar.add_cascade(label="Görünüm", menu=view_menu)
 
         site_menu = tk.Menu(menubar, tearoff=0)
@@ -1733,10 +1802,61 @@ class App:
         help_menu.add_command(label="Hakkında", command=self.show_about)
         menubar.add_cascade(label="Yardım", menu=help_menu)
 
-        self.root.config(menu=menubar)
+        self._menubar = menubar
+        self._build_menubar_frame((
+            ("Dosya", file_menu), ("İndirme", download_menu),
+            ("Kuyruk", queue_menu), ("Araçlar", tools_menu),
+            ("Görünüm", view_menu), ("Siteler", site_menu),
+            ("Yardım", help_menu),
+        ))
+
+    def _build_menubar_frame(self, cascades):
+        """Win32 menü barı yerine temaya uygun özel menü barı.
+
+        Yerleşik menü barı sistem rengine takılı kaldığı için (koyu temada beyaz
+        kalır) header_bg üzerinde kendi barımızı çiziyoruz.
+        """
+        old = getattr(self, "_menubar_frame", None)
+        if old is not None:
+            try:
+                old.destroy()
+            except tk.TclError:
+                pass
+        c = self.theme.c
+        bar = tk.Frame(self.root, background=c["header_bg"], height=27)
+        bar.pack(fill="x", side="top")
+        bar.pack_propagate(False)
+        self._menubar_frame = bar
+        for label, menu in cascades:
+            chip = tk.Label(bar, text=label, background=c["header_bg"],
+                            foreground=c["text2"], font=FONTS["caption"],
+                            padx=10, pady=6, cursor="hand2")
+            chip.pack(side="left")
+            bind_hover(
+                chip,
+                lambda w=chip: w.configure(
+                    background=self.theme.c["surface3"],
+                    foreground=self.theme.c["primary"]),
+                lambda w=chip: w.configure(
+                    background=self.theme.c["header_bg"],
+                    foreground=self.theme.c["text2"]))
+            chip.bind("<Button-1>",
+                      lambda _e, m=menu, w=chip: self._post_menu(m, w))
+
+    def _post_menu(self, menu, widget):
+        """Menüyü etiketinin hemen altında açar (tema uygulanmış olarak)."""
+        self.theme.apply_menu(menu)
+        try:
+            menu.tk_popup(widget.winfo_rootx(),
+                          widget.winfo_rooty() + widget.winfo_height())
+        finally:
+            try:
+                menu.grab_release()
+            except tk.TclError:
+                pass
 
     def _build_toolbar(self):
-        bar = ttk.Frame(self.root, padding=(6, 3))
+        bar = ttk.Frame(self.root, padding=(SPACING["md"], SPACING["sm"] + 1))
         bar.pack(fill="x")
 
         def btn(icon, text, command):
@@ -1769,10 +1889,11 @@ class App:
         self.btn_limit.pack(side="right", padx=4)
 
     def _build_site_bar(self):
-        bar = ttk.Frame(self.root, padding=(6, 0))
+        bar = ttk.Frame(self.root, padding=(SPACING["md"], SPACING["xs"] + 2))
         bar.pack(fill="x")
         ttk.Label(bar, text="Hızlı site:", foreground=COLORS["text2"],
-                  font=("Segoe UI", 8, "bold")).pack(side="left", padx=(2, 4))
+                  font=(FONTS["caption"][0], FONTS["caption"][1], "bold")).pack(
+            side="left", padx=(2, 6))
         self.site_buttons = []
         for name in QUICK_SITES:
             icon = SITE_ICONS.get(name, "add")
@@ -1918,8 +2039,8 @@ class App:
         self.log_text.configure(yscrollcommand=log_scroll.set)
         self.log_text.pack(side="left", fill="both", expand=True)
         log_scroll.pack(side="right", fill="y")
-        for tag, color in (("error", "#fca5a5"), ("warning", "#fcd34d"),
-                           ("success", "#6ee7b7"), ("info", COLORS["text"])):
+        for tag, color in (("error", COLORS["danger"]), ("warning", COLORS["warning"]),
+                           ("success", COLORS["success"]), ("info", COLORS["text"])):
             self.log_text.tag_configure(tag, foreground=color)
         self.log_text.configure(state="disabled")
 
@@ -1977,13 +2098,16 @@ class App:
         self.tree.bind("<Double-1>", self._on_double_click)
 
     def _build_statusbar(self):
-        status = ttk.Frame(self.root, padding=(8, 3))
+        status = ttk.Frame(self.root, padding=(SPACING["lg"], SPACING["sm"]))
         status.pack(fill="x", side="bottom")
         self.var_status_left = tk.StringVar()
         self.var_status_right = tk.StringVar()
-        ttk.Label(status, textvariable=self.var_status_left).pack(side="left")
-        ttk.Label(status, textvariable=self.var_status_right, foreground=COLORS["primary"]
-                  ).pack(side="right")
+        ttk.Label(status, textvariable=self.var_status_left,
+                  font=FONTS["caption"]).pack(side="left")
+        ttk.Label(status, textvariable=self.var_status_right,
+                  foreground=COLORS["primary"],
+                  font=(FONTS["caption"][0], FONTS["caption"][1], "bold")).pack(
+            side="right")
 
     def _bind_keys(self):
         self.root.bind("<Control-n>", lambda _e: self.add_url())
@@ -2126,7 +2250,8 @@ class App:
             elif not want_queue and was_queue:
                 self.mgr.stop_queue()
             if new_theme and new_theme != old_theme:
-                resolved = new_theme if new_theme in ("dark", "light") else detect_system_theme()
+                resolved = (new_theme if new_theme in THEMES
+                            else detect_system_theme())
                 self.theme.apply(resolved)
             self.mgr.log("Ayarlar kaydedildi.", "success")
 
@@ -2396,7 +2521,8 @@ class App:
                 fill_height = max(1, int((height - 2) * fraction))
                 canvas.create_rectangle(x0 + 1, height - 1 - fill_height,
                                         x1 - 1, height - 1,
-                                        fill=COLORS["success"] if fraction >= 1.0 else "#3aa8f0",
+                                        fill=COLORS["success"] if fraction >= 1.0
+                                        else COLORS["primary"],
                                         outline="")
 
     def _update_status(self):

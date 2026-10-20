@@ -52,6 +52,31 @@ Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kul
 
 ---
 
+## Ekran görüntüleri
+
+<img src="docs/screenshots/gui-downloads.png" alt="Retro+ Download Manager — ana pencere (koyu tema, şampanya-altını vurgu)" width="100%">
+
+Diğer görüntüler: [İndirme Ekle](docs/screenshots/gui-add-link.png) ·
+[Site Grabber](docs/screenshots/gui-grabber.png) ·
+[Ayarlar](docs/screenshots/gui-settings.png)
+
+---
+
+## Tasarım & Tema
+
+Lüks masaüstü ilkeleriyle tasarlandı:
+
+- **Anthracite koyu tema** (`#0F1115`) + **tek şampanya-altını vurgu rengi** (`#C9A962`)
+- **3 tema**: Koyu (anthracite), Açık (sıcak beyaz), Gece (midnight) — Ayarlar'dan seçilir, `Ctrl+T` döngü, seçim kalıcı
+- **Koyu başlık çubuğu** (DWM immersive dark mode; temaya göre otomatik)
+- **Özel menü barı** — yerleşik Win32 menüsü yerine temaya uygun bar (koyu temada beyaz kalmaz)
+- **Özel ikon seti** — aksiyon ikonları tek ton şampanya-altını chip stiline (`tools/recolor_icons.py`)
+- **1px kenarlıklar**, subtle katmanlar, cam hissi (gölge yerine yüzey tonları)
+- **Inter tarzı tipografi hiyerarşisi** + cömert boşluk token'ları (`theme.py`)
+- **150-300 ms mikro animasyonlar** — diyalog fade-in, hover durumları
+
+---
+
 ## Kurulum
 
 ```bash

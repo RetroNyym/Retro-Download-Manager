@@ -25,14 +25,15 @@ from .license import (
     get_license_manager, parse_key, load_products,
     KIND_LABELS_TR, TRIAL_DOWNLOADS, PRO_FEATURES,
 )
+from .theme import titlebar_dark
 
-# ─── Renk paleti (koyu tema) ────────────────────────────────────────────────
+# ─── Renk paleti (koyu tema — anthracite + şampanya-altını) ─────────────────
 _DEFAULT_COLORS = {
-    "bg": "#0f1115", "surface": "#161920", "surface2": "#1c2028",
-    "surface3": "#232833", "line": "#2b3140",
-    "text": "#e8ebf0", "text2": "#9aa3b2", "text3": "#5c6470",
-    "primary": "#6c7bff", "accent": "#3ec6e0", "success": "#3ddc84",
-    "danger": "#ff5c72", "warn": "#ffb020",
+    "bg": "#0f1115", "surface": "#15181e", "surface2": "#1a1e26",
+    "surface3": "#21252e", "line": "#232833",
+    "text": "#e8ebf0", "text2": "#a8aebf", "text3": "#6e7689",
+    "primary": "#c9a962", "accent": "#e6cf9a", "success": "#2ecc96",
+    "danger": "#e5484d", "warn": "#f0b429",
 }
 
 # Web sitesi kök URL
@@ -75,6 +76,7 @@ def show_license_dialog(parent=None, product_code: int = 1,
     dlg.configure(bg=c["bg"])
     dlg.transient(parent) if parent else None
     dlg.resizable(False, False)
+    titlebar_dark(dlg, (c.get("name") or "dark") != "light")
 
     lic = get_license_manager()
     products = load_products()

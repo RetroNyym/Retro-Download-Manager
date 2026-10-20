@@ -1,7 +1,12 @@
-"""Retro+ Download Manager — çift temalı tasarım sistemi (token tabanlı).
+"""Retro+ Download Manager — lüks tasarım sistemi (token tabanlı).
 
-2026 trendleri: calm density, adaptive theming, layered elevation
-(gölge yerine yüzey tonları), WCAG AA kontrast, saf siyah/beyaz yok.
+Lüks ilkeleri:
+- Anthracite koyu tema (#0F1115) + tek şampanya-altını vurgu rengi (#C9A962)
+- 1px kenarlıklar, subtle katmanlar (gölge yerine yüzey tonları)
+- Inter tarzı tipografi hiyerarşisi (hero/title/heading/body/caption)
+- Cömert boşluk (SPACING), yumuşak köşe (RADIUS)
+- 150-300 ms mikro animasyonlar (MOTION + fade_in)
+- Tema kişiselleştirme: dark / light / midnight (kaydedilir)
 """
 
 from __future__ import annotations
@@ -14,21 +19,21 @@ from tkinter import ttk
 
 DARK = {
     "name": "dark",
-    # Yüzeyler (elevation → daha açık gri)
+    # Yüzeyler (katman → daha açık nötr ton)
     "bg":            "#0f1115",
-    "surface":       "#161920",
-    "surface2":      "#1c2028",
-    "surface3":      "#232833",
-    "surface4":      "#2b3140",
-    # Kenarlıklar
-    "border":        "#2a3040",
-    "border_focus":  "#5b6cff",
-    # Marka / vurgu
-    "primary":       "#6c7bff",
-    "primary_hover": "#8b96ff",
-    "primary_dim":   "#3d4bcc",
-    "primary_soft":  "#1e2440",
-    "accent":        "#3ec6e0",
+    "surface":       "#15181e",
+    "surface2":      "#1a1e26",
+    "surface3":      "#21252e",
+    "surface4":      "#2a2f3b",
+    # Kenarlıklar (1px, subtle)
+    "border":        "#232833",
+    "border_focus":  "#c9a962",
+    # Marka / tek vurgu: şampanya-altını
+    "primary":       "#c9a962",
+    "primary_hover": "#d8bc7c",
+    "primary_dim":   "#a88b4e",
+    "primary_soft":  "#2b2517",
+    "accent":        "#e6cf9a",
     # Semantik
     "success":       "#2ecc96",
     "warning":       "#f0b429",
@@ -37,62 +42,122 @@ DARK = {
     "text":          "#e8ebf0",
     "text2":         "#a8aebf",
     "text3":         "#6e7689",
-    "on_primary":    "#ffffff",
+    "on_primary":    "#0f1115",
     # Kontrol yüzeyleri
-    "btn_bg":        "#232833",
-    "btn_hover":     "#2b3140",
-    "entry_bg":      "#1c2028",
-    "select_bg":     "#2e3a6e",
-    "select_fg":     "#ffffff",
-    "heading_bg":    "#1c2028",
-    "row_alt":       "#191d26",
-    "scroll_track":  "#161920",
-    "scroll_thumb":  "#2b3140",
-    "scroll_hover":  "#3a4152",
+    "btn_bg":        "#21252e",
+    "btn_hover":     "#2a2f3b",
+    "entry_bg":      "#161a21",
+    "select_bg":     "#463c26",
+    "select_fg":     "#f6efdf",
+    "heading_bg":    "#1a1e26",
+    "row_alt":       "#171a21",
+    "scroll_track":  "#15181e",
+    "scroll_thumb":  "#2a2f3b",
+    "scroll_hover":  "#363c4b",
     # Aksan çubukları
-    "header_bg":     "#12151c",
-    "header_accent": "#6c7bff",
-    "status_bg":     "#12151c",
+    "header_bg":     "#101318",
+    "header_accent": "#c9a962",
+    "status_bg":     "#101318",
 }
 
 LIGHT = {
     "name": "light",
-    "bg":            "#f4f6fa",
+    "bg":            "#f6f5f2",
     "surface":       "#ffffff",
-    "surface2":      "#f9fafb",
-    "surface3":      "#eef1f6",
-    "surface4":      "#e4e8f0",
-    "border":        "#d8dde8",
-    "border_focus":  "#4f5dff",
-    "primary":       "#4f5dff",
-    "primary_hover": "#3d4bff",
-    "primary_dim":   "#3a46d6",
-    "primary_soft":  "#e8ebff",
-    "accent":        "#0ea5c6",
+    "surface2":      "#fbfaf8",
+    "surface3":      "#f0eee9",
+    "surface4":      "#e7e4dc",
+    "border":        "#e0dcd3",
+    "border_focus":  "#8f7434",
+    "primary":       "#8f7434",
+    "primary_hover": "#7c6430",
+    "primary_dim":   "#6d5729",
+    "primary_soft":  "#f3ecdd",
+    "accent":        "#7a6236",
     "success":       "#10a86e",
     "warning":       "#d97706",
     "danger":        "#dc2626",
-    "text":          "#1a1f2e",
-    "text2":         "#4b5568",
-    "text3":         "#8b93a5",
+    "text":          "#1c1a16",
+    "text2":         "#55514a",
+    "text3":         "#8b8579",
     "on_primary":    "#ffffff",
     "btn_bg":        "#ffffff",
-    "btn_hover":     "#eef1f6",
+    "btn_hover":     "#f0eee9",
     "entry_bg":      "#ffffff",
-    "select_bg":     "#e0e5ff",
-    "select_fg":     "#1a1f2e",
-    "heading_bg":    "#f4f6fa",
-    "row_alt":       "#f9fafb",
-    "scroll_track":  "#eef1f6",
-    "scroll_thumb":  "#c4cad8",
-    "scroll_hover":  "#a8b0c4",
+    "select_bg":     "#e9e0cb",
+    "select_fg":     "#1c1a16",
+    "heading_bg":    "#f6f5f2",
+    "row_alt":       "#fbfaf8",
+    "scroll_track":  "#f0eee9",
+    "scroll_thumb":  "#cfc9bd",
+    "scroll_hover":  "#b5ae9f",
     "header_bg":     "#ffffff",
-    "header_accent": "#4f5dff",
+    "header_accent": "#8f7434",
     "status_bg":     "#ffffff",
 }
 
-THEMES = {"dark": DARK, "light": LIGHT}
+MIDNIGHT = {
+    "name": "midnight",
+    "bg":            "#0a0e1a",
+    "surface":       "#101524",
+    "surface2":      "#151b2e",
+    "surface3":      "#1d2440",
+    "surface4":      "#262e4e",
+    "border":        "#232b48",
+    "border_focus":  "#c9a962",
+    "primary":       "#c9a962",
+    "primary_hover": "#d8bc7c",
+    "primary_dim":   "#a88b4e",
+    "primary_soft":  "#24243a",
+    "accent":        "#e6cf9a",
+    "success":       "#34d399",
+    "warning":       "#fbbf24",
+    "danger":        "#f87171",
+    "text":          "#e6e9f5",
+    "text2":         "#9aa3bd",
+    "text3":         "#667089",
+    "on_primary":    "#0a0e1a",
+    "btn_bg":        "#1d2440",
+    "btn_hover":     "#262e4e",
+    "entry_bg":      "#12172a",
+    "select_bg":     "#3a3524",
+    "select_fg":     "#f2ecdc",
+    "heading_bg":    "#151b2e",
+    "row_alt":       "#12172a",
+    "scroll_track":  "#101524",
+    "scroll_thumb":  "#262e4e",
+    "scroll_hover":  "#333d66",
+    "header_bg":     "#0b1020",
+    "header_accent": "#c9a962",
+    "status_bg":     "#0b1020",
+}
+
+THEMES = {"dark": DARK, "light": LIGHT, "midnight": MIDNIGHT}
 DEFAULT_THEME = "dark"
+THEME_ORDER = ("dark", "light", "midnight")
+THEME_LABELS = {"dark": "Koyu", "light": "Açık", "midnight": "Gece"}
+
+# ─── Tipografi hiyerarşisi ──────────────────────────────────────────────────
+FONTS = {
+    "hero":    ("Segoe UI Semibold", 22),
+    "title":   ("Segoe UI Semibold", 15),
+    "heading": ("Segoe UI Semibold", 12),
+    "body":    ("Segoe UI", 10),
+    "caption": ("Segoe UI", 9),
+    "mono":    ("Consolas", 10),
+}
+
+# ─── Cömert boşluk / köşe / hareket ────────────────────────────────────────
+SPACING = {"xs": 2, "sm": 4, "md": 8, "lg": 14, "xl": 20, "xxl": 28}
+RADIUS = {"sm": 4, "md": 7, "lg": 12, "pill": 999}
+MOTION = {"fade_ms": 200, "hover_ms": 150, "tooltip_ms": 350, "steps": 10}
+
+
+def next_theme(current: str) -> str:
+    """Sıradaki tema adını döndürür (dark → light → midnight → dark)."""
+    if current not in THEME_ORDER:
+        return DEFAULT_THEME
+    return THEME_ORDER[(THEME_ORDER.index(current) + 1) % len(THEME_ORDER)]
 
 
 def detect_system_theme() -> str:
@@ -108,6 +173,63 @@ def detect_system_theme() -> str:
         return "light" if int(value) else "dark"
     except Exception:
         return DEFAULT_THEME
+
+
+def fade_in(window: tk.Misc, duration: int | None = None) -> None:
+    """Pencereyi MOTION['fade_ms'] (150-300 ms) içinde 0→1 alfa ile açar."""
+    duration = duration or MOTION["fade_ms"]
+    try:
+        window.wm_attributes("-alpha", 0.0)
+    except tk.TclError:
+        return
+    steps = max(6, min(MOTION["steps"] * 2, duration // 25))
+    delay = max(10, duration // steps)
+    state = {"i": 0}
+
+    def tick():
+        try:
+            if not window.winfo_exists():
+                return
+            state["i"] += 1
+            window.wm_attributes("-alpha", min(1.0, state["i"] / steps))
+            if state["i"] < steps:
+                window.after(delay, tick)
+        except tk.TclError:
+            return
+
+    window.after(delay, tick)
+
+
+def bind_hover(widget: tk.Misc, enter, leave) -> None:
+    """150 ms mikro-hover bağlar (bind tekrarları güvenli)."""
+    widget.bind("<Enter>", lambda _e: enter(), add="+")
+    widget.bind("<Leave>", lambda _e: leave(), add="+")
+
+
+def titlebar_dark(window: tk.Misc, dark: bool) -> None:
+    """Pencere başlık çubuğunu temaya göre koyu/açık yapar (DWM).
+
+    Win10 1809+ attribute 13, Win11 attribute 20; ikisi de denenir.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.windll.user32
+        user32.GetAncestor.argtypes = (wintypes.HWND, wintypes.UINT)
+        user32.GetAncestor.restype = wintypes.HWND
+        hwnd = user32.GetAncestor(int(window.winfo_id()), 2)  # GA_ROOT
+        value = ctypes.c_int(1 if dark else 0)
+        dwmapi = ctypes.windll.dwmapi
+        dwmapi.DwmSetWindowAttribute.argtypes = (
+            wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD)
+        for attr in (13, 20):
+            try:
+                dwmapi.DwmSetWindowAttribute(hwnd, attr, ctypes.byref(value),
+                                             ctypes.sizeof(value))
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 class ThemeManager:
@@ -130,6 +252,11 @@ class ThemeManager:
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def label(self) -> str:
+        """Türkçe tema etiketi (Koyu / Açık / Gece)."""
+        return THEME_LABELS.get(self._name, self._name or "")
 
     @property
     def c(self) -> dict:
@@ -155,20 +282,26 @@ class ThemeManager:
                 except Exception:
                     pass
 
+    def cycle(self):
+        """Sıradaki temaya geç (dark → light → midnight → dark)."""
+        self.apply(next_theme(self._name))
+
     def toggle(self):
-        self.apply("light" if self._name == "dark" else "dark")
+        """Geriye dönük uyum: döngüsel tema değişimi."""
+        self.cycle()
 
     # ── ttk styles ──────────────────────────────────────────────────────────
     def _apply_styles(self):
         c = self._palette
         s = self._style
+        f = FONTS
 
         s.configure(".", background=c["bg"], foreground=c["text"],
                     fieldbackground=c["entry_bg"], bordercolor=c["border"],
                     lightcolor=c["border"], darkcolor=c["border"],
                     troughcolor=c["surface3"], selectbackground=c["select_bg"],
                     selectforeground=c["select_fg"],
-                    font=("Segoe UI", 10))
+                    font=f["body"])
         s.configure("TFrame", background=c["bg"])
         s.configure("Surface.TFrame", background=c["surface"])
         s.configure("Header.TFrame", background=c["header_bg"])
@@ -178,29 +311,34 @@ class ThemeManager:
         s.configure("Muted.TLabel", background=c["bg"], foreground=c["text2"])
         s.configure("Header.TLabel", background=c["header_bg"], foreground=c["text"])
         s.configure("Status.TLabel", background=c["status_bg"], foreground=c["text2"])
+        s.configure("Title.TLabel", background=c["bg"], foreground=c["text"],
+                    font=f["title"])
+        s.configure("Heading.TLabel", background=c["bg"], foreground=c["primary"],
+                    font=f["heading"])
 
+        # Buton — cömert padding, 1px kenarlık
         s.configure("TButton", background=c["btn_bg"], foreground=c["text"],
                     bordercolor=c["border"], focuscolor=c["primary"],
-                    padding=(12, 6))
+                    padding=(14, 7), font=f["body"])
         s.map("TButton",
               background=[("active", c["btn_hover"]), ("pressed", c["primary_soft"])],
               foreground=[("disabled", c["text3"]), ("pressed", c["primary"])],
               bordercolor=[("focus", c["border_focus"])])
         s.configure("Primary.TButton", background=c["primary"],
                     foreground=c["on_primary"], bordercolor=c["primary"],
-                    font=("Segoe UI", 10, "bold"))
+                    padding=(16, 7), font=(f["heading"][0], f["heading"][1], "bold"))
         s.map("Primary.TButton",
               background=[("active", c["primary_hover"]), ("pressed", c["primary_dim"])],
               bordercolor=[("active", c["primary_hover"])])
         s.configure("Ghost.TButton", background=c["header_bg"], foreground=c["text2"],
-                    bordercolor=c["header_bg"], padding=(8, 5))
+                    bordercolor=c["header_bg"], padding=(10, 5))
         s.map("Ghost.TButton",
               background=[("active", c["surface3"]), ("pressed", c["surface4"])],
               foreground=[("active", c["text"])])
 
         s.configure("TEntry", fieldbackground=c["entry_bg"], foreground=c["text"],
                     insertcolor=c["text"], bordercolor=c["border"],
-                    lightcolor=c["border"], darkcolor=c["border"])
+                    lightcolor=c["border"], darkcolor=c["border"], padding=(6, 5))
         s.map("TEntry",
               bordercolor=[("focus", c["border_focus"])],
               lightcolor=[("focus", c["border_focus"])],
@@ -209,7 +347,7 @@ class ThemeManager:
         s.configure("TCombobox", fieldbackground=c["entry_bg"], foreground=c["text"],
                     background=c["btn_bg"], arrowcolor=c["text2"],
                     bordercolor=c["border"], selectbackground=c["entry_bg"],
-                    selectforeground=c["text"])
+                    selectforeground=c["text"], padding=(6, 5))
         s.map("TCombobox",
               fieldbackground=[("readonly", c["entry_bg"])],
               foreground=[("readonly", c["text"])],
@@ -219,7 +357,7 @@ class ThemeManager:
               bordercolor=[("focus", c["border_focus"])])
         s.configure("TSpinbox", fieldbackground=c["entry_bg"], foreground=c["text"],
                     arrowcolor=c["text2"], bordercolor=c["border"],
-                    background=c["btn_bg"])
+                    background=c["btn_bg"], padding=(6, 5))
         s.map("TSpinbox", bordercolor=[("focus", c["border_focus"])])
         s.configure("TCheckbutton", background=c["bg"], foreground=c["text"],
                     focuscolor=c["bg"])
@@ -242,7 +380,7 @@ class ThemeManager:
 
         s.configure("TNotebook", background=c["bg"], borderwidth=0)
         s.configure("TNotebook.Tab", background=c["surface2"], foreground=c["text2"],
-                    padding=(14, 7), borderwidth=0, font=("Segoe UI", 10))
+                    padding=(16, 8), borderwidth=0, font=f["body"])
         s.map("TNotebook.Tab",
               background=[("selected", c["surface3"]), ("active", c["surface4"])],
               foreground=[("selected", c["primary"]), ("active", c["text"])],
@@ -250,10 +388,10 @@ class ThemeManager:
 
         s.configure("Treeview", background=c["surface"], foreground=c["text"],
                     fieldbackground=c["surface"], bordercolor=c["border"],
-                    rowheight=30, font=("Segoe UI", 10))
+                    rowheight=32, font=f["body"])
         s.configure("Treeview.Heading", background=c["heading_bg"],
-                    foreground=c["text2"], relief="flat", padding=(8, 7),
-                    font=("Segoe UI", 9, "bold"))
+                    foreground=c["text2"], relief="flat", padding=(10, 8),
+                    font=(f["caption"][0], f["caption"][1], "bold"))
         s.map("Treeview.Heading", background=[("active", c["surface3"])])
         s.map("Treeview",
               background=[("selected", c["select_bg"])],
@@ -274,7 +412,7 @@ class ThemeManager:
         s.configure("TLabelframe", background=c["bg"], foreground=c["text2"],
                     bordercolor=c["border"])
         s.configure("TLabelframe.Label", background=c["bg"], foreground=c["text2"],
-                    font=("Segoe UI", 9, "bold"))
+                    font=f["caption"])
         s.configure("Horizontal.TProgressbar", background=c["primary"],
                     troughcolor=c["surface3"], bordercolor=c["bg"],
                     lightcolor=c["primary"], darkcolor=c["primary"])

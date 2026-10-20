@@ -155,7 +155,11 @@ def hwnd_of(widget):
 
 
 def capture(widget, path):
-    """Pencereyi PrintWindow ile yakalar; başarısız olursa ekran görüntüsüne düşer."""
+    """Pencereyi yakalar.
+
+    Önce gerçek ekran görüntüsü alınır (DWM koyu başlık çubuğu ve menü barı
+    dahil doğru görünür); pencere görünür değilse PrintWindow'a düşülür.
+    """
     user32 = ctypes.windll.user32
     g32 = ctypes.windll.gdi32
     hwnd = hwnd_of(widget)
@@ -167,31 +171,39 @@ def capture(widget, path):
         raise RuntimeError("pencere ölçüleri geçersiz")
 
     img = None
-    hdc = user32.GetWindowDC(hwnd)
-    if hdc:
-        mem = g32.CreateCompatibleDC(hdc)
-        bmp = g32.CreateCompatibleBitmap(hdc, width, height)
-        g32.SelectObject(mem, bmp)
-        user32.PrintWindow(hwnd, mem, PW_RENDERFULLCONTENT)
-        info = BITMAPINFOHEADER()
-        info.biSize = ctypes.sizeof(BITMAPINFOHEADER)
-        info.biWidth = width
-        info.biHeight = -height  # yukarıdan aşağıya
-        info.biPlanes = 1
-        info.biBitCount = 32
-        info.biCompression = 0
-        buf = ctypes.create_string_buffer(width * height * 4)
-        g32.GetDIBits(mem, bmp, 0, height, buf, ctypes.byref(info), 0)
-        img = Image.frombuffer("RGB", (width, height), buf.raw, "raw", "BGRX", 0, 1)
-        g32.DeleteObject(bmp)
-        g32.DeleteDC(mem)
-        user32.ReleaseDC(hwnd, hdc)
-        extrema = img.convert("L").getextrema()
-        if extrema[1] < 16:  # tamamen kara çıktı
-            img = None
+    try:
+        grabbed = ImageGrab.grab(bbox=(left, top, right, bottom), all_screens=True)
+        lo, hi = grabbed.convert("L").getextrema()
+        if hi - lo > 8:  # tek renk değil → gerçek içerik yakalandı
+            img = grabbed
+    except Exception:
+        img = None
 
     if img is None:
-        img = ImageGrab.grab(bbox=(left, top, right, bottom), all_screens=True)
+        hdc = user32.GetWindowDC(hwnd)
+        if hdc:
+            mem = g32.CreateCompatibleDC(hdc)
+            bmp = g32.CreateCompatibleBitmap(hdc, width, height)
+            g32.SelectObject(mem, bmp)
+            user32.PrintWindow(hwnd, mem, PW_RENDERFULLCONTENT)
+            info = BITMAPINFOHEADER()
+            info.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+            info.biWidth = width
+            info.biHeight = -height  # yukarıdan aşağıya
+            info.biPlanes = 1
+            info.biBitCount = 32
+            info.biCompression = 0
+            buf = ctypes.create_string_buffer(width * height * 4)
+            g32.GetDIBits(mem, bmp, 0, height, buf, ctypes.byref(info), 0)
+            img = Image.frombuffer("RGB", (width, height), buf.raw, "raw",
+                                   "BGRX", 0, 1)
+            g32.DeleteObject(bmp)
+            g32.DeleteDC(mem)
+            user32.ReleaseDC(hwnd, hdc)
+            extrema = img.convert("L").getextrema()
+            if extrema[1] < 16:  # tamamen kara çıktı
+                img = ImageGrab.grab(bbox=(left, top, right, bottom),
+                                     all_screens=True)
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path, "PNG")
@@ -226,7 +238,7 @@ def main():
     mgr = DownloadManager(data_dir=data_dir)
     mgr.apply_settings({"download_dir": dl_dir, "bridge_enabled": False,
                         "auto_start": False, "queue_running": False,
-                        "max_concurrent": 3, "segments": 8})
+                        "max_concurrent": 3, "segments": 8, "theme": "dark"})
 
     app = App(mgr)
     root = app.root
