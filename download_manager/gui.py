@@ -1575,11 +1575,15 @@ class App:
         """
         try:
             if self.root.state() == "iconic":
+                self._trace_log("SAGLIK: pencere iconic! deiconify...")
                 self.root.deiconify()
         except tk.TclError:
             pass
         try:
             if self.root.wm_attributes("-alpha") < 1.0:
+                self._trace_log(
+                    f"SAGLIK: pencere alfa {self.root.wm_attributes('-alpha')} "
+                    "-> 1.0 ayarlandi")
                 self.root.wm_attributes("-alpha", 1.0)
         except tk.TclError:
             pass
@@ -1588,6 +1592,62 @@ class App:
             self.root.focus_force()
         except tk.TclError:
             pass
+
+    def _window_health_check(self, tick_count):
+        """Her ~6 sn'de pencerenin sistemde GÖRÜNÜRLÜĞÜNÜ denetler.
+
+        Erişilebilir aspect'te "off-screen"de durabilir ya da tamamen gizli
+        olabilir; kullanıcı buna 'kapandı' der. Sorunu loglar + kimlik
+        doğrular. Sarıkröntgen amaçlı: trace satırları ile gerçek durumu
+        tespit ederiz.
+        """
+        try:
+            state = self.root.state()
+            alpha = float(self.root.wm_attributes("-alpha"))
+            mapped = bool(self.root.winfo_ismapped())
+            viewable = bool(self.root.winfo_viewable())
+            geo = (self.root.winfo_x(), self.root.winfo_y(),
+                   self.root.winfo_width(), self.root.winfo_height())
+            screen_w = self.root.winfo_screenwidth()
+            screen_h = self.root.winfo_screenheight()
+            off_screen = (geo[2] < 5 or geo[3] < 5 or
+                          geo[0] > screen_w or geo[1] > screen_h or
+                          geo[0] + geo[2] < 0 or geo[1] + geo[3] < 0)
+            problem = (state != "normal" or alpha < 0.99 or
+                       not viewable or off_screen)
+            if problem or tick_count % 225 == 0:  # sorunlu anlar + 90 sn'de bir sağlıklı iz
+                self._trace_log(
+                    f"SAGLIK#{tick_count}: state={state}, alpha={alpha:.2f}, "
+                    f"mapped={mapped}, viewable={viewable}, geo={geo}, "
+                    f"screen={screen_w}x{screen_h}, "
+                    f"off_screen={off_screen}")
+            if problem:
+                if state == "iconic":
+                    self.root.deiconify()
+                if alpha < 0.99:
+                    self.root.wm_attributes("-alpha", 1.0)
+                if not viewable or off_screen:
+                    try:
+                        sw, sh = screen_w, screen_h
+                        w = max(geo[2], 940)
+                        h = max(geo[3], 560)
+                        self.root.geometry(
+                            f"{w}x{h}+{max(0, (sw - w) // 2)}+"
+                            f"{max(0, (sh - h) // 2)}")
+                    except Exception:
+                        pass
+                try:
+                    self.root.state("normal")
+                    self.root.lift()
+                    self.root.focus_force()
+                except Exception:
+                    pass
+                self._trace_log(f"SAGLIK#{tick_count}: pencere kurtarıldı")
+        except Exception as exc:
+            try:
+                self._trace_log(f"SAGLIK hata: {type(exc).__name__}: {exc}")
+            except Exception:
+                pass
 
     def _apply_titlebar(self):
         """DWM ile başlık çubuğunu aktif temaya göre koyu/açık yapar."""
@@ -2868,6 +2928,8 @@ class App:
             if time.perf_counter() - _stage_t > _worst[1]:
                 _worst = ("_refresh_history", time.perf_counter() - _stage_t)
             self._tick_count += 1
+            if self._tick_count % 15 == 0:  # ~6 sn'de bir pencere sağlık denetimi
+                self._window_health_check(self._tick_count)
             if self._tick_count % 75 == 0:  # ~30 sn'de bir kalp atışı izi
                 try:
                     sel = len(self.tree.selection())
