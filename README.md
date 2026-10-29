@@ -3,81 +3,84 @@
 </p>
 
 <p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
-  <img alt="Lisans" src="https://img.shields.io/badge/Lisans-MIT-yellow.svg">
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
-  <img alt="Parça" src="https://img.shields.io/badge/indirme-32%20par%C3%A7a-brightgreen">
-  <img alt="Test" src="https://img.shields.io/badge/test-165%20kontrol-blue">
+  <a href="#language">🌐 English</a> ·
+  <a href="README.tr.md">🇹🇷 Türkçe</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.es.md">Español</a>
 </p>
 
-# Retro+ Download Manager — çok parçalı (segmentli) indirme yöneticisi
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
+  <img alt="Segments" src="https://img.shields.io/badge/segments-32%20parallel-brightgreen">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-199%20checks-blue">
+</p>
 
-> **EN:** Multi-segment download manager with pause/resume, queue, scheduler,
-> webpage & playlist parsing and a browser bridge. Turkish Tkinter GUI, usable
-> as a library too.
+# Retro+ Download Manager — Multi-Segment Download Manager (Pause/Resume · Queue · Scheduler · Torrent · yt-dlp)
 
-**Retro+ Download Manager**, çok parçalı (segmentli) indirme, duraklat/devam, kuyruk, zamanlama,
-otomatik dosya kategorileri, bağlantı grabber'ı, web sayfası/playlist çözümleme, tarayıcı köprüsü
-ve Türkçe Tkinter arayüzü sunan bağımsız bir Python indirme yöneticisidir.
+> **TR:** Çok parçalı indirme yöneticisi — duraklat/devam, kuyruk, zamanlama, web sayfası &
+> oynatma listesi çözümleme ve tarayıcı köprüsü. Türkçe Tkinter arayüzü; kütüphane olarak da
+> kullanılabilir. Detaylar için [README.tr.md](README.tr.md).
 
-Modül hem **masaüstü uygulaması** hem de **Python kütüphanesi** olarak kullanılabilir — GUI olmadan
-`DownloadManager` sınıfını doğrudan kendi programınıza bağlayabilirsiniz.
+**Retro+ Download Manager** is a standalone Python download manager with multi-segment (parallel)
+downloading, pause/resume at any point, queue and scheduling, automatic file categorization,
+clipboard & webpage link grabbing, a local browser bridge, and a polished dark-theme Tkinter UI.
 
-> Depo adı `Retro-Download-Manager` (GitHub boşluk ve `+` karakterini depo adında kabul etmez),
-> ürün adı **Retro+ Download Manager**'dır.
+The module works both as a **desktop application** and as a **Python library** — you can plug the
+`DownloadManager` class into your own program without the GUI.
+
+> The repository name is `Retro-Download-Manager` (GitHub does not accept spaces or `+` in repo
+> names); the product name is **Retro+ Download Manager**.
 
 ---
 
-## Özellikler
+## Features
 
-| Özellik | Durum | Not |
+| Feature | Status | Notes |
 | --- | :---: | --- |
-| Çok parçalı indirme (paralel segment) | ✅ | Varsayılan 8, en fazla 32 parça |
-| Duraklat / devam (her noktadan) | ✅ | 206 Range ile ilerleme dosyasına yazılır |
-| Bilinmeyen boyutlu / `Range` desteklemeyen sunucu | ✅ | Tek parça + hazır olan kadar parçalı kademelenme |
-| Çelişkili/eksik `Content-Length` çözümü | ✅ | `HEAD` + `Range` teyidi, uzunluk uyuşmazlığında parça sadeleştirilir |
-| Zamanlanmış / tekrarlayan indirme | ✅ | Kuyruk + saatlik/günlük planlayıcı |
-| Duraklatma sırasında bitiş eşiği ve hız sınırı | ✅ | KB/sn sınırı, isteğe bağlı kota |
-| Kategori kuralı (video/müzik/arşiv...) | ✅ | Uzantı + anahtar kelime, eşleşene göre klasöre ayırır |
-| Tarayıcı bağlantı grabber'ı | ✅ | Pano izleme + yerel HTTP köprüsü (`/links`, `/add`) |
-| Web sayfası / playlist linki çözümleme | ✅ | `og:video`/kaynak tarayıcı + yt-dlp (56 videoluk liste tek tuşla kuyruğa) |
-| Hızlı site butonları | ✅ | YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo — tek tıkla ekleme |
-| Video indirme (ses+video birleştirme) | ✅ | YouTube vb. için yt-dlp + ffmpeg otomatik birleştirme |
-| Site şifresi / çerez desteği | ✅ | Başlıklar ve tanımlar üzerinden (`headers`/`cookies`) |
-| FTP / FTPS | ✅ | Parçalı FTP indirme, duraklat/devam |
-| Yerel güncelleme (uzaktan, linke dokunmadan) | ✅ | `version.json` + zip + SHA-256; klasör/UNC/HTTP kaynağı, sessiz kurulum + yeniden başlatma |
-| WhatsApp PDF yakalama | ✅ | Bağlı cihaz (QR) dinleyici + beyaz liste; yalnızca seçili grup/kişilerin PDF'leri iner |
-| Torrent (magnet / `.torrent`) | ✅ | aria2 motoru, ayrı sekme, `magnet:` Windows kaydı (`tools/magnet_bagla.ps1`) |
-| MMS/RTSP, FTPS'te özel tunnel | ❌ | Desteklenmez |
+| Multi-segment downloads (parallel) | ✅ | 8 segments by default, up to 32 |
+| Pause / resume at any point | ✅ | HTTP 206 `Range` replay from the progress file |
+| Unknown size / no-`Range` servers | ✅ | Single-segment fallback + gradual staging |
+| Conflicting/missing `Content-Length` | ✅ | `HEAD` + `Range` verification; segments slim down on mismatch |
+| Scheduled / recurring downloads | ✅ | Queue + hourly/daily planner |
+| Pause threshold and speed limit | ✅ | KB/s cap, optional quota |
+| Category rules (video/music/archive…) | ✅ | Extension + keyword matching into folders |
+| Browser link grabber | ✅ | Clipboard monitoring + local HTTP bridge (`/links`, `/add`) |
+| Webpage / playlist link parsing | ✅ | `og:video`/`<source>` scanning + yt-dlp (a 56-video list queued in one click) |
+| Quick site buttons | ✅ | YouTube, Instagram, X (Twitter), Facebook, TikTok, Vimeo — one-click add |
+| Video downloads (audio+video merge) | ✅ | yt-dlp + ffmpeg automatic muxing for YouTube etc. |
+| Site password / cookie support | ✅ | Via `headers`/`cookies` fields |
+| FTP / FTPS | ✅ | Segmented FTP download with pause/resume |
+| Local self-update (no external link) | ✅ | `version.json` + zip + SHA-256; folder/UNC/HTTP source, silent install + restart |
+| WhatsApp PDF capture | ✅ | Linked-device (QR) listener + whitelist; only chosen chats deliver PDFs |
+| Torrent (magnet / `.torrent`) | ✅ | aria2 engine, dedicated tab, `magnet:` Windows registration (`tools/magnet_bagla.ps1`) |
+| MMS/RTSP, FTPS with custom tunnel | ❌ | Not supported |
 
----
+## Screenshots
 
-## Ekran görüntüleri
+<img src="docs/screenshots/gui-downloads.png" alt="Retro+ Download Manager — main window (dark theme, champagne-gold accent)" width="100%">
 
-<img src="docs/screenshots/gui-downloads.png" alt="Retro+ Download Manager — ana pencere (koyu tema, şampanya-altını vurgu)" width="100%">
-
-Diğer görüntüler: [İndirme Ekle](docs/screenshots/gui-add-link.png) ·
+More views: [Add Download](docs/screenshots/gui-add-link.png) ·
 [Site Grabber](docs/screenshots/gui-grabber.png) ·
-[Ayarlar](docs/screenshots/gui-settings.png)
+[Settings](docs/screenshots/gui-settings.png)
 
----
+## Design & Theme
 
-## Tasarım & Tema
+The UI follows a luxury desktop design language:
 
-Lüks masaüstü ilkeleriyle tasarlandı:
+- **Anthracite dark theme** (`#0F1115`) with a single **champagne-gold accent** (`#C9A962`)
+- **3 themes**: Dark (anthracite), Light (warm white), Midnight — selectable in Settings,
+  `Ctrl+T` cycles, choice persists
+- **Dark title bar** (DWM immersive dark mode; automatic per theme)
+- **Custom menu bar** that matches the theme (no white residue in dark mode)
+- **Custom icon set** — action icons in monochrome champagne-gold chip style (`tools/recolor_icons.py`)
+- **1px borders**, subtle layered surfaces instead of shadows
+- **Inter-style typographic hierarchy** + generous spacing tokens (`theme.py`)
+- **150–300 ms micro-animations** — dialog fade-in, hover states
 
-- **Anthracite koyu tema** (`#0F1115`) + **tek şampanya-altını vurgu rengi** (`#C9A962`)
-- **3 tema**: Koyu (anthracite), Açık (sıcak beyaz), Gece (midnight) — Ayarlar'dan seçilir, `Ctrl+T` döngü, seçim kalıcı
-- **Koyu başlık çubuğu** (DWM immersive dark mode; temaya göre otomatik)
-- **Özel menü barı** — yerleşik Win32 menüsü yerine temaya uygun bar (koyu temada beyaz kalmaz)
-- **Özel ikon seti** — aksiyon ikonları tek ton şampanya-altını chip stiline (`tools/recolor_icons.py`)
-- **1px kenarlıklar**, subtle katmanlar, cam hissi (gölge yerine yüzey tonları)
-- **Inter tarzı tipografi hiyerarşisi** + cömert boşluk token'ları (`theme.py`)
-- **150-300 ms mikro animasyonlar** — diyalog fade-in, hover durumları
-
----
-
-## Kurulum
+## Installation
 
 ```bash
 git clone https://github.com/RetroNyym/Retro-Download-Manager.git
@@ -85,169 +88,169 @@ cd Retro-Download-Manager
 python -m pip install -r requirements.txt
 ```
 
-Tek çalışma zamanı bağımlılığı `requests`'tir; `tkinterdnd2` kuruluysa sürükle-bırak eklenir.
+The only runtime dependency is `requests`; if `tkinterdnd2` is installed, drag & drop is enabled.
 
-Video/playlist linkleri (YouTube, Vimeo, ...) için opsiyonel olarak `yt-dlp` ve `ffmpeg`
-gerektirir; ikisi de kurulu değilse uygulama normal indirmelere olduğu gibi devam eder:
+Video/playlist links (YouTube, Vimeo, …) optionally require `yt-dlp` and `ffmpeg`; if neither is
+installed the app continues with normal downloads:
 
 ```bash
 python -m pip install yt-dlp
-winget install Gyan.FFmpeg        # ses+video birleştirme için
+winget install Gyan.FFmpeg        # for audio+video muxing
 ```
 
-## Çalıştırma
+## Running
 
 ```bash
-python -m download_manager        # GUI (konsolda)
-baslat_gui.bat                    # Windows kısayolu (konsolsuz, pythonw)
-baslat_gui.vbs                    # Windows: tamamen gizli açılış, hiçbir pencere yok
+python -m download_manager        # GUI (console attached)
+baslat_gui.bat                    # Windows shortcut (console-free, pythonw)
+baslat_gui.vbs                    # Windows: fully hidden start, no window at all
 ```
 
-## Kütüphane olarak kullanma
+## Using as a library
 
 ```python
 from download_manager import DownloadManager
 
-mgr = DownloadManager(max_tasks=4)          # ayarlar veri klasörüne yazılır
-mgr.add(["https://ornek.com/dosya.zip", "https://ornek.com/bolum-01.mkv"],
-        segments=16,                        # parça sayısı (1..32)
-        speed_limit=2048)                   # KB/sn, None = sınırsız
-mgr.start()                                 # kuyruk çalışır
+mgr = DownloadManager(max_tasks=4)          # settings persist to the data folder
+mgr.add(["https://example.com/file.zip", "https://example.com/episode-01.mkv"],
+        segments=16,                        # segment count (1..32)
+        speed_limit=2048)                   # KB/s, None = unlimited
+mgr.start()                                 # queue starts working
 ```
 
-Durum, ilerleme ve sonuçlar `mgr.tasks` üzerinden okunabilir; uygulama yeniden başlatıldığında
-yarım kalan indirmeler `download_manager/data/state.json` üzerinden kaldığı yerden devam eder.
+State, progress and results are readable via `mgr.tasks`; when the app restarts, half-finished
+downloads resume from `download_manager/data/state.json`.
 
-## Web sayfası ve video linkleri
+## Web page & video links
 
-Adres çubuğuna yapıştırılan link taranır ve doğru motor otomatik seçilir:
+Links pasted into the address bar are scanned and the right engine is picked automatically:
 
-| Girdi | Davranış |
+| Input | Behavior |
 | --- | --- |
-| Doğrudan dosya (`.zip`, `.mp4`, ...) | çok parçalı HTTP/FTP indirme |
-| `.html`/`.htm` uzantılı bağlantı | sayfa dosya olarak iner |
-| Web sayfası (uzantısız, PHP, ...) | `og:video`/`<source>`/JSON-LD ile medya adresi çözümlenir |
-| Medya bulunamayan sayfa | net hata mesajı, dosya oluşturmaz |
-| Playlist / video sayfası (YouTube vb.) | yt-dlp ile liste çözümlenir, tüm videolar kuyruğa eklenir |
-| Ses+video ayrı akış (DASH) | yt-dlp indirir, ffmpeg ile tek dosyada birleştirir |
-| Site bağlantısı (YouTube/Instagram/X/Facebook/TikTok/Vimeo) | hızlı site butonu → yapıştır → otomatik site çözümleyicisiyle indirme |
+| Direct file (`.zip`, `.mp4`, …) | multi-segment HTTP/FTP download |
+| `.html`/`.htm` link | page saved as file |
+| Webpage (extension-less, PHP, …) | `og:video`/`<source>`/JSON-LD resolve the media address |
+| Page without media | clean error message, no file created |
+| Playlist / video page (YouTube etc.) | yt-dlp parses the list, all videos queued |
+| Separate audio+video stream (DASH) | yt-dlp downloads, ffmpeg merges into one file |
+| Site link (YouTube/Instagram/X/Facebook/TikTok/Vimeo) | quick site button → paste → automatic site parser |
 
-Tek parça indirme ayrıca **Site Grabber** (aynı sayfadaki tüm medya bağlantıları) ile de
-toplu eklenebilir.
+Single-segment downloads can also be added in bulk via the **Site Grabber** (all media links on
+the same page).
 
-## Tarayıcı köprüsü
+## Browser bridge
 
-Adres çubuğuna yazılan linkleri arayüze taşımak için yerel köprü sunucusu kullanılır
-(`http://127.0.0.1:8877`, yalnızca makinenize bağlıdır):
+A local bridge server moves typed links into the UI
+(`http://127.0.0.1:8877`, bound to your machine only):
 
-| Uç | Ne yapar |
+| Endpoint | What it does |
 | --- | --- |
-| `GET /links` | pano/grabber'da toplanan linkleri JSON olarak verir |
-| `GET /add?url=...` | linki kuyruğa ekler |
-| `GET /status` | kuyruk özeti |
-| `GET /torrent?url=magnet:...` | magnet/.torrent ekler, `gid` döner |
-| `GET /torrents` | eklenen torrentlerin listesi |
+| `GET /links` | returns clipboard/grabber links as JSON |
+| `GET /add?url=...` | adds a link to the queue |
+| `GET /status` | queue summary |
+| `GET /torrent?url=magnet:...` | adds a magnet/.torrent, returns `gid` |
+| `GET /torrents` | list of added torrents |
 
-Tarayıcıya ekleyebileceğiniz imleç (bookmarklet):
+Bookmarklet you can add to your browser:
 
 ```javascript
 javascript:(function(){fetch('http://127.0.0.1:8877/add?url='+encodeURIComponent(location.href))})()
 ```
 
-## Torrent (BitTorrent) desteği
+## Torrent (BitTorrent) support
 
-`magnet:` linkleri ve `.torrent` dosyaları Retro+'un kendi motoruyla indirilir
-(UI'da ayrı **Torrent** sekmesi; arayüz ayrı bir uygulama değildir):
+`magnet:` links and `.torrent` files are downloaded by Retro+'s own engine
+(a dedicated **Torrent** tab in the UI; part of the app, not a separate process):
 
-- **Motor:** gömülü [aria2](https://aria2.github.io/) (`tools/aria2/aria2c.exe`,
-  indirme sırasında `tools/` altına gelir; `RETRO_ARIA2` ile dışarıdan da verilebilir).
-  Tembel başlar: ilk torrent eklendiğinde açılır, program kapanınca durur.
-- **Kalıcılık:** eklenen URI'ler `data/torrents.json`'a yazılır; motor yeniden
-  başlayınca tamamlanmamış torrentler otomatik tekrar eklenir.
-- **Windows `magnet:` bağlama** (yönetici gerekmez, yalnızca HKCU):
+- **Engine:** embedded [aria2](https://aria2.github.io/) (`tools/aria2/aria2c.exe`,
+  arrives under `tools/` during download; can be provided externally via `RETRO_ARIA2`).
+  Starts lazily: opened when the first torrent is added, stopped when the program exits.
+- **Persistence:** added URIs are written to `data/torrents.json`; on a fresh start
+  unfinished torrents are re-added automatically.
+- **Windows `magnet:` binding** (no admin needed, HKCU only):
 
   ```powershell
   powershell -ExecutionPolicy Bypass -File tools\magnet_bagla.ps1
-  powershell -ExecutionPolicy Bypass -File tools\magnet_bagla.ps1 -Kaldir   # geri al
+  powershell -ExecutionPolicy Bypass -File tools\magnet_bagla.ps1 -Kaldir   # revert
   ```
 
-  Kaynak kurulumda `pythonw -m download_manager --magnet "%1"` olarak bağlanır;
-  portable exe ile `magnet_bagla.ps1 -Exe "C:\Yol\RetroDownloadManager.exe"`.
-- **Sınırlar (v1):** web tohumu (DHT/PEX) üzerinden indirilir; trackersiz/sunsuz
-  mahalle torrentleri hızlanmayabilir. Torrent klasörü varsayılan olarak
-  `İndirme klasörü\Torrentler` (Ayarlar → Torrent'ten değiştirilebilir).
-- Yapım notu: exe paketlemeye `--add-data "tools;tools"` ile dahil edilir
-  (`baslat_exe.py` başlığında hazır komut).
-- **Doğrulama:** `tests/test_torrent.py` 23/23; canlı test gerçek Ubuntu
-  26.04.1 .torrent'iyle **14/14** (eş bağlantısı, veri aktı, duraklat/devam/
-  kaldır, kayıt+PID temizliği); `RETRO_SMOKE=1` ile portable exe smoke → exit 0
-  (`dist\data\torrents.json` yazılır, aria2 shutdown'da temizlenir).
+  On a source install it binds to `pythonw -m download_manager --magnet "%1"`;
+  with the portable exe use `magnet_bagla.ps1 -Exe "C:\Path\RetroDownloadManager.exe"`.
+- **Limits (v1):** downloads via web seeds (DHT/PEX); tracker-less/private torrents may
+  not speed up. The torrent folder defaults to `Download folder\Torrents`
+  (change in Settings → Torrent).
+- Build note: the exe packaging includes it with `--add-data "tools;tools"`
+  (ready-made command at the top of `baslat_exe.py`).
+- **Verification:** `tests/test_torrent.py` 23/23; a live test against a real
+  Ubuntu 26.04.1 .torrent **14/14** (peer connect, data flow, pause/resume/remove,
+  state+PID cleanup); portable exe smoke with `RETRO_SMOKE=1` → exit 0
+  (`dist\data\torrents.json` written, aria2 cleaned on shutdown).
 
-## Otomatik güncelleme (yerel kaynak)
+## Automatic update (local source)
 
-Sürüm dağıtımı GitHub'a bağlı olmadan çalışır: güncelleme klasörü (yerel disk,
-UNC paylaşımı veya HTTP) içinde `version.json` + zip paketi bulunur.
+Version distribution works without depending on GitHub: an update folder (local disk,
+UNC share or HTTP) contains `version.json` + a zip package.
 
 ```bash
-python tools\\pack_update.py --out \\\\sunucu\\paylasim\\retro
+python tools\\pack_update.py --out \\\\server\\share\\retro
 ```
 
-Program açılışında (6 saatte bir de arka planda) kaynağı kontrol eder; yeni
-sürüm varsa indirmeler bitmesini bekler, SHA-256 doğrular, kurar ve kendini
-yeniden başlatır — kullanıcının herhangi bir linke tıklaması gerekmez.
-Kaynak: Ayarlar → Güncelleştirme. Kullanıcı verisi (`data/`), `.git` ve WhatsApp
-oturumu güncellemede korunur; hata olursa yedekten geri alınır.
+At launch (and every 6 hours in the background) the source is checked; if a new version
+exists it downloads — waiting for active downloads to finish — verifies SHA-256, installs
+and restarts itself; the user never clicks a link. Source: Settings → Updater. User data
+(`data/`), `.git` and the WhatsApp session are preserved during updates; on error it is
+restored from the backup.
 
-## WhatsApp PDF yakalama
+## WhatsApp PDF capture
 
 ```bash
 cd whatsapp_listener
-npm install        # bir kez (Node.js 18+)
+npm install        # once (Node.js 18+)
 ```
 
-Ayarlar → WhatsApp: izleme/hedef klasör + **beyaz liste** (yalnızca seçtiğiniz
-grup/kişiler). **Dinleyiciyi başlat** → `qr.png`'yi telefondan okutun →
-**Sohbetleri yükle** ile izin verilecekleri seçin. Beyaz liste dışındaki
-hiçbir sohbetten dosya indirilmez (dinleyici + Python tarafında çift kontrol).
+Settings → WhatsApp: watch/target folder + **whitelist** (only the chats you choose).
+**Start listener** → scan `qr.png` from your phone → **Load chats** to pick the allowed
+ones. No files are downloaded from chats outside the whitelist (double-checked in the
+listener and on the Python side).
 
-## Mimari
+## Architecture
 
-| Dosya | Görev |
+| File | Role |
 | --- | --- |
-| `download_manager/engine.py` | çok parçalı indirme motoru (HTTP/FTP, duraklat/devam, yeniden deneme, ayna URL) |
-| `download_manager/manager.py` | kuyruk, zamanlayıcı, kategoriler, grabber, köprü, geçmiş, ayarlar |
-| `download_manager/gui.py` | Tkinter arayüz (kategori paneli, ikonlu araç çubuğu, segment görünürlüğü) |
-| `download_manager/extractor.py` | web sayfası medya çözümleme, yt-dlp/ffmpeg köprüsü, playlist genişletme |
-| `download_manager/util.py` | kategori tespiti, biçimlendirme, dosya yardımcıları |
-| `download_manager/notify.py` | tamamlanma / hata sesli bildirimi |
-| `download_manager/updater.py` | yerel güncelleme kanalı (manifest, SHA-256, staging, geri alma, yeniden başlatma) |
-| `download_manager/whatsapp.py` | WhatsApp PDF izleyici (üst veri + beyaz liste + hedefe taşıma) |
-| `download_manager/torrent.py` | aria2 motoru (JSON-RPC, port arama, `torrents.json` kalıcılığı) |
-| `whatsapp_listener/` | Node/Baileys bağlı cihaz dinleyicisi (QR, sohbet listesi, PDF indirme) |
-| `tools/pack_update.py` | yerel güncelleme paketi üretici (`dist/` → zip + `version.json`) |
-| `tests/` | 199 kontrol (motor, FTP, köprü, torrent, yeniden başlatma, GUI, sayfa/medya, güncelleme, WhatsApp) |
+| `download_manager/engine.py` | multi-segment download engine (HTTP/FTP, pause/resume, retry, mirror URLs) |
+| `download_manager/manager.py` | queue, scheduler, categories, grabber, bridge, history, settings |
+| `download_manager/gui.py` | Tkinter UI (category panel, icon toolbar, segment visibility) |
+| `download_manager/extractor.py` | webpage media parsing, yt-dlp/ffmpeg bridge, playlist expansion |
+| `download_manager/util.py` | category detection, formatting, file helpers |
+| `download_manager/notify.py` | completion/error sound notification |
+| `download_manager/updater.py` | local update channel (manifest, SHA-256, staging, rollback, restart) |
+| `download_manager/whatsapp.py` | WhatsApp PDF watcher (metadata + whitelist + move to target) |
+| `download_manager/torrent.py` | aria2 engine (JSON-RPC, port scan, `torrents.json` persistence) |
+| `whatsapp_listener/` | Node/Baileys linked-device listener (QR, chat list, PDF download) |
+| `tools/pack_update.py` | local update package builder (`dist/` → zip + `version.json`) |
+| `tests/` | 199 checks (engine, FTP, bridge, torrent, restart, GUI, page/media, update, WhatsApp) |
 
-## Testler
+## Tests
 
-| Dosya | Kapsam | Kontrol |
+| File | Scope | Checks |
 | --- | --- | ---: |
-| `tests/test_download_manager.py` | çok parçalı, `Range` yok, bilinmeyen boyut, duraklat/devam, iptal, kuyruk, grabber, kalıcılık | 37 |
-| `tests/test_restart_resume.py` | kapanınca duraklat → açılınca devam + gerçek internet indirmesi | 8 |
-| `tests/test_ftp.py` | FTP parça/duraklat/iptal (`pip install pyftpdlib`) | 10 |
-| `tests/test_bridge.py` | köprü uçları (`/add`, `/links`, `/status`) | 7 |
-| `tests/test_gui.py` | diyaloglar, hızlı site butonları, torrent sekmesi ve arayüz (ekran/`tkinter` gerekir) | 34 |
-| `tests/test_page_media.py` | web sayfası çözümleme, medya yoksa hata, `.html` davranışı, site adları | 22 |
-| `tests/test_torrent.py` | aria2 başlatma, HTTP indirme, magnet ekle/duraklat/sil, köprü `/torrent`, kalıcılık | 23 |
-| `tests/test_updater.py` | sürüm karşılaştırma, manifest, SHA-256 reddi, zip-slip, geri alma, kurulum | 35 |
-| `tests/test_whatsapp.py` | beyaz liste eşleşme, üst veri, izleyici teslimi, kapalı/boş durumlar | 23 |
+| `tests/test_download_manager.py` | multi-segment, no-`Range`, unknown size, pause/resume, cancel, queue, grabber, persistence | 37 |
+| `tests/test_restart_resume.py` | pause on close → resume after restart + a real internet download | 8 |
+| `tests/test_ftp.py` | FTP segments/pause/cancel (`pip install pyftpdlib`) | 10 |
+| `tests/test_bridge.py` | bridge endpoints (`/add`, `/links`, `/status`) | 7 |
+| `tests/test_gui.py` | dialogs, quick site buttons, torrent tab and the UI (needs a display/`tkinter`) | 34 |
+| `tests/test_page_media.py` | webpage parsing, clean error without media, `.html` behavior, site names | 22 |
+| `tests/test_torrent.py` | aria2 startup, HTTP download, magnet add/pause/remove, bridge `/torrent`, persistence | 23 |
+| `tests/test_updater.py` | version comparison, manifest, SHA-256 rejection, zip-slip, rollback, install | 35 |
+| `tests/test_whatsapp.py` | whitelist matching, metadata, watcher delivery, closed/empty states | 23 |
 
 ```bash
 python tests/test_download_manager.py
 python tests/test_restart_resume.py
 python tests/test_bridge.py
-python tests/test_torrent.py      # tools/aria2/aria2c.exe gerekir
-python tests/test_ftp.py        # pip install pyftpdlib
-python tests/test_gui.py        # grafik oturum gerekir
+python tests/test_torrent.py      # requires tools/aria2/aria2c.exe
+python tests/test_ftp.py          # pip install pyftpdlib
+python tests/test_gui.py          # requires a graphical session
 python tests/test_page_media.py
 python tests/test_updater.py
 python tests/test_whatsapp.py
@@ -255,39 +258,50 @@ python tests/test_whatsapp.py
 
 Lint: `python -m pyflakes download_manager`.
 
-## Ekran görüntüsü üretimi
+## Demo video
 
-Portal başvuruları için dört ekran görüntüsü tek komutla üretilir (internet
-kullanmaz, yerel `Range` destekli sunucu açar):
+A short promo clip (`docs/promo/promo.mp4`) is generated for the project page
+and social channels — watch it here:
+
+https://github.com/RetroNyym/Retro-Download-Manager/raw/main/docs/promo/promo.mp4
+
+<p align="center">
+  <img src="docs/promo/promo.gif" alt="Retro+ Download Manager — promo preview (main window, add dialog, site grabber, settings)" width="80%">
+</p>
+
+## Screenshot production
+
+Application screenshots are generated with a single command for portal submissions
+(no internet used; a local `Range`-capable server is opened):
 
 ```bash
 python tools/shots.py
 # docs/screenshots/gui-downloads.png, gui-add-link.png, gui-grabber.png, gui-settings.png
 ```
 
-## Başvuru / dağıtım paketi
+## Portal submission / distribution package
 
-Yazılım indirme portallarına (global ve Türkiye) yapılacak başvurular için hazır
-metinler ve kontrol listesi `docs/submission/` klasöründedir; genel bakış
-[SUBMISSION.md](SUBMISSION.md) dosyasındadır.
+Ready-made texts and a checklist for submissions to software download portals (global and
+Turkish) are in the `docs/submission/` folder; see [SUBMISSION.md](SUBMISSION.md) for an overview.
 
-| Dosya | İçerik |
+| File | Contents |
 | --- | --- |
-| `docs/submission/metinler-tr.md` | Türkçe kısa/uzun açıklama, künye alanları, ekran görüntüleri, SSS |
-| `docs/submission/metinler-en.md` | İngilizce karşılıkları |
-| `docs/submission/e-posta-sablonlari.md` | Portal/tanıtım e-postası şablonları (TR + EN) |
-| `docs/submission/KONTROL-LISTESI.md` | Hangi portaala başvuruldu, durum, tarih |
+| `docs/submission/metinler-tr.md` | Turkish short/long description, metadata fields, screenshots, FAQ |
+| `docs/submission/metinler-en.md` | The English counterparts |
+| `docs/submission/e-posta-sablonlari.md` | Portal/promo e-mail templates (TR + EN) |
+| `docs/submission/KONTROL-LISTESI.md` | Which portals were applied to, status, date |
 
-## Sınırlamalar
+## Limitations
 
-- Tarayıcı entegrasyonu eklenti yerine **yerel köprü + pano izleme** ile sağlanır.
-- Sunucu `Range` desteklemiyorsa paralel segment kullanılmaz (tümü doğrudan tamamlanır).
-- Video indirmeleri yt-dlp tarafından yürütülür; duraklat/devam yerine iptal→yeniden
-  başlatma mantığı kullanılır (tek parça `Range` indirmesi gibi değildir).
-- `FTP over explicit TLS` (FTPS) deneme amaçlıdır; bazı sunucularda `MLSD` yerine `NLST`'ye düşer.
-- Saloon / çoklu parça her zaman sunucunun izin verdiği kadar hızlanır; hız sınırı istemci tarafıdır.
-- WhatsApp dinleyicisi resmi API değil, WhatsApp Web protokolü (Baileys) kullanır; Node.js kurulumu ve QR eşleştirmesi gerektirir.
+- Browser integration comes via a **local bridge + clipboard monitoring** instead of an extension.
+- If the server does not support `Range`, parallel segments are not used (everything completes serially).
+- Video downloads are executed by yt-dlp; instead of pause/resume it uses cancel→restart logic
+  (unlike single-segment `Range` downloads).
+- `FTP over explicit TLS` (FTPS) is experimental; on some servers it falls back to `NLST` instead of `MLSD`.
+- Parallel segments always speed up as much as the server allows; the speed limit is client-side.
+- The WhatsApp listener is not the official API; it uses the WhatsApp Web protocol (Baileys) and
+  requires a Node.js install and QR pairing.
 
-## Lisans
+## License
 
 [MIT](LICENSE) © RetroNyym

@@ -154,11 +154,14 @@ def hwnd_of(widget):
     return user32.GetAncestor(int(widget.winfo_id()), GA_ROOT)
 
 
-def capture(widget, path):
+def capture(widget, path, prefer_print=False):
     """Pencereyi yakalar.
 
     Önce gerçek ekran görüntüsü alınır (DWM koyu başlık çubuğu ve menü barı
     dahil doğru görünür); pencere görünür değilse PrintWindow'a düşülür.
+    Diyaloglar için `prefer_print=True` kullanın: diyalog ana pencerenin
+    arkasında kalırsa ekran grab'i ana pencereyi yakalar; PrintWindow ise
+    z-sırasından bağımsız olarak pencerenin kendi içeriğini verir.
     """
     user32 = ctypes.windll.user32
     g32 = ctypes.windll.gdi32
@@ -171,13 +174,14 @@ def capture(widget, path):
         raise RuntimeError("pencere ölçüleri geçersiz")
 
     img = None
-    try:
-        grabbed = ImageGrab.grab(bbox=(left, top, right, bottom), all_screens=True)
-        lo, hi = grabbed.convert("L").getextrema()
-        if hi - lo > 8:  # tek renk değil → gerçek içerik yakalandı
-            img = grabbed
-    except Exception:
-        img = None
+    if not prefer_print:
+        try:
+            grabbed = ImageGrab.grab(bbox=(left, top, right, bottom), all_screens=True)
+            lo, hi = grabbed.convert("L").getextrema()
+            if hi - lo > 8:  # tek renk değil → gerçek içerik yakalandı
+                img = grabbed
+        except Exception:
+            img = None
 
     if img is None:
         hdc = user32.GetWindowDC(hwnd)
@@ -285,8 +289,13 @@ def main():
     dlg.var_segments.set(16)
     dlg.var_speed.set(4096)
     dlg.var_subdir.set("videolar")
+    dlg.lift()
+    dlg.focus_force()
+    dlg.attributes("-topmost", True)
+    dlg.after(200, lambda: dlg.attributes("-topmost", False))
     pump(root, 0.6)
-    capture(dlg, os.path.join(OUT_DIR, "gui-add-link.png"))
+    pump(dlg, 0.4)
+    capture(dlg, os.path.join(OUT_DIR, "gui-add-link.png"), prefer_print=True)
     dlg.destroy()
 
     # 3) Site Grabber penceresi (tarama sonucu dolu)
@@ -301,14 +310,23 @@ def main():
     pump(grabber, 0.8)
     if grabber.listbox.size() >= 4:
         grabber.listbox.selection_set(0, 2)
+    grabber.lift()
+    grabber.focus_force()
+    grabber.attributes("-topmost", True)
+    grabber.after(200, lambda: grabber.attributes("-topmost", False))
     pump(grabber, 0.4)
-    capture(grabber, os.path.join(OUT_DIR, "gui-grabber.png"))
+    capture(grabber, os.path.join(OUT_DIR, "gui-grabber.png"), prefer_print=True)
     grabber.destroy()
 
     # 4) Ayarlar penceresi
     settings = SettingsDialog(root, mgr)
+    settings.lift()
+    settings.focus_force()
+    settings.attributes("-topmost", True)
+    settings.after(200, lambda: settings.attributes("-topmost", False))
     pump(root, 0.6)
-    capture(settings, os.path.join(OUT_DIR, "gui-settings.png"))
+    pump(settings, 0.4)
+    capture(settings, os.path.join(OUT_DIR, "gui-settings.png"), prefer_print=True)
     settings.destroy()
 
     root.destroy()

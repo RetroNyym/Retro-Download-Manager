@@ -86,6 +86,52 @@ def _sync_palette(palette: dict):
 
 def _header_bg() -> str:
     return _HEADER_BG[0]
+
+
+def _theme_dialog(window) -> None:
+    """Diyalog Toplevel'ına tema arka planı ve koyu başlık çubuğu uygular.
+
+    Toplevel pencere gövdesi varsayılan olarak açık (sistem) renkte kalır;
+    koyu temada kirli beyaz bantlar oluşmasını önler.
+    """
+    try:
+        window.configure(background=COLORS.get("bg", "#0f1115"))
+    except tk.TclError:
+        pass
+    titlebar_dark(window, COLORS.get("name") in ("dark", "midnight"))
+
+
+def _style_text(widget) -> None:
+    """tk.Text'i temaya boyar (arka plan beyaz kalmaz)."""
+    widget.configure(
+        bg=COLORS.get("entry_bg", "#161a21"),
+        fg=COLORS.get("text", "#e8ebf0"),
+        insertbackground=COLORS.get("text", "#e8ebf0"),
+        selectbackground=COLORS.get("select_bg", "#463c26"),
+        selectforeground=COLORS.get("select_fg", "#f6efdf"),
+        highlightthickness=1,
+        highlightbackground=COLORS.get("border", "#232833"),
+        relief="flat",
+        padx=8, pady=6,
+    )
+
+
+def _style_listbox(widget) -> None:
+    """tk.Listbox'ı temaya boyar."""
+    try:
+        activestyle = widget.cget("activestyle")
+    except tk.TclError:
+        activestyle = "none"
+    widget.configure(
+        bg=COLORS.get("surface", "#15181e"),
+        fg=COLORS.get("text", "#e8ebf0"),
+        selectbackground=COLORS.get("select_bg", "#463c26"),
+        selectforeground=COLORS.get("select_fg", "#f6efdf"),
+        highlightthickness=1,
+        highlightbackground=COLORS.get("border", "#232833"),
+        relief="flat",
+        activestyle=activestyle,
+    )
 SITE_ICONS = {
     "YouTube": "youtube",
     "Instagram": "instagram",
@@ -253,6 +299,7 @@ def _grid_label(parent, row, text):
 class AddDialog(tk.Toplevel):
     def __init__(self, parent, manager, initial="", batch=False, site=None):
         super().__init__(parent)
+        _theme_dialog(self)
         self.manager = manager
         self.batch = batch
         self.site = site
@@ -273,6 +320,7 @@ class AddDialog(tk.Toplevel):
             ttk.Label(body, text="Bağlantılar (her satıra bir URL):").grid(
                 row=0, column=0, columnspan=2, sticky="w", padx=8, pady=(0, 4))
             self.txt_urls = tk.Text(body, width=66, height=11, wrap="none")
+            _style_text(self.txt_urls)
             self.txt_urls.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=8)
             body.rowconfigure(1, weight=1)
             if initial:
@@ -377,6 +425,7 @@ class AddDialog(tk.Toplevel):
         arow += 1
         _grid_label(advanced, arow, "Ek başlıklar:")
         self.txt_headers = tk.Text(advanced, height=3, width=52)
+        _style_text(self.txt_headers)
         self.txt_headers.grid(row=arow, column=1, sticky="we", pady=3)
         row += 1
 
@@ -387,6 +436,9 @@ class AddDialog(tk.Toplevel):
 
         self.bind("<Escape>", lambda _e: self.destroy())
         self.bind("<Control-Return>", lambda _e: self._ok())
+        if not self.batch:
+            # URL alanındayken Enter da indirmeyi başlatır (klavye kısayolu)
+            self.ent_url.bind("<Return>", lambda _e: self._ok())
         center_window(self, parent)
         fade_in(self)
         titlebar_dark(self, COLORS.get("name") in ("dark", "midnight"))
@@ -488,6 +540,7 @@ def _parse_headers(text):
 class SettingsDialog(tk.Toplevel):
     def __init__(self, parent, manager, tab=None):
         super().__init__(parent)
+        _theme_dialog(self)
         self.manager = manager
         self.result = None
         self.title("Ayarlar")
@@ -635,6 +688,7 @@ class SettingsDialog(tk.Toplevel):
         row += 1
         _grid_label(connection, row, "Ek başlıklar:")
         self.txt_headers = tk.Text(connection, height=4, width=56)
+        _style_text(self.txt_headers)
         self.txt_headers.grid(row=row, column=1, sticky="we", pady=4)
         self.txt_headers.insert("1.0", st.extra_headers or "")
 
@@ -1013,6 +1067,7 @@ class SettingsDialog(tk.Toplevel):
             messagebox.showwarning("Boş", "Sohbet listesi boş.", parent=self)
             return
         picker = tk.Toplevel(self)
+        _theme_dialog(picker)
         picker.title("Sohbet seç (beyaz liste)")
         picker.transient(self)
         picker.resizable(True, True)
@@ -1023,6 +1078,7 @@ class SettingsDialog(tk.Toplevel):
         box_frame.pack(fill="both", expand=True)
         listbox = tk.Listbox(box_frame, selectmode="extended", height=14,
                              activestyle="none")
+        _style_listbox(listbox)
         scroll = ttk.Scrollbar(box_frame, orient="vertical",
                                command=listbox.yview)
         listbox.configure(yscrollcommand=scroll.set)
@@ -1191,6 +1247,7 @@ class SettingsDialog(tk.Toplevel):
 class GrabberDialog(tk.Toplevel):
     def __init__(self, parent, manager):
         super().__init__(parent)
+        _theme_dialog(self)
         self.manager = manager
         self.title("Site Grabber — Bağlantıları Topla")
         self.transient(parent)
@@ -1234,6 +1291,7 @@ class GrabberDialog(tk.Toplevel):
         list_frame.pack(fill="both", expand=True)
         self.listbox = tk.Listbox(list_frame, selectmode="extended", height=14,
                                   activestyle="none")
+        _style_listbox(self.listbox)
         scroll = ttk.Scrollbar(list_frame, orient="vertical",
                                command=self.listbox.yview)
         self.listbox.configure(yscrollcommand=scroll.set)
@@ -1334,6 +1392,7 @@ class GrabberDialog(tk.Toplevel):
 class PropertiesDialog(tk.Toplevel):
     def __init__(self, parent, manager, task):
         super().__init__(parent)
+        _theme_dialog(self)
         self.manager = manager
         self.task = task
         self.title("Bağlantı Özellikleri")
