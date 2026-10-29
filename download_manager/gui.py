@@ -1517,11 +1517,38 @@ class App:
         self._setup_dnd()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        self._install_session_tracer()
         self.mgr.on_all_done = self._on_all_done
         self._ui_tick()
 
+    def _install_session_tracer(self):
+        """root.destroy() çağrılarını izler — sessiz 'kapandı' olayını teşhis eder."""
+        root = self.root
+        try:
+            self._trace_log(
+                f"oturum başladı (tema: {self.theme.name}, "
+                f"sürüm: {__version__})")
+        except Exception:
+            pass
+        orig_destroy = root.destroy
+
+        def _tracked_destroy(*args, **kwargs):
+            import traceback as _tb
+            stack = "".join(_tb.format_stack()[-6:])
+            try:
+                self._trace_log("root.destroy çağrıldı:\n" + stack)
+            except Exception:
+                pass
+            return orig_destroy(*args, **kwargs)
+        root.destroy = _tracked_destroy
+
     def _on_theme_change(self, name: str):
         """Tema değiştiğinde: paleti senkronla, stilleri uygula, widget'ları yenile."""
+        try:
+            self._trace_log(
+                f"tema değişimi: {getattr(self.theme, 'name', '?')} → {name}")
+        except Exception:
+            pass
         _sync_palette(self.theme.c)
         try:
             self.mgr.settings.theme = name
@@ -2839,8 +2866,25 @@ class App:
                     "Duraklatılıp çıkış yapılsın mı? (Devam ettirmek için Vazgeç)",
                     parent=self.root):
                 return
+        self._trace_log("WM_DELETE_WINDOW protokolü (_on_close) — kullanıcı çıkışı")
         try:
             self.root.destroy()
+        except Exception:
+            pass
+
+    def _trace_log(self, message):
+        """Oturum yürütmesine teşhis satırı yazar (data/logs/oturum-iz.log).
+
+        Sessiz 'kapandı' olaylarını sonradan teşhis etmek için: root.destroy
+        çağrıları, WM protokol tetikleri, mainloop çıkışı bu dosyada iz
+        bırakır. Hatalar asla UI'ya taşmaz.
+        """
+        try:
+            base = os.path.join(self.mgr.data_dir, "logs")
+            os.makedirs(base, exist_ok=True)
+            with open(os.path.join(base, "oturum-iz.log"), "a",
+                      encoding="utf-8") as f:
+                f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}\n")
         except Exception:
             pass
 
@@ -2861,15 +2905,16 @@ def _install_crash_logger(app):
     def _report(kind, value, tb):
         base = None
         try:
-            data_dir = getattr(getattr(app.mgr, "settings", None),
-                               "data_dir", None)
-            base = os.path.join(data_dir if data_dir else os.path.join(
-                ".", "data"), "logs")
+            base = os.path.join(getattr(app.mgr, "data_dir", ".") or ".", "logs")
             os.makedirs(base, exist_ok=True)
             with open(os.path.join(base, "callback-hatalari.log"), "a",
                       encoding="utf-8") as f:
                 f.write(f"---- {time.strftime('%Y-%m-%d %H:%M:%S')} ----\n")
                 traceback.print_exception(kind, value, tb, file=f)
+            try:
+                app._trace_log(f"callback istisnası: {kind.__name__}: {value}")
+            except Exception:
+                pass
             if getattr(app, "_crash_notified", False):
                 return
             app._crash_notified = True
@@ -2912,6 +2957,7 @@ def run(argv=None):
         if os.environ.get("RETRO_SMOKE"):
             app.root.after(1500, app.root.destroy)
         app.run()
+        app._trace_log("mainloop döndü — pencere döngüsü sonlandı")
     finally:
         manager.shutdown()
     return 0
