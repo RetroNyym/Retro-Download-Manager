@@ -2840,36 +2840,69 @@ class App:
             f"Motor: {ayakta} • {aktif} aktif / {toplam} torrent")
 
     def _ui_tick(self):
+        _t0 = time.perf_counter()
+        _stage = "start"
+        _worst = ("", 0.0)
         try:
             if self._all_done:
                 self._all_done = False
                 self.mgr.log("Kuyruk tamamlandı, program kapanıyor.", "success")
                 self._on_close()
+            _stage_t = time.perf_counter()
             self._sync_rows()
+            _worst = ("_sync_rows", time.perf_counter() - _stage_t)
+            _stage_t = time.perf_counter(); _stage = "_update_details"
             self._update_details()
+            if time.perf_counter() - _stage_t > _worst[1]:
+                _worst = ("_update_details", time.perf_counter() - _stage_t)
+            _stage_t = time.perf_counter(); _stage = "_update_status"
             self._update_status()
+            if time.perf_counter() - _stage_t > _worst[1]:
+                _worst = ("_update_status", time.perf_counter() - _stage_t)
+            _stage_t = time.perf_counter(); _stage = "_drain_logs"
             self._drain_logs()
+            if time.perf_counter() - _stage_t > _worst[1]:
+                _worst = ("_drain_logs", time.perf_counter() - _stage_t)
+            _stage_t = time.perf_counter(); _stage = "_refresh_history"
             self._refresh_history()
+            if time.perf_counter() - _stage_t > _worst[1]:
+                _worst = ("_refresh_history", time.perf_counter() - _stage_t)
             self._tick_count += 1
             if self._tick_count % 75 == 0:  # ~30 sn'de bir kalp atışı izi
                 try:
                     sel = len(self.tree.selection())
                     self._trace_log(f"ui_tick kalp #{self._tick_count} "
-                                    f"(seçili: {sel}; admin process alive)")
+                                    f"(seçili: {sel}; process alive)")
                 except Exception:
                     self._trace_log(f"ui_tick kalp #{self._tick_count}")
             if self._tick_count % 3 == 0:
+                _stage = "_poll_clipboard"
+                _stage_t = time.perf_counter()
                 self._poll_clipboard()
+                if time.perf_counter() - _stage_t > _worst[1]:
+                    _worst = ("_poll_clipboard", time.perf_counter() - _stage_t)
             if self._tick_count % 3 == 0:
                 try:
                     if self.notebook.index("current") == \
                             self.notebook.index(self._torrent_frame):
+                        _stage = "_refresh_torrents"
+                        _stage_t = time.perf_counter()
                         self._refresh_torrents()
+                        if time.perf_counter() - _stage_t > _worst[1]:
+                            _worst = ("_refresh_torrents",
+                                      time.perf_counter() - _stage_t)
                 except Exception:
                     pass
+            _total = time.perf_counter() - _t0
+            if _total > 0.35:  # UI'nin takılabileceği her aşamayı logla
+                self._trace_log(
+                    f"YAVAŞ _ui_tick: toplam {_total*1000:.0f} ms; "
+                    f"en ağır aşama {_worst[0]} {_worst[1]*1000:.0f} ms "
+                    f"[tick #{self._tick_count}]")
         except Exception as exc:
             try:
-                self._trace_log(f"ui_tick istisnası (#{self._tick_count}): "
+                self._trace_log(f"ui_tick istisnası (#{self._tick_count}, "
+                                f"aşama {_stage}): "
                                 f"{type(exc).__name__}: {exc}")
             except Exception:
                 pass
