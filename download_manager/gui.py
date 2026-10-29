@@ -2096,13 +2096,52 @@ class App:
         self.ent_link.bind("<FocusIn>", self._link_focus_in)
         self.ent_link.bind("<FocusOut>", self._link_focus_out)
 
+        # ByClick tarzı hızlı format seçimi (Otomatik / MP3 / MP4 / MKV / WEBM)
+        self.var_link_format = tk.StringVar(value="Otomatik")
+        format_box = ttk.Combobox(bar, textvariable=self.var_link_format,
+                                  width=13, state="readonly",
+                                  values=("Otomatik", "MP3 (sadece ses)", "MP4",
+                                          "MKV", "WEBM"))
+        format_box.grid(row=0, column=2, padx=(0, 6))
+
         btn_add = ttk.Button(bar, text="İndir", style="Primary.TButton",
                              command=self.quick_add_from_bar)
-        btn_add.grid(row=0, column=2, padx=(0, 4))
+        btn_add.grid(row=0, column=3, padx=(0, 4))
         btn_batch = ttk.Button(bar, text="Toplu yapıştır",
                                command=lambda: self.add_batch(
                                    initial=self._bar_content_if_multi()))
-        btn_batch.grid(row=0, column=3, padx=(0, 2))
+        btn_batch.grid(row=0, column=5, padx=(0, 2))
+        btn_clip = ttk.Button(bar, text="📋 Pano: Kapalı",
+                              command=self.toggle_clipboard_monitor)
+        btn_clip.grid(row=0, column=6, padx=(4, 0))
+        self.btn_clip_monitor = btn_clip
+        self._refresh_clip_button()
+
+    def _refresh_clip_button(self):
+        try:
+            on = bool(self.mgr.settings.clipboard_monitor)
+            self.btn_clip_monitor.configure(
+                text="📋 Pano: Açık" if on else "📋 Pano: Kapalı")
+        except Exception:
+            pass
+
+    def toggle_clipboard_monitor(self):
+        """ByClick tarzı: panoya kopyalanan linki otomatik algıla/aç.
+
+        Ayarlara gitmeden tek tıkla açık/kapalı yapar; durum buton üstünde
+        görünür. Kopyalanan URL otomatik kuyruğa iner (clipboard_auto_add
+        isteğe bağlı Ayarlarنگiren üzerinde ayrıca kontrolü vardır).
+        """
+        try:
+            current = bool(self.mgr.settings.clipboard_monitor)
+            self.mgr.settings.clipboard_monitor = (not current)
+        except Exception:
+            return
+        self._refresh_clip_button()
+        on = bool(self.mgr.settings.clipboard_monitor)
+        self.mgr.log(
+            "Pano izleme AÇIK: kopyalanan URL'ler yakalanır." if on
+            else "Pano izleme KAPALI.", "info")
 
     def _link_focus_in(self, _event=None):
         if self._link_is_placeholder:
@@ -2138,8 +2177,24 @@ class App:
                 "Geçerli bağlantı yok",
                 "Metinde http/https adresi bulunamadı.", parent=self.root)
             return
+        kwargs = {}
+        fmt_label = getattr(self, "var_link_format", None)
+        fmt = fmt_label.get() if fmt_label is not None else "Otomatik"
+        if fmt == "MP3 (sadece ses)":
+            kwargs = {"quality": "bestaudio/best",
+                      "format": "FFmpegExtractAudio:preferredcodec=mp3",
+                      "format_ext": "mp3"}
+        elif fmt == "MP4":
+            kwargs = {"format": "FFmpegVideoConvertor:preferedformat=mp4",
+                      "format_ext": "mp4"}
+        elif fmt == "MKV":
+            kwargs = {"format": "FFmpegVideoConvertor:preferedformat=mkv",
+                      "format_ext": "mkv"}
+        elif fmt == "WEBM":
+            kwargs = {"format": "FFmpegVideoConvertor:preferedformat=webm",
+                      "format_ext": "webm"}
         try:
-            tasks = self.mgr.add(urls)
+            tasks = self.mgr.add(urls, **kwargs)
         except Exception as exc:
             messagebox.showerror("Ekleme hatası", str(exc), parent=self.root)
             return
