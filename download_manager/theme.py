@@ -266,24 +266,49 @@ class ThemeManager:
     def on_change(self, callback):
         self._listeners.append(callback)
 
+    # ── izleme (teşhis) ────────────────────────────────────────────────────
+    _trace_hook = None
+
+    @staticmethod
+    def _trace(message: str):
+        hook = ThemeManager._trace_hook
+        if hook is not None:
+            try:
+                hook(message)
+            except Exception:
+                pass
+
     # ── theme switching ─────────────────────────────────────────────────────
     def apply(self, name: str, notify: bool = True):
+        prev = self._name
+        self._trace(f"apply başlıyor: {prev} → {name}")
         if name not in THEMES:
             name = DEFAULT_THEME
+            self._trace(f"bilinmeyen tema; {name} olarak düzeltildi")
         if name == self._name:
+            self._trace(f"apply erken dönüş (zaten {name})")
             return
         self._name = name
         self._palette = dict(THEMES[name])
-        self._apply_styles()
+        try:
+            self._apply_styles()
+            self._trace(f"apply: ttk stilleri uygulandı ({name})")
+        except Exception as exc:
+            self._trace(f"apply: _apply_styles istisnası: {exc!r}")
+            raise
         if notify:
-            for cb in self._listeners:
-                try:
+            try:
+                for cb in self._listeners:
                     cb(name)
-                except Exception:
-                    pass
+                self._trace(f"apply: {len(self._listeners)} dinleyici tamam ({name})")
+            except Exception as exc:
+                self._trace(f"apply: dinleyici istisnası: {exc!r}")
+                raise
 
     def cycle(self):
         """Sıradaki temaya geç (dark → light → midnight → dark)."""
+        # detaylı iz
+        self._trace(f"cycle: {self._name} → …")
         self.apply(next_theme(self._name))
 
     def toggle(self):

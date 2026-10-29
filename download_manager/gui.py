@@ -1493,6 +1493,10 @@ class App:
 
         saved_theme = getattr(self.mgr.settings, "theme", "") or ""
         self.theme = ThemeManager(self.root, saved_theme or None)
+        try:
+            self.theme._trace_hook = self._trace_log
+        except Exception:
+            pass
         _sync_palette(self.theme.c)
         self.theme.on_change(self._on_theme_change)
 
@@ -1676,7 +1680,9 @@ class App:
 
     def toggle_theme(self):
         """Tema döngüsü: Koyu → Açık → Gece → Koyu."""
+        self._trace_log("toggle_theme çağrıldı (Ctrl+T/kafa çipi döngüsü)")
         self.theme.cycle()
+        self._trace_log(f"toggle_theme tamam; tema = {self.theme.name}")
 
     def open_license(self):
         """Lisans aktivasyon / Pro durumu diyaloğunu açar."""
