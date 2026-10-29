@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -2061,7 +2062,6 @@ class App:
         ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=4)
         btn("grabber", "Grabber", self.open_grabber)
         btn("schedule", "Zamanla", self.open_scheduler)
-        btn("add", "Twitch", lambda: self.add_site("Twitch"))
 
         self.btn_queue = ttk.Button(bar, text="Kuyruk", command=self.toggle_queue)
         self.btn_queue.pack(side="right", padx=1)
@@ -2071,38 +2071,91 @@ class App:
         self.btn_limit.pack(side="right", padx=4)
 
     def _build_site_bar(self):
+        """Tek evrensel bağlantı çubuğu (site butonlarının yerini aldı).
+
+        Kullanıcı talebi: tek tek site butonaları yerine tek çubuktan hangi
+        link verilmişse indirme yapsın. Çubukta çoklu geçişte (boşluk/satır
+        ayrımı) toptan ekleme çalışır; motor siteyi otomatik çözümler.
+        """
         bar = ttk.Frame(self.root, padding=(SPACING["md"], SPACING["xs"] + 2))
         bar.pack(fill="x")
-        ttk.Label(bar, text="Hızlı site:", foreground=COLORS["text2"],
-                  font=(FONTS["caption"][0], FONTS["caption"][1], "bold")).pack(
-            side="left", padx=(2, 6))
-        self.site_buttons = []
-        for name in QUICK_SITES:
-            icon = SITE_ICONS.get(name, "add")
-            image = load_photo(f"icons/site_{icon}.png", self._photos)
-            widget = ttk.Button(bar, text=name, image=image, compound="left",
-                                command=lambda n=name: self.add_site(n))
-            widget.pack(side="left", padx=1)
-            self.site_buttons.append(widget)
-        self.btn_all_sites = ttk.Button(bar, text="Tüm Siteler ▼",
-                                        command=self._show_all_sites_menu)
-        self.btn_all_sites.pack(side="left", padx=(4, 2))
+        bar.columnconfigure(1, weight=1)
 
-    def _show_all_sites_menu(self):
-        """Tüm desteklenen siteleri kategorili menüde gösterir."""
-        menu = tk.Menu(self.root, tearoff=0)
-        for category, sites in ALL_SITES_CATEGORIES.items():
-            submenu = tk.Menu(menu, tearoff=0)
-            for site in sites:
-                submenu.add_command(label=site,
-                                    command=lambda n=site: self.add_site(n))
-            menu.add_cascade(label=category, menu=submenu)
-            menu.add_separator()
+        ttk.Label(bar, text="Bağlantı:", foreground=COLORS["text2"],
+                  font=(FONTS["caption"][0], FONTS["caption"][1], "bold")).grid(
+            row=0, column=0, sticky="w", padx=(2, 6))
+
+        self._link_placeholder = (
+            "Bağlantıyı buraya yapıştır — Enter ile indir "
+            "(YouTube, Instagram, TikTok, site sayfası, doğrudan dosya: fark etmez)")
+        self.var_link = tk.StringVar(value=self._link_placeholder)
+        self.ent_link = ttk.Entry(bar, textvariable=self.var_link)
+        self._link_is_placeholder = True
+        self.ent_link.grid(row=0, column=1, sticky="we", padx=(0, 8))
+        self.ent_link.bind("<Return>", lambda _e: self.quick_add_from_bar())
+        self.ent_link.bind("<FocusIn>", self._link_focus_in)
+        self.ent_link.bind("<FocusOut>", self._link_focus_out)
+
+        btn_add = ttk.Button(bar, text="İndir", style="Primary.TButton",
+                             command=self.quick_add_from_bar)
+        btn_add.grid(row=0, column=2, padx=(0, 4))
+        btn_batch = ttk.Button(bar, text="Toplu yapıştır",
+                               command=lambda: self.add_batch(
+                                   initial=self._bar_content_if_multi()))
+        btn_batch.grid(row=0, column=3, padx=(0, 2))
+
+    def _link_focus_in(self, _event=None):
+        if self._link_is_placeholder:
+            self.var_link.set("")
+            self._link_is_placeholder = False
+
+    def _link_focus_out(self, _event=None):
+        if not self.ent_link.get().strip():
+            self.var_link.set(self._link_placeholder)
+            self._link_is_placeholder = True
+
+    def _bar_content_if_multi(self):
+        """Çubukta çoklu satır varsa onu toplu pencereye öndoldar."""
+        raw = "" if self._link_is_placeholder else self.ent_link.get().strip()
+        if len(re.split(r"[\s,]+", raw)) > 1:
+            return raw
+        return ""
+
+    def quick_add_from_bar(self):
+        """Çubuktaki metni (çoklu dahil) doğradığan manager.add ile kuyruğa ekler.
+
+        AddDialog'ı atlar — kullanıcının tek tıkla indirme istediği akış.
+        """
+        raw = "" if self._link_is_placeholder else self.ent_link.get().strip()
+        if not raw:
+            messagebox.showinfo(
+                "Bağlantı yok", "Önce bir bağlantı yapıştırın.", parent=self.root)
+            return
+        tokens = [t.strip() for t in re.split(r"[\s,;]+", raw) if t.strip()]
+        urls = [t for t in tokens if looks_like_url(t)]
+        if not urls:
+            messagebox.showwarning(
+                "Geçerli bağlantı yok",
+                "Metinde http/https adresi bulunamadı.", parent=self.root)
+            return
         try:
-            menu.tk_popup(self.btn_all_sites.winfo_rootx(),
-                          self.btn_all_sites.winfo_rooty() + self.btn_all_sites.winfo_height())
-        finally:
-            menu.grab_release()
+            tasks = self.mgr.add(urls)
+        except Exception as exc:
+            messagebox.showerror("Ekleme hatası", str(exc), parent=self.root)
+            return
+        self.var_link.set(self._link_placeholder)
+        self._link_is_placeholder = True
+        try:
+            self._sync_rows()
+            if self.tree.exists(tasks[0].id):
+                self.tree.selection_set(tasks[0].id)
+                self.tree.focus(tasks[0].id)
+            self.var_detail.set(
+                f"Kuyruğa {len(tasks)} öğe eklendi "
+                f"(otomatik kategori, otomatik parça).")
+        except Exception:
+            pass
+        self.mgr.log(f"Çubuktan eklendi: {len(tasks)} öğe", "info")
 
     def _show_limits(self):
         menu = tk.Menu(self.root, tearoff=0)
@@ -2379,8 +2432,8 @@ class App:
     def add_site(self, site):
         return self.add_url(site=site)
 
-    def add_batch(self):
-        dialog = AddDialog(self.root, self.mgr, batch=True)
+    def add_batch(self, initial=""):
+        dialog = AddDialog(self.root, self.mgr, batch=True, initial=initial)
         self.root.wait_window(dialog)
         if dialog.result:
             self._create_tasks(dialog.result)

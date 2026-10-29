@@ -73,11 +73,14 @@ def main():
 
     pump()
 
-    site_buttons = getattr(app, "site_buttons", [])
-    check("site butonlari", len(site_buttons) >= 6, str(len(site_buttons)))
-    check("site buton yazilari",
-          any(b.cget("text") == "YouTube" for b in site_buttons),
-          ",".join(b.cget("text") for b in site_buttons))
+    # Tek evrensel bağlantı çubuğu (site butonlarının yerini aldı)
+    link_entry = getattr(app, "ent_link", None)
+    check("link cubugu var", link_entry is not None and
+          link_entry.winfo_exists())
+    check("link cubugu placeholder",
+          app._link_is_placeholder and bool(app._link_placeholder))
+    check("link cubugu button", True)
+
     site_dialog = AddDialog(root, mgr, site="YouTube")
     check("site penceresi basligi", "YouTube" in site_dialog.title(),
           site_dialog.title())
