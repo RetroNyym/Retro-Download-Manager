@@ -145,9 +145,9 @@ A local bridge server moves typed links into the UI
 
 | Endpoint | What it does |
 | --- | --- |
-| `GET /links` | returns clipboard/grabber links as JSON |
 | `GET /add?url=...` | adds a link to the queue |
 | `GET /status` | queue summary |
+| `GET /links?url=...` | scans the given page and returns media links as JSON (`depth` and `extensions` parameters supported; same as `/grab`) |
 | `GET /torrent?url=magnet:...` | adds a magnet/.torrent, returns `gid` |
 | `GET /torrents` | list of added torrents |
 

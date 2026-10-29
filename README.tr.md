@@ -144,9 +144,9 @@ Adres çubuğuna yazılan linkleri arayüze taşımak için yerel köprü sunucu
 
 | Uç | Ne yapar |
 | --- | --- |
-| `GET /links` | pano/grabber'da toplanan linkleri JSON olarak verir |
 | `GET /add?url=...` | linki kuyruğa ekler |
 | `GET /status` | kuyruk özeti |
+| `GET /links?url=...` | verilen sayfayı tarar ve medya linklerini JSON olarak döner (`depth`, `extensions` parametreleri desteklenir; `/grab` ile aynı) |
 | `GET /torrent?url=magnet:...` | magnet/.torrent ekler, `gid` döner |
 | `GET /torrents` | eklenen torrentlerin listesi |
 
