@@ -1496,7 +1496,8 @@ class App:
         saved_theme = getattr(self.mgr.settings, "theme", "") or ""
         self.theme = ThemeManager(self.root, saved_theme or None)
         try:
-            self.theme._trace_hook = self._trace_log
+            # Sınıf düzeyinde atanmalı (_trace statik olarak SMITTED okur)
+            ThemeManager._trace_hook = self._trace_log
         except Exception:
             pass
         _sync_palette(self.theme.c)
@@ -1846,7 +1847,7 @@ class App:
                               command=self.open_settings)
         file_menu.add_command(label="Geçmişi Temizle", command=self.clear_history)
         file_menu.add_separator()
-        file_menu.add_command(label="Çıkış", accelerator="Ctrl+Q", command=self._on_close)
+        file_menu.add_command(label="Çıkış", command=self._on_close)
         menubar.add_cascade(label="Dosya", menu=file_menu)
 
         download_menu = tk.Menu(menubar, tearoff=0)
@@ -2239,7 +2240,11 @@ class App:
         self.root.bind("<Control-V>", lambda _e: self.add_from_clipboard())
         self.root.bind("<Control-p>", lambda _e: self._apply("pause"))
         self.root.bind("<Control-r>", lambda _e: self._apply("start"))
-        self.root.bind("<Control-q>", lambda _e: self._on_close())
+        # Ctrl+Q çıkış kısayolu KALDIRILDI: Ctrl+T (tema) kullanılırken yanlışlıkla
+        # Q'ya kayıp programın kendini kapatmasına neden olabiliyordu.
+        # Çıkış yalnızca Menü → Dosya → Çıkış ve pencere X butonundan yapılır.
+        # self.root.bind("<Control-q>", lambda _e: self._on_close())
+        self.root.bind("<Control-Q>", lambda _e: "break")
         self.root.bind("<Control-comma>", lambda _e: self.open_settings())
         self.root.bind("<Control-t>", lambda _e: self.toggle_theme())
         self.root.bind("<Control-T>", lambda _e: self.toggle_theme())
@@ -2846,6 +2851,13 @@ class App:
             self._drain_logs()
             self._refresh_history()
             self._tick_count += 1
+            if self._tick_count % 75 == 0:  # ~30 sn'de bir kalp atışı izi
+                try:
+                    sel = len(self.tree.selection())
+                    self._trace_log(f"ui_tick kalp #{self._tick_count} "
+                                    f"(seçili: {sel}; admin process alive)")
+                except Exception:
+                    self._trace_log(f"ui_tick kalp #{self._tick_count}")
             if self._tick_count % 3 == 0:
                 self._poll_clipboard()
             if self._tick_count % 3 == 0:
@@ -2856,7 +2868,11 @@ class App:
                 except Exception:
                     pass
         except Exception as exc:
-            print("UI hatası:", exc)
+            try:
+                self._trace_log(f"ui_tick istisnası (#{self._tick_count}): "
+                                f"{type(exc).__name__}: {exc}")
+            except Exception:
+                pass
         try:
             self.root.after(400, self._ui_tick)
         except Exception:
@@ -2866,6 +2882,12 @@ class App:
         self._all_done = True
 
     def _on_close(self):
+        try:
+            stack = traceback.format_stack()[-9:]
+            self._trace_log("_on_close CALISTI (tetik kidemleri):\n" +
+                            "".join(stack))
+        except Exception:
+            pass
         active = [t for t in self.mgr.tasks if t.is_busy]
         if active:
             if not messagebox.askyesno(
@@ -2874,7 +2896,7 @@ class App:
                     "Duraklatılıp çıkış yapılsın mı? (Devam ettirmek için Vazgeç)",
                     parent=self.root):
                 return
-        self._trace_log("WM_DELETE_WINDOW protokolü (_on_close) — kullanıcı çıkışı")
+        self._trace_log("cikis onaylandi — destroy basliyor")
         try:
             self.root.destroy()
         except Exception:
