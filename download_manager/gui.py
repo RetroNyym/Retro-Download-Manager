@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import os
 import threading
+import time
+import traceback
 import tkinter as tk
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -1534,7 +1536,8 @@ class App:
 
         Bazi DWM/Tk etkilesimleri (baslik cubugu yeniden boyama, stil degisimi)
         pencereyi ikonlastirebilir veya alfa degerini sifirlayabilir; kullanici
-        bunu "kuculup acilmama" olarak gorur. Guvenlik agi olarak normale doner.
+        bunu "kuculup acilmama" veya "program kapandı" olarak gorur. Guvenlik
+        agi olarak normale doner ve pencereyi tekrar one getirir.
         """
         try:
             if self.root.state() == "iconic":
@@ -1544,6 +1547,11 @@ class App:
         try:
             if self.root.wm_attributes("-alpha") < 1.0:
                 self.root.wm_attributes("-alpha", 1.0)
+        except tk.TclError:
+            pass
+        try:
+            self.root.lift()
+            self.root.focus_force()
         except tk.TclError:
             pass
 
@@ -2840,6 +2848,41 @@ class App:
         self.root.mainloop()
 
 
+def _install_crash_logger(app):
+    """Sessiz ölümü engeller: Tk callback istisnalarını dosyaya yazar.
+
+    Pythonw ile çalışırken konsol yoktur; callback hatası iz görmeden
+    kaybolur ve pencere beklenmedik şekilde 'kapandı' gibi davranabilir.
+    data/logs/callback-hatalari.log dosyasına yazılır; böylece kullanıcının
+    gördüğü çakışma sonradan teşhis edilebilir.
+    """
+    root = app.root
+
+    def _report(kind, value, tb):
+        base = None
+        try:
+            data_dir = getattr(getattr(app.mgr, "settings", None),
+                               "data_dir", None)
+            base = os.path.join(data_dir if data_dir else os.path.join(
+                ".", "data"), "logs")
+            os.makedirs(base, exist_ok=True)
+            with open(os.path.join(base, "callback-hatalari.log"), "a",
+                      encoding="utf-8") as f:
+                f.write(f"---- {time.strftime('%Y-%m-%d %H:%M:%S')} ----\n")
+                traceback.print_exception(kind, value, tb, file=f)
+            if getattr(app, "_crash_notified", False):
+                return
+            app._crash_notified = True
+            messagebox.showwarning(
+                "Beklenmeyen durum",
+                "Bir arayüz hatası oluştu; ayrıntılar\n"
+                "data\\logs\\callback-hatalari.log dosyasına yazıldı.\n"
+                "Program çalışmaya devam ediyor.", parent=root)
+        except Exception:
+            pass
+    root.report_callback_exception = _report
+
+
 def run(argv=None):
     cleanup_stale_updates()  # önceki exe güncellemesinden kalan .old dosyaları
     baslangic_magnet = None
@@ -2856,6 +2899,7 @@ def run(argv=None):
             baslangic_magnet = arg
     manager = DownloadManager()
     app = App(manager)
+    _install_crash_logger(app)
     if baslangic_magnet:
         def _magnet_ekle():
             try:
