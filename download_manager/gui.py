@@ -1566,34 +1566,6 @@ class App:
         self._refresh_widget_colors()
         self._ensure_window_sane()
 
-    def _ensure_window_sane(self):
-        """Tema/WM etkileşimlerinden sonra pencereyi görünür + normal duruma zorlar.
-
-        Bazi DWM/Tk etkilesimleri (baslik cubugu yeniden boyama, stil degisimi)
-        pencereyi ikonlastirebilir veya alfa degerini sifirlayabilir; kullanici
-        bunu "kuculup acilmama" veya "program kapandı" olarak gorur. Guvenlik
-        agi olarak normale doner ve pencereyi tekrar one getirir.
-        """
-        try:
-            if self.root.state() == "iconic":
-                self._trace_log("SAGLIK: pencere iconic! deiconify...")
-                self.root.deiconify()
-        except tk.TclError:
-            pass
-        try:
-            if self.root.wm_attributes("-alpha") < 1.0:
-                self._trace_log(
-                    f"SAGLIK: pencere alfa {self.root.wm_attributes('-alpha')} "
-                    "-> 1.0 ayarlandi")
-                self.root.wm_attributes("-alpha", 1.0)
-        except tk.TclError:
-            pass
-        try:
-            self.root.lift()
-            self.root.focus_force()
-        except tk.TclError:
-            pass
-
     def _window_health_check(self, tick_count):
         """Her ~6 sn'de pencerenin sistemde GÖRÜNÜRLÜĞÜNÜ denetler.
 
@@ -1601,6 +1573,9 @@ class App:
         olabilir; kullanıcı buna 'kapandı' der. Sorunu loglar + kimlik
         doğrular. Sarıkröntgen amaçlı: trace satırları ile gerçek durumu
         tespit ederiz.
+
+        NOT: 'zoomed' (maximized) ve 'fullscreen' SAĞLIKLI durumlardır —
+        kullanıcı pencereyi büyüttüyse asla küçültmez uzanmıyoruz.
         """
         try:
             state = self.root.state()
@@ -1611,11 +1586,13 @@ class App:
                    self.root.winfo_width(), self.root.winfo_height())
             screen_w = self.root.winfo_screenwidth()
             screen_h = self.root.winfo_screenheight()
-            off_screen = (geo[2] < 5 or geo[3] < 5 or
-                          geo[0] > screen_w or geo[1] > screen_h or
-                          geo[0] + geo[2] < 0 or geo[1] + geo[3] < 0)
-            problem = (state != "normal" or alpha < 0.99 or
-                       not viewable or off_screen)
+            off_screen = (mapped and viewable and
+                          (geo[2] < 180 or geo[3] < 120 or
+                           geo[0] > screen_w or geo[1] > screen_h or
+                           geo[0] + geo[2] < 0 or geo[1] + geo[3] < 0))
+            problem = (state in ("iconic", "withdrawn") or
+                       alpha < 0.95 or not mapped or not viewable or
+                       off_screen)
             if problem or tick_count % 225 == 0:  # sorunlu anlar + 90 sn'de bir sağlıklı iz
                 self._trace_log(
                     f"SAGLIK#{tick_count}: state={state}, alpha={alpha:.2f}, "
@@ -1623,22 +1600,17 @@ class App:
                     f"screen={screen_w}x{screen_h}, "
                     f"off_screen={off_screen}")
             if problem:
-                if state == "iconic":
-                    self.root.deiconify()
-                if alpha < 0.99:
-                    self.root.wm_attributes("-alpha", 1.0)
-                if not viewable or off_screen:
-                    try:
-                        sw, sh = screen_w, screen_h
+                try:
+                    if state == "iconic":
+                        self.root.deiconify()
+                    if alpha < 0.95:
+                        self.root.wm_attributes("-alpha", 1.0)
+                    if off_screen:
                         w = max(geo[2], 940)
                         h = max(geo[3], 560)
                         self.root.geometry(
-                            f"{w}x{h}+{max(0, (sw - w) // 2)}+"
-                            f"{max(0, (sh - h) // 2)}")
-                    except Exception:
-                        pass
-                try:
-                    self.root.state("normal")
+                            f"{w}x{h}+{max(0, (screen_w - w) // 2)}+"
+                            f"{max(0, (screen_h - h) // 2)}")
                     self.root.lift()
                     self.root.focus_force()
                 except Exception:
@@ -1649,6 +1621,34 @@ class App:
                 self._trace_log(f"SAGLIK hata: {type(exc).__name__}: {exc}")
             except Exception:
                 pass
+
+    def _ensure_window_sane(self):
+        """Tema/WM etkileşimlerinden sonra pencereyi görünür + normal duruma zorlar.
+
+        Bazi DWM/Tk etkilesimleri (baslik cubugu yeniden boyama, stil degisimi)
+        pencereyi ikonlastirebilir veya alfa degerini sifirlayabilir; kullanici
+        bunu "kuculup acilmama" veya "program kapandı" olarak gorur. Guvenlik
+        agi olarak normale doner ve pencereyi tekrar one getirir.
+
+        NOT: 'zoomed' (maximized) SAĞLIKLI bir durumdur; asla normal'e çekmez.
+        """
+        try:
+            state = self.root.state()
+            if state == "iconic":
+                self._trace_log("SAGLIK: pencere iconic! deiconify...")
+                self.root.deiconify()
+        except tk.TclError:
+            pass
+        try:
+            if self.root.state() != "zoomed" and \
+                    self.root.wm_attributes("-alpha") < 1.0:
+                self.root.wm_attributes("-alpha", 1.0)
+        except tk.TclError:
+            pass
+        try:
+            self.root.lift()
+        except tk.TclError:
+            pass
 
     def _apply_titlebar(self):
         """DWM ile başlık çubuğunu aktif temaya göre koyu/açık yapar."""
