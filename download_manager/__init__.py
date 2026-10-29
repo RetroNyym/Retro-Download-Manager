@@ -24,7 +24,7 @@ from .util import (
     format_speed,
 )
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __all__ = [
     "DownloadManager", "DownloadTask", "Settings", "RateLimiter",
     "CATEGORIES", "CATEGORY_LABELS", "DEFAULT_CATEGORY_FOLDERS", "STATE_LABELS",
