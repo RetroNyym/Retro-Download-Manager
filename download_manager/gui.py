@@ -3019,6 +3019,75 @@ def run(argv=None):
         pass
     # -------------------------------------------------------------------------
     cleanup_stale_updates()  # önceki exe güncellemesinden kalan .old dosyaları
+
+    # --- tek kopya kilidi (single instance) ----------------------------------
+    # İki kopya aynı anda çalışınca (kullanıcı kısayola çift tıklarsa) pencereler
+    # karışabilir: "butonlar çalışmıyor", "kapandı" algıları gibi görüntüler.
+    # Bu korumada ikinci kopya asla açılmaz; mevcut pencere öne getirilir.
+    try:
+        import ctypes
+        import ctypes.wintypes as wintypes
+        _lock_path = default_data_dir() / "kosucu.json"
+        if os.path.exists(str(_lock_path)):
+            _other = None
+            try:
+                import json as _json
+                _lock_pid = int(_json.loads(_lock_path.read_text(
+                    encoding="utf-8")).get("pid", 0))
+                kernel32 = ctypes.windll.kernel32
+                kernel32.OpenProcess.restype = wintypes.HANDLE
+                h = kernel32.OpenProcess(0x00040000, False, _lock_pid)  # SYNCHRONIZE
+                if h:
+                    kernel32.CloseHandle(h)
+                    _other = _lock_pid
+            except Exception:
+                _other = None
+            if _other:
+                try:
+                    _found = []
+                    _GetWindowText = ctypes.windll.user32.GetWindowTextW
+                    _GetWindowThreadProcessId = (
+                        ctypes.windll.user32.GetWindowThreadProcessId)
+                    _SetForeground = ctypes.windll.user32.SetForegroundWindow
+                    _ShowWindow = ctypes.windll.user32.ShowWindow
+
+                    def _cb(hwnd, _lp):
+                        pid = wintypes.DWORD(0)
+                        _GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+                        if pid.value == _other:
+                            buf = ctypes.create_unicode_buffer(256)
+                            _GetWindowText(hwnd, buf, 256)
+                            if "Retro+" in buf.value:
+                                _found.append((hwnd, buf.value))
+                        return True
+                    _Func = ctypes.WINFUNCTYPE(
+                        ctypes.c_int, wintypes.HWND, wintypes.LPARAM)
+                    ctypes.windll.user32.EnumWindows(_Func(_cb), 0)
+                    if _found:
+                        hwnd, title = _found[0]
+                        _ShowWindow(hwnd, 9)  # SW_RESTORE
+                        _SetForeground(hwnd)
+                except Exception:
+                    pass
+                messagebox.showwarning(
+                    "Retro+ Download Manager",
+                    "Program zaten çalışıyor (ikinci kopya açılmaz).\n"
+                    "Açık pencere öne getirildi.", parent=None)
+                return 0
+        import atexit
+        _lock_path.parent.mkdir(parents=True, exist_ok=True)
+        _pid = getattr(os, "getpid", lambda: 0)()
+        try:
+            _lock_path.write_text(json.dumps({"pid": _pid},
+                                             ensure_ascii=False))
+        except Exception:
+            pass
+        atexit.register(lambda: (_lock_path.unlink(missing_ok=True)
+                                 if _lock_path.exists() else None))
+    except Exception:
+        pass
+    # -------------------------------------------------------------------------
+
     baslangic_magnet = None
     for arg in list(argv or []):
         if arg.startswith("--magnet="):
