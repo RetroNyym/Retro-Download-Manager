@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import threading
 import time
 import traceback
@@ -44,6 +45,7 @@ from .util import (
     CATEGORY_LABELS,
     app_root_dir,
     cleanup_stale_updates,
+    default_data_dir,
     ensure_listener_files,
     format_bytes,
     format_datetime,
@@ -2935,6 +2937,32 @@ def _install_crash_logger(app):
 
 
 def run(argv=None):
+    # --- sessiz çakışma teşhis katmanı (pythonw'de konsol yok) ---------------
+    try:
+        import faulthandler
+        import threading
+        _log_dir = os.path.join(str(default_data_dir()), "logs")
+        os.makedirs(_log_dir, exist_ok=True)
+        _crash_path = os.path.join(_log_dir, "callback-hatalari.log")
+        _fh = open(_crash_path, "a", encoding="utf-8")
+        faulthandler.enable(_fh)
+        def _thr_hook(args):
+            with open(_crash_path, "a", encoding="utf-8") as f:
+                f.write(f"---- THREAD EXCEPTION {time.strftime('%H:%M:%S')} "
+                        f"(({args.thread.name})) ----\n")
+                traceback.print_exception(args.exc_type, args.exc_value,
+                                          args.exc_traceback, file=f)
+        threading.excepthook = _thr_hook
+
+        def _sys_hook(t, v, tb):
+            with open(_crash_path, "a", encoding="utf-8") as f:
+                f.write(f"---- SYS EXCEPTION {time.strftime('%H:%M:%S')} ----\n")
+                traceback.print_exception(t, v, tb, file=f)
+                f.flush()
+        sys.excepthook = _sys_hook
+    except Exception:
+        pass
+    # -------------------------------------------------------------------------
     cleanup_stale_updates()  # önceki exe güncellemesinden kalan .old dosyaları
     baslangic_magnet = None
     for arg in list(argv or []):
